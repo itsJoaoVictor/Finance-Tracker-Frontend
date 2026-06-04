@@ -1,0 +1,185 @@
+.register {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: clamp(20px, 4vw, 48px);
+}
+
+.register__shell {
+  width: min(620px, 100%);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(16px, 3vw, 28px);
+  align-items: stretch;
+}
+
+.register__panel {
+  background: var(--card);
+  border-radius: 28px;
+  border: 1px solid rgba(27, 26, 23, 0.08);
+  box-shadow: var(--shadow);
+}
+
+.register__panel--form {
+  padding: clamp(28px, 5vw, 52px);
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.register__logo {
+  width: min(180px, 46vw);
+  height: auto;
+  align-self: center;
+}
+
+.register__headline {
+  display: grid;
+  gap: 10px;
+}
+
+.register__eyebrow {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-size: 0.75rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.register__title {
+  margin: 0;
+  font-family: 'Instrument Serif', 'Times New Roman', serif;
+  font-size: clamp(2rem, 3.5vw, 3rem);
+  font-weight: 400;
+  letter-spacing: 0.01em;
+}
+
+.register__subtitle {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+  font-size: 1rem;
+}
+
+.register__form {
+  display: grid;
+  gap: 18px;
+}
+
+.register__password-block {
+  display: grid;
+  gap: 12px;
+}
+
+.register__password-hints {
+  border-radius: 16px;
+  padding: 14px 16px;
+  background: rgba(47, 91, 75, 0.08);
+  border: 1px solid rgba(47, 91, 75, 0.12);
+}
+
+.register__hint-title {
+  margin: 0 0 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--accent-2);
+}
+
+.register__hint-list {
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+  list-style: none;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.register__hint::before {
+  content: "-";
+  margin-right: 8px;
+  color: var(--muted);
+}
+
+.register__hint--ok {
+  color: var(--accent-2);
+  font-weight: 600;
+}
+
+.register__hint--ok::before {
+  color: var(--accent-2);
+}
+
+.register__submit {
+  border: none;
+  border-radius: 16px;
+  padding: 14px 18px;
+  font-size: 1rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, #1f7a5a, #2c9b74);
+  color: #fffaf3;
+  cursor: pointer;
+  transition: transform 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
+}
+
+.register__submit:hover:enabled {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 32px rgba(31, 122, 90, 0.28);
+}
+
+.register__submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.register__feedback {
+  padding: 12px 14px;
+  border-radius: 14px;
+  font-weight: 600;
+}
+
+.register__feedback--error {
+  background: rgba(213, 74, 58, 0.12);
+  color: #b33728;
+}
+
+.register__feedback--success {
+  background: rgba(31, 122, 90, 0.12);
+  color: #1c6c52;
+}
+
+.register__footnote {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.register__link-button {
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  color: #1c6c52;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.register__link-button:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 640px) {
+  .register__panel--form {
+    padding: 24px;
+  }
+
+  .register__headline {
+    text-align: center;
+  }
+
+  .register__logo {
+    width: min(160px, 60vw);
+  }
+}

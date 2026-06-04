@@ -1,0 +1,51 @@
+# Gitignore para React/Vite
+
+# Dependencies
+node_modules
+package-lock.json
+yarn.lock
+
+# Production
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+.env.development
+.env.test
+.env.production
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Security/Credentials/Keys
+*.pem
+*.key
+*.p12
+*.pfx
+*.cer
+*.crt
+*.der
+credentials.json
+secrets.json
+id_rsa
+id_dsa
+id_ecdsa
+id_ed25519
+authorized_keys
+know_hosts
+

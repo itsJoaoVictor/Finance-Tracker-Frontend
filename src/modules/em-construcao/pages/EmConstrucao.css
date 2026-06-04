@@ -1,0 +1,109 @@
+.construction {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: clamp(24px, 4vw, 48px);
+  padding: clamp(24px, 4vw, 56px);
+}
+
+.construction__brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.construction__logo {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--accent), #f7a348);
+  color: #fffaf3;
+  font-weight: 700;
+}
+
+.construction__brand-name {
+  font-size: 1.1rem;
+}
+
+.construction__card {
+  max-width: 720px;
+  background: var(--card);
+  border-radius: 28px;
+  padding: clamp(28px, 5vw, 48px);
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(27, 26, 23, 0.08);
+}
+
+.construction__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(240, 90, 60, 0.12);
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.construction__title {
+  margin: 18px 0 8px;
+  font-family: 'Instrument Serif', 'Times New Roman', serif;
+  font-size: clamp(2.2rem, 4vw, 3.3rem);
+  font-weight: 400;
+  letter-spacing: 0.01em;
+}
+
+.construction__subtitle {
+  margin: 0 0 24px;
+  color: var(--muted);
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+.construction__status {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(27, 26, 23, 0.08);
+}
+
+.construction__status-label {
+  display: block;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+}
+
+.construction__status-value {
+  display: block;
+  margin-top: 6px;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.construction__footer {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 640px) {
+  .construction__brand {
+    justify-content: center;
+  }
+
+  .construction__card {
+    text-align: center;
+  }
+
+  .construction__status {
+    grid-template-columns: 1fr;
+  }
+}

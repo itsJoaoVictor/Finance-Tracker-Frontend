@@ -1,0 +1,204 @@
+import { useMemo, useState } from 'react'
+import type React from 'react'
+import axios from 'axios'
+import { PasswordField } from '../components/PasswordField'
+import { TextField } from '../components/TextField'
+import { authService } from '../../../services/api'
+import '../components/fields.css'
+import './Register.css'
+
+type RegisterProps = {
+  onNavigateLogin: () => void
+}
+
+const isEmailValid = (email: string) => /\S+@\S+\.\S+/.test(email)
+
+const getPasswordChecks = (password: string) => {
+  const hasMinLength = password.length >= 8
+  const hasUppercase = /[A-Z]/.test(password)
+  const hasNumber = /\d/.test(password)
+  const hasSymbol = /[^A-Za-z0-9]/.test(password)
+
+  return {
+    hasMinLength,
+    hasUppercase,
+    hasNumber,
+    hasSymbol,
+  }
+}
+
+export function Register({ onNavigateLogin }: RegisterProps) {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [touched, setTouched] = useState({ email: false, password: false, confirmPassword: false })
+  const [hasSubmitted, setHasSubmitted] = useState(false)
+  const [submitError, setSubmitError] = useState('')
+  const [submitSuccess, setSubmitSuccess] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const passwordChecks = useMemo(() => getPasswordChecks(password), [password])
+  const isPasswordStrong = Object.values(passwordChecks).every(Boolean)
+
+  const emailError = useMemo(() => {
+    if (!email) return 'Informe seu e-mail.'
+    if (!isEmailValid(email)) return 'Use um e-mail valido.'
+    return ''
+  }, [email])
+
+  const passwordError = useMemo(() => {
+    if (!password) return 'Informe sua senha.'
+    if (!isPasswordStrong) return 'A senha precisa atender aos requisitos abaixo.'
+    return ''
+  }, [password, isPasswordStrong])
+
+  const confirmPasswordError = useMemo(() => {
+    if (!confirmPassword) return 'Confirme sua senha.'
+    if (confirmPassword !== password) return 'As senhas nao coincidem.'
+    return ''
+  }, [confirmPassword, password])
+
+  const showEmailError = (touched.email || hasSubmitted) && emailError
+  const showPasswordError = (touched.password || hasSubmitted) && passwordError
+  const showConfirmError = (touched.confirmPassword || hasSubmitted) && confirmPasswordError
+
+  const isFormValid = !emailError && !passwordError && !confirmPasswordError
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setHasSubmitted(true)
+    setSubmitError('')
+    setSubmitSuccess('')
+
+    if (!isFormValid) return
+
+    setIsSubmitting(true)
+    try {
+      await authService.register({ email, password, confirmPassword })
+      setSubmitSuccess('Cadastro realizado. Agora voce pode entrar.')
+      setPassword('')
+      setConfirmPassword('')
+      setTouched({ email: false, password: false, confirmPassword: false })
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const status = error.response?.status
+        if (status === 409) {
+          setSubmitError('Este e-mail ja esta cadastrado.')
+        } else if (status === 400) {
+          setSubmitError('Revise os dados e tente novamente.')
+        } else {
+          setSubmitError('Nao foi possivel criar a conta agora.')
+        }
+      } else {
+        setSubmitError('Nao foi possivel criar a conta agora.')
+      }
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  return (
+    <div className="register">
+      <div className="register__shell">
+        <div className="register__panel register__panel--form">
+          <img
+            src="/assets/images/Logo.png"
+            alt="Finance Tracker"
+            className="register__logo"
+          />
+          <div className="register__headline">
+            <p className="register__eyebrow">Crie sua conta</p>
+            <h1 className="register__title">Tudo pronto para organizar suas financas.</h1>
+            <p className="register__subtitle">
+              Cadastre-se para acompanhar despesas, metas e evolucao em um so lugar.
+            </p>
+          </div>
+
+          <form className="register__form" onSubmit={handleSubmit} noValidate>
+            <TextField
+              id="register-email"
+              label="E-mail"
+              type="email"
+              value={email}
+              placeholder="voce@exemplo.com"
+              autoComplete="email"
+              inputMode="email"
+              error={showEmailError ? emailError : ''}
+              onChange={(event) => setEmail(event.target.value)}
+              onBlur={(_event) => setTouched((current) => ({ ...current, email: true }))}
+            />
+
+            <div className="register__password-block">
+              <PasswordField
+                id="register-password"
+                label="Senha"
+                value={password}
+                placeholder="Crie uma senha forte"
+                autoComplete="new-password"
+                error={showPasswordError ? passwordError : ''}
+                onChange={(event) => setPassword(event.target.value)}
+                onBlur={(_event) => setTouched((current) => ({ ...current, password: true }))}
+              />
+
+              <div className="register__password-hints" aria-live="polite">
+                <p className="register__hint-title">Sua senha precisa ter:</p>
+                <ul className="register__hint-list">
+                  <li className={`register__hint ${passwordChecks.hasMinLength ? 'register__hint--ok' : ''}`}>
+                    8 caracteres ou mais
+                  </li>
+                  <li className={`register__hint ${passwordChecks.hasUppercase ? 'register__hint--ok' : ''}`}>
+                    1 letra maiuscula
+                  </li>
+                  <li className={`register__hint ${passwordChecks.hasNumber ? 'register__hint--ok' : ''}`}>
+                    1 numero
+                  </li>
+                  <li className={`register__hint ${passwordChecks.hasSymbol ? 'register__hint--ok' : ''}`}>
+                    1 simbolo
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <PasswordField
+              id="register-confirm-password"
+              label="Confirmacao de senha"
+              value={confirmPassword}
+              placeholder="Repita a senha"
+              autoComplete="new-password"
+              error={showConfirmError ? confirmPasswordError : ''}
+              onChange={(event) => setConfirmPassword(event.target.value)}
+              onBlur={(_event) => setTouched((current) => ({ ...current, confirmPassword: true }))}
+            />
+
+            {submitError ? (
+              <div className="register__feedback register__feedback--error" role="alert" aria-live="polite">
+                {submitError}
+              </div>
+            ) : null}
+
+            {submitSuccess ? (
+              <div className="register__feedback register__feedback--success" role="status" aria-live="polite">
+                {submitSuccess}
+              </div>
+            ) : null}
+
+            <button className="register__submit" type="submit" disabled={!isFormValid || isSubmitting}>
+              {isSubmitting ? 'Criando conta...' : 'Criar conta'}
+            </button>
+          </form>
+
+          <p className="register__footnote">
+            Ja possui conta?{' '}
+            <button
+              className="register__link-button"
+              type="button"
+              onClick={onNavigateLogin}
+            >
+              Entrar agora
+            </button>
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
