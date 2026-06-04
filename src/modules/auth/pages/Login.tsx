@@ -1,18 +1,15 @@
 import { useMemo, useState } from 'react'
 import type React from 'react'
+import axios from 'axios'
 import { PasswordField } from '../components/PasswordField'
 import { TextField } from '../components/TextField'
+import { authService } from '../../../services/api'
 import '../components/fields.css'
 import './Login.css'
 
 type LoginProps = {
   onLoginSuccess: () => void
   onNavigateRegister: () => void
-}
-
-const mockCredentials = {
-  email: 'demo@financetracker.com',
-  password: '123456',
 }
 
 const isEmailValid = (email: string) => /\S+@\S+\.\S+/.test(email)
@@ -39,19 +36,28 @@ export function Login({ onLoginSuccess, onNavigateRegister }: LoginProps) {
   const showPasswordError = (touched.password || hasSubmitted) && passwordError
   const isFormValid = !emailError && !passwordError
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setHasSubmitted(true)
+    setAuthError('')
 
     if (!isFormValid) return
 
-    if (email === mockCredentials.email && password === mockCredentials.password) {
-      setAuthError('')
+    try {
+      const response = await authService.login({ email, password })
+      localStorage.setItem('token', response.data.token)
       onLoginSuccess()
-      return
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          setAuthError('E-mail ou senha incorretos. Tente novamente.')
+        } else {
+          setAuthError('Nao foi possivel conectar ao servidor. Tente novamente.')
+        }
+      } else {
+        setAuthError('E-mail ou senha incorretos. Tente novamente.')
+      }
     }
-
-    setAuthError('E-mail ou senha incorretos. Tente novamente.')
   }
 
   return (

@@ -11,17 +11,19 @@ type RegisterProps = {
   onNavigateLogin: () => void
 }
 
-const isEmailValid = (email: string) => /\S+@\S+\.\S+/.test(email)
+const isEmailValid = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
 
 const getPasswordChecks = (password: string) => {
   const hasMinLength = password.length >= 8
   const hasUppercase = /[A-Z]/.test(password)
+  const hasLowercase = /[a-z]/.test(password)
   const hasNumber = /\d/.test(password)
   const hasSymbol = /[^A-Za-z0-9]/.test(password)
 
   return {
     hasMinLength,
     hasUppercase,
+    hasLowercase,
     hasNumber,
     hasSymbol,
   }
@@ -82,9 +84,7 @@ export function Register({ onNavigateLogin }: RegisterProps) {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const status = error.response?.status
-        if (status === 409) {
-          setSubmitError('Este e-mail ja esta cadastrado.')
-        } else if (status === 400) {
+        if (status === 409 || status === 400) {
           setSubmitError('Revise os dados e tente novamente.')
         } else {
           setSubmitError('Nao foi possivel criar a conta agora.')
@@ -148,6 +148,9 @@ export function Register({ onNavigateLogin }: RegisterProps) {
                   </li>
                   <li className={`register__hint ${passwordChecks.hasUppercase ? 'register__hint--ok' : ''}`}>
                     1 letra maiuscula
+                  </li>
+                  <li className={`register__hint ${passwordChecks.hasLowercase ? 'register__hint--ok' : ''}`}>
+                    1 letra minuscula
                   </li>
                   <li className={`register__hint ${passwordChecks.hasNumber ? 'register__hint--ok' : ''}`}>
                     1 numero

@@ -1,11 +1,25 @@
 import axios from 'axios'
-import { Expense, Category, RegisterRequest } from '../types'
+import { Expense, Category, RegisterRequest, LoginRequest, LoginResponse } from '../types'
 
-const API_BASE_URL = '/api'
+const API_BASE_URL = 'http://localhost:8080' // Base URL points to the running backend port 8080
 
 const api = axios.create({
   baseURL: API_BASE_URL,
 })
+
+// Add token to headers if it exists
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token')
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+    return config
+  },
+  (error) => {
+    return Promise.reject(error)
+  }
+)
 
 // Expenses
 export const expenseService = {
@@ -28,4 +42,5 @@ export const categoryService = {
 // Auth
 export const authService = {
   register: (payload: RegisterRequest) => api.post<void>('/usuarios/register', payload),
+  login: (payload: LoginRequest) => api.post<LoginResponse>('/usuarios/login', payload),
 }
