@@ -81,10 +81,15 @@ export function Register({ onNavigateLogin }: RegisterProps) {
       setPassword('')
       setConfirmPassword('')
       setTouched({ email: false, password: false, confirmPassword: false })
+      setTimeout(() => {
+        onNavigateLogin()
+      }, 2000)
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const status = error.response?.status
-        if (status === 409 || status === 400) {
+        if (status === 409) {
+          setSubmitError('Este e-mail ja esta cadastrado.')
+        } else if (status === 400) {
           setSubmitError('Revise os dados e tente novamente.')
         } else {
           setSubmitError('Nao foi possivel criar a conta agora.')
