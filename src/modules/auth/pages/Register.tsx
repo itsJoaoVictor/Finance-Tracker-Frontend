@@ -30,10 +30,11 @@ const getPasswordChecks = (password: string) => {
 }
 
 export function Register({ onNavigateLogin }: RegisterProps) {
+  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [touched, setTouched] = useState({ email: false, password: false, confirmPassword: false })
+  const [touched, setTouched] = useState({ name: false, email: false, password: false, confirmPassword: false })
   const [hasSubmitted, setHasSubmitted] = useState(false)
   const [submitError, setSubmitError] = useState('')
   const [submitSuccess, setSubmitSuccess] = useState('')
@@ -41,6 +42,12 @@ export function Register({ onNavigateLogin }: RegisterProps) {
 
   const passwordChecks = useMemo(() => getPasswordChecks(password), [password])
   const isPasswordStrong = Object.values(passwordChecks).every(Boolean)
+
+  const nameError = useMemo(() => {
+    if (!name) return 'Informe seu nome.'
+    if (name.trim().length < 3) return 'O nome deve ter pelo menos 3 caracteres.'
+    return ''
+  }, [name])
 
   const emailError = useMemo(() => {
     if (!email) return 'Informe seu e-mail.'
@@ -60,11 +67,12 @@ export function Register({ onNavigateLogin }: RegisterProps) {
     return ''
   }, [confirmPassword, password])
 
+  const showNameError = (touched.name || hasSubmitted) && nameError
   const showEmailError = (touched.email || hasSubmitted) && emailError
   const showPasswordError = (touched.password || hasSubmitted) && passwordError
   const showConfirmError = (touched.confirmPassword || hasSubmitted) && confirmPasswordError
 
-  const isFormValid = !emailError && !passwordError && !confirmPasswordError
+  const isFormValid = !nameError && !emailError && !passwordError && !confirmPasswordError
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -76,11 +84,13 @@ export function Register({ onNavigateLogin }: RegisterProps) {
 
     setIsSubmitting(true)
     try {
-      await authService.register({ email, password, confirmPassword })
+      await authService.register({ name, email, password, confirmPassword })
       setSubmitSuccess('Cadastro realizado. Agora voce pode entrar.')
+      setName('')
+      setEmail('')
       setPassword('')
       setConfirmPassword('')
-      setTouched({ email: false, password: false, confirmPassword: false })
+      setTouched({ name: false, email: false, password: false, confirmPassword: false })
       setTimeout(() => {
         onNavigateLogin()
       }, 2000)
@@ -88,7 +98,7 @@ export function Register({ onNavigateLogin }: RegisterProps) {
       if (axios.isAxiosError(error)) {
         const status = error.response?.status
         if (status === 409) {
-          setSubmitError('Este e-mail ja esta cadastrado.')
+          setSubmitError('Este e-mail ou nome ja esta cadastrado.')
         } else if (status === 400) {
           setSubmitError('Revise os dados e tente novamente.')
         } else {
@@ -120,6 +130,18 @@ export function Register({ onNavigateLogin }: RegisterProps) {
           </div>
 
           <form className="register__form" onSubmit={handleSubmit} noValidate>
+            <TextField
+              id="register-name"
+              label="Nome"
+              type="text"
+              value={name}
+              placeholder="Seu nome"
+              autoComplete="name"
+              error={showNameError ? nameError : ''}
+              onChange={(event) => setName(event.target.value)}
+              onBlur={(_event) => setTouched((current) => ({ ...current, name: true }))}
+            />
+
             <TextField
               id="register-email"
               label="E-mail"

@@ -9,7 +9,7 @@ type PasswordFieldProps = {
   autoComplete?: string
   error?: string
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void
-  onBlur: (event: React.FocusEvent<HTMLInputElement>) => void
+  onBlur?: (event: React.FocusEvent<HTMLInputElement>) => void
 }
 
 export function PasswordField({

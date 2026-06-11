@@ -16,6 +16,7 @@ export interface Category {
 }
 
 export interface RegisterRequest {
+  name: string
   email: string
   password: string
   confirmPassword: string
@@ -27,5 +28,8 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-  token: string
+  token?: string
+  access_token?: string
+  refresh_token?: string
+  twoFactorRequired?: boolean
 }

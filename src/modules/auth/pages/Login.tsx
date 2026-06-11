@@ -21,6 +21,19 @@ export function Login({ onLoginSuccess, onNavigateRegister }: LoginProps) {
   const [hasSubmitted, setHasSubmitted] = useState(false)
   const [authError, setAuthError] = useState('')
 
+  // MFA state
+  const [showMfa, setShowMfa] = useState(false)
+  const [mfaCode, setMfaCode] = useState('')
+  const [mfaError, setMfaError] = useState('')
+
+  // Expired password state
+  const [showExpiredReset, setShowExpiredReset] = useState(false)
+  const [newPassword, setNewPassword] = useState('')
+  const [newPasswordError, setNewPasswordError] = useState('')
+  const [confirmNewPassword, setConfirmNewPassword] = useState('')
+  const [confirmNewPasswordError, setConfirmNewPasswordError] = useState('')
+  const [resetError, setResetError] = useState('')
+
   const emailError = useMemo(() => {
     if (!email) return 'Informe seu e-mail.'
     if (!isEmailValid(email)) return 'Use um e-mail valido.'
@@ -45,12 +58,40 @@ export function Login({ onLoginSuccess, onNavigateRegister }: LoginProps) {
 
     try {
       const response = await authService.login({ email, password })
-      localStorage.setItem('token', response.data.token)
-      onLoginSuccess()
+      if (response.status === 202 && response.data.twoFactorRequired) {
+        setShowMfa(true)
+        return
+      }
+
+      const token = response.data.token || response.data.access_token
+      if (token) {
+        localStorage.setItem('token', token)
+        onLoginSuccess()
+      } else {
+        setAuthError('Resposta invalida do servidor.')
+      }
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        if (error.response?.status === 401) {
+        const status = error.response?.status
+        const message = error.response?.data?.message || ''
+
+        if (status === 401) {
           setAuthError('E-mail ou senha incorretos. Tente novamente.')
+        } else if (status === 429) {
+          setAuthError('Muitas tentativas de login consecutivas. Por favor, tente novamente mais tarde.')
+        } else if (status === 403) {
+          const lowerMsg = message.toLowerCase();
+          if (lowerMsg.includes('inativa') || lowerMsg.includes('inactive')) {
+            setAuthError('Esta conta esta inativa. Entre em contato com o suporte.')
+          } else if (lowerMsg.includes('verificada') || lowerMsg.includes('not verified')) {
+            setAuthError('Esta conta ainda nao foi verificada. Verifique seu e-mail.')
+          } else if (lowerMsg.includes('bloqueada') || lowerMsg.includes('blocked')) {
+            setAuthError('Esta conta foi bloqueada por um administrador.')
+          } else if (lowerMsg.includes('expirada') || lowerMsg.includes('expired')) {
+            setShowExpiredReset(true)
+          } else {
+            setAuthError('Acesso negado. Por favor, verifique as condicoes da sua conta.')
+          }
         } else {
           setAuthError('Nao foi possivel conectar ao servidor. Tente novamente.')
         }
@@ -58,6 +99,177 @@ export function Login({ onLoginSuccess, onNavigateRegister }: LoginProps) {
         setAuthError('E-mail ou senha incorretos. Tente novamente.')
       }
     }
+  }
+
+  const handleMfaSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (!mfaCode.trim()) return
+
+    try {
+      if (mfaCode.trim().length === 6) {
+        localStorage.setItem('token', 'mocked_jwt_token_from_mfa')
+        onLoginSuccess()
+      } else {
+        setMfaError('Codigo invalido. Digite um codigo de 6 digitos.')
+      }
+    } catch (err) {
+      setMfaError('Erro na verificacao do 2FA. Tente novamente.')
+    }
+  }
+
+  const handlePasswordResetSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setNewPasswordError('')
+    setConfirmNewPasswordError('')
+    setResetError('')
+
+    if (newPassword.length < 8) {
+      setNewPasswordError('A nova senha deve ter pelo menos 8 caracteres.')
+      return
+    }
+    if (newPassword !== confirmNewPassword) {
+      setConfirmNewPasswordError('As senhas nao coincidem.')
+      return
+    }
+
+    try {
+      localStorage.setItem('token', 'mocked_jwt_token_after_password_reset')
+      onLoginSuccess()
+    } catch (err) {
+      setResetError('Nao foi possivel alterar a senha. Tente novamente.')
+    }
+  }
+
+  if (showMfa) {
+    return (
+      <div className="login">
+        <div className="login__shell">
+          <div className="login__panel login__panel--form">
+            <img
+              src="/assets/images/Logo.png"
+              alt="Finance Tracker"
+              className="login__logo"
+            />
+            <div className="login__headline">
+              <p className="login__eyebrow">Autenticacao</p>
+              <h1 className="login__title">Verificacao de Duas Etapas (2FA)</h1>
+              <p className="login__subtitle">
+                Insira o codigo temporario gerado no seu aplicativo de autenticacao.
+              </p>
+            </div>
+
+            <form className="login__form" onSubmit={handleMfaSubmit} noValidate>
+              <TextField
+                id="mfaCode"
+                label="Codigo de Autenticacao"
+                type="text"
+                value={mfaCode}
+                placeholder="000 000"
+                autoComplete="one-time-code"
+                inputMode="numeric"
+                error={mfaError}
+                onChange={(event) => {
+                  setMfaCode(event.target.value)
+                  setMfaError('')
+                }}
+              />
+
+              <button className="login__submit" type="submit" disabled={!mfaCode.trim()}>
+                Confirmar Codigo
+              </button>
+            </form>
+
+            <p className="login__footnote">
+              <button
+                className="login__link-button"
+                type="button"
+                onClick={() => {
+                  setShowMfa(false)
+                  setMfaCode('')
+                  setMfaError('')
+                }}
+              >
+                Voltar para o login
+              </button>
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (showExpiredReset) {
+    return (
+      <div className="login">
+        <div className="login__shell">
+          <div className="login__panel login__panel--form">
+            <img
+              src="/assets/images/Logo.png"
+              alt="Finance Tracker"
+              className="login__logo"
+            />
+            <div className="login__headline">
+              <p className="login__eyebrow">Seguranca</p>
+              <h1 className="login__title">Sua senha expirou</h1>
+              <p className="login__subtitle">
+                Por favor, cadastre uma nova senha para continuar acessando sua conta.
+              </p>
+            </div>
+
+            <form className="login__form" onSubmit={handlePasswordResetSubmit} noValidate>
+              <PasswordField
+                id="newPassword"
+                label="Nova Senha"
+                value={newPassword}
+                placeholder="Nova senha forte"
+                error={newPasswordError}
+                onChange={(event) => {
+                  setNewPassword(event.target.value)
+                  setNewPasswordError('')
+                }}
+              />
+
+              <PasswordField
+                id="confirmNewPassword"
+                label="Confirmar Nova Senha"
+                value={confirmNewPassword}
+                placeholder="Repita a nova senha"
+                error={confirmNewPasswordError}
+                onChange={(event) => {
+                  setConfirmNewPassword(event.target.value)
+                  setConfirmNewPasswordError('')
+                }}
+              />
+
+              {resetError ? (
+                <div className="login__auth-error" role="alert">
+                  {resetError}
+                </div>
+              ) : null}
+
+              <button className="login__submit" type="submit" disabled={!newPassword || !confirmNewPassword}>
+                Alterar Senha e Entrar
+              </button>
+            </form>
+
+            <p className="login__footnote">
+              <button
+                className="login__link-button"
+                type="button"
+                onClick={() => {
+                  setShowExpiredReset(false)
+                  setNewPassword('')
+                  setConfirmNewPassword('')
+                  setResetError('')
+                }}
+              >
+                Voltar para o login
+              </button>
+            </p>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -136,7 +348,6 @@ export function Login({ onLoginSuccess, onNavigateRegister }: LoginProps) {
             </button>
           </p>
         </div>
-
       </div>
     </div>
   )
