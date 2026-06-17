@@ -4,6 +4,7 @@ import axios from 'axios'
 import { PasswordField } from '../components/PasswordField'
 import { TextField } from '../components/TextField'
 import { authService } from '../../../services/api'
+import { useTheme } from '../../../hooks/useTheme'
 import '../components/fields.css'
 import './Login.css'
 
@@ -15,6 +16,7 @@ type LoginProps = {
 const isEmailValid = (email: string) => /\S+@\S+\.\S+/.test(email)
 
 export function Login({ onLoginSuccess, onNavigateRegister }: LoginProps) {
+  const { theme, toggleTheme } = useTheme()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [touched, setTouched] = useState({ email: false, password: false })
@@ -65,7 +67,7 @@ export function Login({ onLoginSuccess, onNavigateRegister }: LoginProps) {
 
       const token = response.data.token || response.data.access_token
       if (token) {
-        localStorage.setItem('token', token)
+        sessionStorage.setItem('token', token)
         onLoginSuccess()
       } else {
         setAuthError('Resposta invalida do servidor.')
@@ -107,7 +109,7 @@ export function Login({ onLoginSuccess, onNavigateRegister }: LoginProps) {
 
     try {
       if (mfaCode.trim().length === 6) {
-        localStorage.setItem('token', 'mocked_jwt_token_from_mfa')
+        sessionStorage.setItem('token', 'mocked_jwt_token_from_mfa')
         onLoginSuccess()
       } else {
         setMfaError('Codigo invalido. Digite um codigo de 6 digitos.')
@@ -133,7 +135,7 @@ export function Login({ onLoginSuccess, onNavigateRegister }: LoginProps) {
     }
 
     try {
-      localStorage.setItem('token', 'mocked_jwt_token_after_password_reset')
+      sessionStorage.setItem('token', 'mocked_jwt_token_after_password_reset')
       onLoginSuccess()
     } catch (err) {
       setResetError('Nao foi possivel alterar a senha. Tente novamente.')
@@ -143,6 +145,30 @@ export function Login({ onLoginSuccess, onNavigateRegister }: LoginProps) {
   if (showMfa) {
     return (
       <div className="login">
+        <button
+          className="auth__theme-toggle"
+          onClick={toggleTheme}
+          type="button"
+          aria-label={theme === 'light' ? 'Ativar Modo Escuro' : 'Ativar Modo Claro'}
+        >
+          {theme === 'light' ? (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="5" />
+              <line x1="12" y1="1" x2="12" y2="3" />
+              <line x1="12" y1="21" x2="12" y2="23" />
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+              <line x1="1" y1="12" x2="3" y2="12" />
+              <line x1="21" y1="12" x2="23" y2="12" />
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+            </svg>
+          )}
+        </button>
         <div className="login__shell">
           <div className="login__panel login__panel--form">
             <img
@@ -201,6 +227,30 @@ export function Login({ onLoginSuccess, onNavigateRegister }: LoginProps) {
   if (showExpiredReset) {
     return (
       <div className="login">
+        <button
+          className="auth__theme-toggle"
+          onClick={toggleTheme}
+          type="button"
+          aria-label={theme === 'light' ? 'Ativar Modo Escuro' : 'Ativar Modo Claro'}
+        >
+          {theme === 'light' ? (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="5" />
+              <line x1="12" y1="1" x2="12" y2="3" />
+              <line x1="12" y1="21" x2="12" y2="23" />
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+              <line x1="1" y1="12" x2="3" y2="12" />
+              <line x1="21" y1="12" x2="23" y2="12" />
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+            </svg>
+          )}
+        </button>
         <div className="login__shell">
           <div className="login__panel login__panel--form">
             <img
@@ -274,6 +324,30 @@ export function Login({ onLoginSuccess, onNavigateRegister }: LoginProps) {
 
   return (
     <div className="login">
+      <button
+        className="auth__theme-toggle"
+        onClick={toggleTheme}
+        type="button"
+        aria-label={theme === 'light' ? 'Ativar Modo Escuro' : 'Ativar Modo Claro'}
+      >
+        {theme === 'light' ? (
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+          </svg>
+        ) : (
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="5" />
+            <line x1="12" y1="1" x2="12" y2="3" />
+            <line x1="12" y1="21" x2="12" y2="23" />
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+            <line x1="1" y1="12" x2="3" y2="12" />
+            <line x1="21" y1="12" x2="23" y2="12" />
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+          </svg>
+        )}
+      </button>
       <div className="login__shell">
         <div className="login__panel login__panel--form">
           <img

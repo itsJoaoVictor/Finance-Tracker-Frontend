@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Expense } from '../types'
-import { expenseService } from '../services/api'
+import { Expense } from '../../../types'
+import { expenseService } from '../../../services/api'
 
 export function ExpenseList() {
   const [expenses, setExpenses] = useState<Expense[]>([])
