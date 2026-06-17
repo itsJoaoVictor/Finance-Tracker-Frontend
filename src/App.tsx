@@ -65,6 +65,37 @@ function DashboardLayout() {
   )
 }
 
+import { Perfil } from './modules/usuario/pages/Perfil'
+
+function PerfilLayout() {
+  const { user, loading } = useUsuario()
+  const navigate = useNavigate()
+
+  const handleLogout = () => {
+    sessionStorage.removeItem('token')
+    navigate('/login')
+  }
+
+  return (
+    <div className="sidebar-layout">
+      <Sidebar
+        onLogout={handleLogout}
+      />
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+        <Navbar
+          pageTitle="Meu Perfil"
+          userName={loading ? 'Carregando...' : (user?.name || '')}
+          userEmail={loading ? '...' : (user?.email || '')}
+          onLogout={handleLogout}
+        />
+        <main className="sidebar-layout__content app__screen app__screen--enter" style={{ padding: '32px' }}>
+          <Perfil />
+        </main>
+      </div>
+    </div>
+  )
+}
+
 function AppContent() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -150,6 +181,14 @@ function AppContent() {
           element={
             <PrivateRoute>
               <DashboardLayout />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/perfil"
+          element={
+            <PrivateRoute>
+              <PerfilLayout />
             </PrivateRoute>
           }
         />

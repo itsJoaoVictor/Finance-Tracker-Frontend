@@ -1,0 +1,249 @@
+.perfil-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 40px 20px;
+  min-height: calc(100vh - 120px);
+}
+
+.perfil-card {
+  background: var(--card);
+  border: 1px solid rgba(27, 26, 23, 0.08);
+  border-radius: 16px;
+  padding: 40px;
+  width: 100%;
+  max-width: 600px;
+  box-shadow: var(--shadow);
+}
+
+.perfil-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 28px;
+  color: var(--ink);
+  margin: 0 0 8px 0;
+}
+
+.perfil-subtitle {
+  color: var(--muted);
+  font-size: 16px;
+  margin: 0 0 32px 0;
+}
+
+.perfil-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-label {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1.5px solid rgba(27, 26, 23, 0.15);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 16px;
+  background: transparent;
+  color: var(--ink);
+  transition: all 0.2s ease-in-out;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(240, 90, 60, 0.15);
+}
+
+.form-input--error {
+  border-color: var(--accent);
+  background-color: rgba(240, 90, 60, 0.03);
+}
+
+.error-message {
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.feedback-message {
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 14px;
+  text-align: center;
+}
+
+.feedback-message--error {
+  background-color: rgba(240, 90, 60, 0.1);
+  color: var(--accent);
+  border: 1px solid rgba(240, 90, 60, 0.2);
+}
+
+.feedback-message--success {
+  background-color: rgba(47, 91, 75, 0.1);
+  color: var(--accent-2);
+  border: 1px solid rgba(47, 91, 75, 0.2);
+}
+
+.perfil-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
+  gap: 16px;
+}
+
+.btn-save {
+  padding: 12px 24px;
+  background-color: var(--ink);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-save:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.btn-save:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-delete-trigger {
+  padding: 12px 20px;
+  background-color: transparent;
+  color: var(--accent);
+  border: 1.5px solid var(--accent);
+  border-radius: 8px;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-delete-trigger:hover:not(:disabled) {
+  background-color: rgba(240, 90, 60, 0.05);
+}
+
+/* Modal Styling */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(27, 26, 23, 0.4);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-card {
+  background: var(--card);
+  border: 1px solid rgba(27, 26, 23, 0.1);
+  border-radius: 16px;
+  padding: 32px;
+  max-width: 440px;
+  width: 90%;
+  box-shadow: var(--shadow);
+  text-align: center;
+  animation: modalScaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalScaleUp {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.modal-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0 0 12px 0;
+}
+
+.modal-text {
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.5;
+  margin: 0 0 24px 0;
+}
+
+.modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.btn-confirm-delete {
+  padding: 12px;
+  background-color: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.btn-confirm-delete:hover {
+  opacity: 0.95;
+}
+
+.btn-cancel {
+  padding: 12px;
+  background-color: var(--bg-accent);
+  color: var(--ink);
+  border: none;
+  border-radius: 8px;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.btn-cancel:hover {
+  opacity: 0.95;
+}
+
+.perfil-loading, .perfil-error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 120px);
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--muted);
+}

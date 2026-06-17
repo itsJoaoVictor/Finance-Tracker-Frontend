@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import './Navbar.css'
 
 interface NavbarProps {
@@ -19,6 +20,7 @@ export function Navbar({
   onLogout
 }: NavbarProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const navigate = useNavigate()
 
   const handleQuickAction = () => {
     if (onQuickAction) {
@@ -104,7 +106,7 @@ export function Navbar({
                 className="navbar__dropdown-item"
                 role="menuitem"
                 onClick={() => {
-                  alert('Acessar Perfil');
+                  navigate('/perfil');
                   setIsDropdownOpen(false);
                 }}
               >
