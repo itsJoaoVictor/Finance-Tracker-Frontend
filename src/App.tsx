@@ -60,6 +60,7 @@ function AppShell({
           onLogout={handleLogout}
         />
         <main
+          key={pageTitle}
           className="sidebar-layout__content app__screen app__screen--enter"
           style={{ padding: '32px' }}
         >
@@ -90,7 +91,6 @@ function DashboardLayout() {
       pageTitle={itemLabels[activeItem] || activeItem}
       activeItem={activeItem}
       onSelectItem={setActiveItem}
-      key={activeItem}
     >
       {activeItem === 'contas' ? (
         <Contas />
