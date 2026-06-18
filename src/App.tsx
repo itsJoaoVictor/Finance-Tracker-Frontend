@@ -60,7 +60,6 @@ function AppShell({
           onLogout={handleLogout}
         />
         <main
-          key={pageTitle}
           className="sidebar-layout__content app__screen app__screen--enter"
           style={{ padding: '32px' }}
         >
