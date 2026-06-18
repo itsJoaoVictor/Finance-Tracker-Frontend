@@ -125,7 +125,6 @@
   background: var(--card);
   border-radius: 20px;
   box-shadow: 0 4px 24px rgba(28, 26, 23, 0.09);
-  overflow: hidden;
   position: relative;
   border: 1px solid rgba(28, 26, 23, 0.07);
   transition: transform 0.2s, box-shadow 0.2s;
@@ -143,6 +142,8 @@
   width: 100%;
   background: #ccc;
   flex-shrink: 0;
+  border-top-left-radius: 19px;
+  border-top-right-radius: 19px;
 }
 
 .account-card__body {
