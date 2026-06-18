@@ -78,3 +78,5 @@ export const userService = {
   update: (id: string, payload: UsuarioUpdateRequest) => api.put<void>(`/usuarios/${id}`, payload),
   delete: (id: string) => api.delete<void>(`/usuarios/${id}`),
 }
+
+export default api
