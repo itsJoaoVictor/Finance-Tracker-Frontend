@@ -45,11 +45,23 @@ function AppShell({
     navigate('/login')
   }
 
+  const handleSelectItem = (item: string) => {
+    if (onSelectItem) {
+      onSelectItem(item)
+    } else {
+      if (item === 'contas') {
+        navigate('/contas')
+      } else {
+        navigate('/construction', { state: { activeItem: item } })
+      }
+    }
+  }
+
   return (
     <div className="sidebar-layout">
       <Sidebar
         activeItem={activeItem}
-        onSelectItem={onSelectItem}
+        onSelectItem={handleSelectItem}
         onLogout={handleLogout}
       />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
@@ -73,7 +85,18 @@ function AppShell({
 
 // ─── Dashboard Layout (sidebar-based navigation) ─────────────────────────────
 function DashboardLayout() {
-  const [activeItem, setActiveItem] = useState('dashboard')
+  const location = useLocation()
+  const navigate = useNavigate()
+
+  const [activeItem, setActiveItem] = useState(() => {
+    return (location.state as any)?.activeItem || 'dashboard'
+  })
+
+  useEffect(() => {
+    if (location.state && (location.state as any).activeItem) {
+      setActiveItem((location.state as any).activeItem)
+    }
+  }, [location.state])
 
   const itemLabels: Record<string, string> = {
     dashboard: 'Dashboard',
@@ -86,17 +109,22 @@ function DashboardLayout() {
     configuracoes: 'Configurações',
   }
 
+  const handleSelectItem = (item: string) => {
+    if (item === 'contas') {
+      navigate('/contas')
+    } else {
+      setActiveItem(item)
+      navigate('/construction', { state: { activeItem: item }, replace: true })
+    }
+  }
+
   return (
     <AppShell
       pageTitle={itemLabels[activeItem] || activeItem}
       activeItem={activeItem}
-      onSelectItem={setActiveItem}
+      onSelectItem={handleSelectItem}
     >
-      {activeItem === 'contas' ? (
-        <Contas />
-      ) : (
-        <EmConstrucao moduleName={itemLabels[activeItem] || activeItem} />
-      )}
+      <EmConstrucao moduleName={itemLabels[activeItem] || activeItem} />
     </AppShell>
   )
 }
