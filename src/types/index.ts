@@ -65,3 +65,6 @@ export interface ContaResumoResponse {
   totalSaldo: number
   quantidadeContas: number
 }
+
+export * from './cartoes'
+

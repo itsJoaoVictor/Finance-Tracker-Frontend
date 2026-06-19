@@ -7,6 +7,7 @@ import { Register } from './modules/auth/pages/Register'
 import { EmConstrucao } from './modules/em-construcao/pages/EmConstrucao'
 import { Perfil } from './modules/usuario/pages/Perfil'
 import { Contas } from './modules/contas/pages/Contas'
+import { Cartoes } from './modules/cartoes/pages/Cartoes'
 
 import { useTheme } from './hooks/useTheme'
 import { Sidebar } from './components/Sidebar'
@@ -51,6 +52,8 @@ function AppShell({
     } else {
       if (item === 'contas') {
         navigate('/contas')
+      } else if (item === 'cartoes') {
+        navigate('/cartoes')
       } else {
         navigate('/construction', { state: { activeItem: item } })
       }
@@ -112,6 +115,8 @@ function DashboardLayout() {
   const handleSelectItem = (item: string) => {
     if (item === 'contas') {
       navigate('/contas')
+    } else if (item === 'cartoes') {
+      navigate('/cartoes')
     } else {
       setActiveItem(item)
       navigate('/construction', { state: { activeItem: item }, replace: true })
@@ -143,6 +148,15 @@ function ContasLayout() {
   return (
     <AppShell pageTitle="Contas" activeItem="contas">
       <Contas />
+    </AppShell>
+  )
+}
+
+// ─── Cartões Layout (rota própria /cartoes) ───────────────────────────────────
+function CartoesLayout() {
+  return (
+    <AppShell pageTitle="Cartões" activeItem="cartoes">
+      <Cartoes />
     </AppShell>
   )
 }
@@ -238,6 +252,14 @@ function AppContent() {
           element={
             <PrivateRoute>
               <ContasLayout />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/cartoes"
+          element={
+            <PrivateRoute>
+              <CartoesLayout />
             </PrivateRoute>
           }
         />
