@@ -67,4 +67,6 @@ export interface ContaResumoResponse {
 }
 
 export * from './cartoes'
+export * from './categorias'
+
 

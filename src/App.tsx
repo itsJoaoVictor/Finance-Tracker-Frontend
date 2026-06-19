@@ -8,6 +8,8 @@ import { EmConstrucao } from './modules/em-construcao/pages/EmConstrucao'
 import { Perfil } from './modules/usuario/pages/Perfil'
 import { Contas } from './modules/contas/pages/Contas'
 import { Cartoes } from './modules/cartoes/pages/Cartoes'
+import { Categorias } from './modules/categorias/pages/Categorias'
+
 
 import { useTheme } from './hooks/useTheme'
 import { Sidebar } from './components/Sidebar'
@@ -54,6 +56,8 @@ function AppShell({
         navigate('/contas')
       } else if (item === 'cartoes') {
         navigate('/cartoes')
+      } else if (item === 'categorias') {
+        navigate('/categorias')
       } else {
         navigate('/construction', { state: { activeItem: item } })
       }
@@ -117,6 +121,8 @@ function DashboardLayout() {
       navigate('/contas')
     } else if (item === 'cartoes') {
       navigate('/cartoes')
+    } else if (item === 'categorias') {
+      navigate('/categorias')
     } else {
       setActiveItem(item)
       navigate('/construction', { state: { activeItem: item }, replace: true })
@@ -157,6 +163,15 @@ function CartoesLayout() {
   return (
     <AppShell pageTitle="Cartões" activeItem="cartoes">
       <Cartoes />
+    </AppShell>
+  )
+}
+
+// ─── Categorias Layout (rota própria /categorias) ─────────────────────────────
+function CategoriasLayout() {
+  return (
+    <AppShell pageTitle="Categorias" activeItem="categorias">
+      <Categorias />
     </AppShell>
   )
 }
@@ -260,6 +275,14 @@ function AppContent() {
           element={
             <PrivateRoute>
               <CartoesLayout />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/categorias"
+          element={
+            <PrivateRoute>
+              <CategoriasLayout />
             </PrivateRoute>
           }
         />

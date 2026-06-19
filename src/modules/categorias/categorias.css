@@ -1,0 +1,228 @@
+/* ===== CATEGORIAS CSS ===== */
+
+.categorias-page {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.categorias-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.categorias-header__title {
+  font-family: 'Instrument Serif', serif;
+  font-size: 2.2rem;
+  font-weight: 400;
+  color: var(--ink, #1c1a17);
+  margin: 0;
+}
+
+.categorias-header__subtitle {
+  font-size: 0.875rem;
+  color: var(--muted, #828282);
+  margin: 4px 0 0;
+}
+
+.btn-nova-categoria {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--accent, #f05a3c);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 22px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+  box-shadow: 0 4px 16px rgba(240, 90, 60, 0.25);
+}
+
+.btn-nova-categoria:hover {
+  background: #d94e33;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(240, 90, 60, 0.35);
+}
+
+.btn-nova-categoria:active {
+  transform: translateY(0);
+}
+
+.categorias-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  background: var(--bg-accent, #fbfbfb);
+  border: 1px solid var(--border, #e0e0e0);
+  border-radius: 16px;
+}
+
+.toggle-switch-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--ink, #1c1a17);
+  font-weight: 500;
+  user-select: none;
+}
+
+.toggle-switch {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  background-color: var(--border, #ccc);
+  border-radius: 12px;
+  transition: background-color 0.2s;
+}
+
+.toggle-switch--active {
+  background-color: var(--accent, #f05a3c);
+}
+
+.toggle-switch__circle {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background-color: white;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+
+.toggle-switch--active .toggle-switch__circle {
+  transform: translateX(20px);
+}
+
+/* ===== CATEGORY GRID & CARDS ===== */
+
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.category-card {
+  background: var(--card, #ffffff);
+  border: 1px solid var(--border, rgba(0, 0, 0, 0.08));
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: var(--shadow, 0 4px 12px rgba(0,0,0,0.03));
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.category-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+.category-card--inactive {
+  opacity: 0.55;
+}
+
+.category-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.category-card__icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+}
+
+.category-card__badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--muted, #666);
+}
+
+.category-card__badge--system {
+  background: rgba(9, 132, 227, 0.1);
+  color: #0984e3;
+}
+
+.category-card__badge--inactive {
+  background: rgba(232, 65, 24, 0.1);
+  color: #e84118;
+}
+
+.category-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.category-card__title {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--ink, #1c1a17);
+  margin: 0;
+}
+
+.category-card__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: auto;
+  border-top: 1px solid var(--border, rgba(0,0,0,0.05));
+  padding-top: 12px;
+}
+
+.btn-card-action {
+  background: none;
+  border: none;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-card-action--edit {
+  color: var(--accent, #f05a3c);
+}
+
+.btn-card-action--edit:hover {
+  background: rgba(240, 90, 60, 0.08);
+}
+
+.btn-card-action--delete {
+  color: #e84118;
+}
+
+.btn-card-action--delete:hover {
+  background: rgba(232, 65, 24, 0.08);
+}
+
+.btn-card-action--reactivate {
+  color: #2ed573;
+}
+
+.btn-card-action--reactivate:hover {
+  background: rgba(46, 213, 115, 0.08);
+}
