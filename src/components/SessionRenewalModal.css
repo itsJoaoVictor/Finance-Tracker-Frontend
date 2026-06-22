@@ -1,0 +1,219 @@
+.session-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(11, 12, 14, 0.7);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: sessionFadeIn 0.3s ease-out;
+}
+
+.session-modal {
+  background: var(--bg-card, #ffffff);
+  border: 1px solid rgba(27, 26, 23, 0.08);
+  border-radius: 20px;
+  width: 90%;
+  max-width: 420px;
+  padding: 36px 32px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  text-align: center;
+  animation: sessionScaleUp 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+/* For dark mode integration, if any exists */
+[style*="--bg: #0b0c0e"] .session-modal {
+  background: #111215;
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+.session-modal__icon {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 20px;
+  background: rgba(240, 90, 60, 0.1);
+  color: var(--accent, #f05a3c);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.session-modal__title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--ink, #1b1a17);
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.session-modal__message {
+  font-size: 0.88rem;
+  color: var(--muted, #6b7280);
+  line-height: 1.5;
+  margin-top: 0;
+  margin-bottom: 24px;
+}
+
+.session-modal__timer {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--accent, #f05a3c);
+  margin: 20px 0;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  transition: color 0.3s ease;
+}
+
+.session-modal__timer--urgent {
+  color: #dc2626;
+  animation: timerAlertPulse 1s infinite alternate;
+}
+
+.session-modal__form {
+  display: flex;
+  flex-direction: column;
+}
+
+.session-modal__input-wrapper {
+  position: relative;
+  margin-bottom: 12px;
+}
+
+.session-modal__input-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted, #9ca3af);
+  display: flex;
+  align-items: center;
+}
+
+.session-modal__input {
+  width: 100%;
+  padding: 14px 16px 14px 44px;
+  border: 1.5px solid rgba(27, 26, 23, 0.12);
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  background: var(--bg, #fcfcfc);
+  color: var(--ink, #1b1a17);
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+[style*="--bg: #0b0c0e"] .session-modal__input {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: #181a1e;
+}
+
+.session-modal__input:focus {
+  border-color: var(--accent, #f05a3c);
+  box-shadow: 0 0 0 3px rgba(240, 90, 60, 0.15);
+}
+
+.session-modal__toggle-pwd {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--muted, #9ca3af);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s;
+}
+
+.session-modal__toggle-pwd:hover {
+  color: var(--ink, #1b1a17);
+}
+
+.session-modal__error {
+  color: #dc2626;
+  font-size: 0.82rem;
+  font-weight: 500;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.session-modal__actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.session-modal__btn {
+  flex: 1;
+  padding: 14px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.92rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.session-modal__btn--secondary {
+  background: var(--bg-accent, #f3f4f6);
+  color: var(--muted, #4b5563);
+}
+
+[style*="--bg: #0b0c0e"] .session-modal__btn--secondary {
+  background: #1d2025;
+  color: #a0aec0;
+}
+
+.session-modal__btn--secondary:hover {
+  background: #e5e7eb;
+}
+
+[style*="--bg: #0b0c0e"] .session-modal__btn--secondary:hover {
+  background: #2d323b;
+}
+
+.session-modal__btn--primary {
+  background: var(--accent, #f05a3c);
+  color: #ffffff;
+}
+
+.session-modal__btn--primary:hover {
+  background: #d94e33;
+  transform: translateY(-1px);
+}
+
+.session-modal__btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@keyframes sessionFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes sessionScaleUp {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes timerAlertPulse {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.05);
+  }
+}

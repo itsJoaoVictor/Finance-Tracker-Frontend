@@ -94,6 +94,7 @@ export function Perfil() {
     try {
       await userService.delete(user.id)
       sessionStorage.removeItem('token')
+      sessionStorage.removeItem('sessionExpiration')
       navigate('/login')
     } catch (err) {
       setFeedbackError('Não foi possível excluir a conta.')

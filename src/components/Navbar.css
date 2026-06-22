@@ -214,6 +214,45 @@
   color: var(--accent);
 }
 
+.navbar__dropdown-timer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 6px 8px;
+  background: rgba(22, 101, 52, 0.08); /* subtle green tint */
+  border: 1px solid rgba(22, 101, 52, 0.15);
+  border-radius: 6px;
+  font-size: 0.75rem;
+  color: #16a34a; /* green */
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  font-variant-numeric: tabular-nums;
+  transition: all 0.3s ease;
+}
+
+.navbar__dropdown-timer svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.navbar__dropdown-timer--urgent {
+  background: rgba(220, 38, 38, 0.08); /* subtle red tint */
+  border-color: rgba(220, 38, 38, 0.15);
+  color: #dc2626; /* red */
+  animation: timerPulse 1s infinite alternate;
+}
+
+@keyframes timerPulse {
+  from {
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.15);
+  }
+  to {
+    box-shadow: 0 0 4px 2px rgba(220, 38, 38, 0.25);
+  }
+}
+
 /* RESPONSIVE DESIGN */
 @media (max-width: 768px) {
   .navbar {

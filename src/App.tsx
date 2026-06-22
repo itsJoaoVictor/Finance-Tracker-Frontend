@@ -13,6 +13,7 @@ import { useTheme } from './hooks/useTheme'
 import { Sidebar } from './components/Sidebar'
 import { Navbar } from './components/Navbar'
 import { useUsuario } from './modules/usuario/hooks/useUsuario'
+import { SessionRenewalModal } from './components/SessionRenewalModal'
 
 // PrivateRoute to protect authenticated screens
 function PrivateRoute({ children }: { children: React.ReactNode }) {
@@ -43,6 +44,7 @@ function AppShell({
 
   const handleLogout = () => {
     sessionStorage.removeItem('token')
+    sessionStorage.removeItem('sessionExpiration')
     navigate('/login')
   }
 
@@ -161,6 +163,22 @@ function CartoesLayout() {
   )
 }
 
+function decodeToken(token: string) {
+  try {
+    const base64Url = token.split('.')[1]
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+    const jsonPayload = decodeURIComponent(
+      window
+        .atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join(''),
+    )
+    return JSON.parse(jsonPayload)
+  } catch (e) {
+    return { exp: Math.floor(Date.now() / 1000) + 2 * 60 * 60 }
+  }
+}
 // ─── App Content (routing) ────────────────────────────────────────────────────
 function AppContent() {
   const navigate = useNavigate()
@@ -168,31 +186,95 @@ function AppContent() {
   const [isTransitioning, setIsTransitioning] = useState(false)
   useTheme()
 
-  // Inactivity auto-logout (15 minutes)
+  const [sessionExpiration, setSessionExpiration] = useState<number | null>(() => {
+    const stored = sessionStorage.getItem('sessionExpiration')
+    if (stored) return parseInt(stored, 10)
+    const token = sessionStorage.getItem('token')
+    if (token) {
+      try {
+        const decoded = decodeToken(token)
+        return decoded.exp * 1000
+      } catch (e) {
+        return null
+      }
+    }
+    return null
+  })
+
+  const [showSessionModal, setShowSessionModal] = useState(false)
+
+  const handleLogout = useCallback(() => {
+    sessionStorage.removeItem('token')
+    sessionStorage.removeItem('sessionExpiration')
+    setSessionExpiration(null)
+    setShowSessionModal(false)
+    navigate('/login')
+  }, [navigate])
+
+  const handleRenewSession = useCallback((newToken: string) => {
+    sessionStorage.setItem('token', newToken)
+    try {
+      const decoded = decodeToken(newToken)
+      const newExpiration = decoded.exp * 1000
+      setSessionExpiration(newExpiration)
+      sessionStorage.setItem('sessionExpiration', newExpiration.toString())
+    } catch (e) {
+      const newExpiration = Date.now() + 2 * 60 * 60 * 1000
+      setSessionExpiration(newExpiration)
+      sessionStorage.setItem('sessionExpiration', newExpiration.toString())
+    }
+    setShowSessionModal(false)
+  }, [])
+
+  // Session duration timer & countdown manager
   useEffect(() => {
     const isAuthPage = ['/login', '/register'].includes(location.pathname)
     const token = sessionStorage.getItem('token')
-    if (isAuthPage || !token) return
 
-    let timeoutId: number
-
-    const resetTimer = () => {
-      window.clearTimeout(timeoutId)
-      timeoutId = window.setTimeout(() => {
-        sessionStorage.removeItem('token')
-        navigate('/login')
-      }, 15 * 60 * 1000) // 15 minutes
+    if (isAuthPage || !token) {
+      setShowSessionModal(false)
+      return
     }
 
-    const events = ['mousemove', 'mousedown', 'click', 'scroll', 'keypress']
-    events.forEach((event) => window.addEventListener(event, resetTimer))
-    resetTimer()
+    // Set or load sessionExpiration
+    let expirationTime = sessionExpiration
+    if (!expirationTime) {
+      try {
+        const decoded = decodeToken(token)
+        expirationTime = decoded.exp * 1000
+        setSessionExpiration(expirationTime)
+        sessionStorage.setItem('sessionExpiration', expirationTime.toString())
+      } catch (e) {
+        expirationTime = Date.now() + 2 * 60 * 60 * 1000
+        setSessionExpiration(expirationTime)
+        sessionStorage.setItem('sessionExpiration', expirationTime.toString())
+      }
+    }
+
+    const checkTimer = () => {
+      const now = Date.now()
+      const diff = expirationTime! - now
+
+      if (diff <= 0) {
+        handleLogout()
+        return
+      }
+
+      // Show renewal modal if remaining time is <= 5 minutes (300,000 ms)
+      if (diff <= 5 * 60 * 1000) {
+        setShowSessionModal(true)
+      } else {
+        setShowSessionModal(false)
+      }
+    }
+
+    checkTimer()
+    const intervalId = window.setInterval(checkTimer, 1000)
 
     return () => {
-      window.clearTimeout(timeoutId)
-      events.forEach((event) => window.removeEventListener(event, resetTimer))
+      window.clearInterval(intervalId)
     }
-  }, [location.pathname, navigate])
+  }, [location.pathname, sessionExpiration, handleLogout])
 
   const handleNavigate = useCallback(
     (path: string) => {
@@ -283,6 +365,13 @@ function AppContent() {
           }
         />
       </Routes>
+      {showSessionModal && (
+        <SessionRenewalModal
+          onRenew={handleRenewSession}
+          onLogout={handleLogout}
+          expirationTime={sessionExpiration}
+        />
+      )}
     </div>
   )
 }

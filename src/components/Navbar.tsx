@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './Navbar.css'
 
@@ -21,6 +21,50 @@ export function Navbar({
 }: NavbarProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const navigate = useNavigate()
+
+  const [timeLeft, setTimeLeft] = useState('')
+  const [isUrgent, setIsUrgent] = useState(false)
+
+  useEffect(() => {
+    if (!isDropdownOpen) return
+
+    const updateTimer = () => {
+      const expirationStr = sessionStorage.getItem('sessionExpiration')
+      if (!expirationStr) {
+        setTimeLeft('')
+        return
+      }
+
+      const expiration = parseInt(expirationStr, 10)
+      const now = Date.now()
+      const diff = expiration - now
+
+      if (diff <= 0) {
+        setTimeLeft('Expirado')
+        setIsUrgent(true)
+        return
+      }
+
+      const totalSeconds = Math.floor(diff / 1000)
+      const hours = Math.floor(totalSeconds / 3600)
+      const minutes = Math.floor((totalSeconds % 3600) / 60)
+      const seconds = totalSeconds % 60
+
+      const formatted = [
+        hours.toString().padStart(2, '0'),
+        minutes.toString().padStart(2, '0'),
+        seconds.toString().padStart(2, '0')
+      ].join(':')
+
+      setTimeLeft(formatted)
+      setIsUrgent(totalSeconds <= 300) // 5 minutes
+    }
+
+    updateTimer()
+    const interval = setInterval(updateTimer, 1000)
+
+    return () => clearInterval(interval)
+  }, [isDropdownOpen])
 
   const handleQuickAction = () => {
     if (onQuickAction) {
@@ -100,6 +144,15 @@ export function Navbar({
               <div className="navbar__dropdown-header">
                 <span className="navbar__username" style={{ display: 'block' }}>{userName}</span>
                 <span className="navbar__dropdown-email">{userEmail}</span>
+                {timeLeft && (
+                  <div className={`navbar__dropdown-timer ${isUrgent ? 'navbar__dropdown-timer--urgent' : ''}`}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="10" />
+                      <polyline points="12 6 12 12 16 14" />
+                    </svg>
+                    <span>Sessão: {timeLeft}</span>
+                  </div>
+                )}
               </div>
 
               <button
