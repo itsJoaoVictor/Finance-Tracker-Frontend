@@ -10,9 +10,25 @@ export interface Expense {
 }
 
 export interface Category {
-  id: number
-  name: string
-  color?: string
+  id: string
+  usuarioId: string | null
+  nome: string
+  icone: string
+  corHexadecimal: string
+  ativo: boolean
+  criadoEm?: string
+}
+
+export interface CategoryCreateRequest {
+  nome: string
+  icone: string
+  corHexadecimal: string
+}
+
+export interface CategoryUpdateRequest {
+  nome: string
+  icone: string
+  corHexadecimal: string
 }
 
 export interface RegisterRequest {

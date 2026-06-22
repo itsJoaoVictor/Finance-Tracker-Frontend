@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { Expense, Category, RegisterRequest, LoginRequest, LoginResponse } from '../types'
+import { Expense, RegisterRequest, LoginRequest, LoginResponse } from '../types'
 
 const API_BASE_URL = 'http://localhost:8080' // Base URL points to the running backend port 8080
 
@@ -45,14 +45,7 @@ export const expenseService = {
   delete: (id: number) => api.delete(`/expenses/${id}`),
 }
 
-// Categories
-export const categoryService = {
-  getAll: () => api.get<Category[]>('/categories'),
-  getById: (id: number) => api.get<Category>(`/categories/${id}`),
-  create: (category: Omit<Category, 'id'>) => api.post<Category>('/categories', category),
-  update: (id: number, category: Omit<Category, 'id'>) => api.put<Category>(`/categories/${id}`, category),
-  delete: (id: number) => api.delete(`/categories/${id}`),
-}
+
 
 // Auth
 export const authService = {
