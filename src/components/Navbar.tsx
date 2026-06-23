@@ -7,7 +7,7 @@ interface NavbarProps {
   userName?: string
   userEmail?: string
   userAvatar?: string
-  onQuickAction?: () => void
+  // onQuickAction?: () => void
   onLogout?: () => void
 }
 
@@ -16,7 +16,7 @@ export function Navbar({
   userName = 'Alex Silva',
   userEmail = 'alex.silva@email.com',
   userAvatar = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
-  onQuickAction,
+  // onQuickAction,
   onLogout
 }: NavbarProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
@@ -66,13 +66,13 @@ export function Navbar({
     return () => clearInterval(interval)
   }, [isDropdownOpen])
 
-  const handleQuickAction = () => {
-    if (onQuickAction) {
-      onQuickAction()
-    } else {
-      alert('Nova Transação (Ação Rápida)')
-    }
-  }
+  // const handleQuickAction = () => {
+  //   if (onQuickAction) {
+  //     onQuickAction()
+  //   } else {
+  //     alert('Nova Transação (Ação Rápida)')
+  //   }
+  // }
 
   return (
     <header className="navbar">
@@ -86,15 +86,8 @@ export function Navbar({
         <h2 className="navbar__title">{pageTitle}</h2>
       </div>
 
-      {/* Right side: Quick Action button & Profile Menu */}
+      {/* Right side: Profile Menu */}
       <div className="navbar__right">
-        <button className="navbar__action-btn" onClick={handleQuickAction}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19" />
-            <line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
-          <span>Nova Transação</span>
-        </button>
 
         <div className="navbar__user-menu">
           <button

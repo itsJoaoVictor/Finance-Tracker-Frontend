@@ -7,6 +7,7 @@ import { CreateCardModal } from '../components/CreateCardModal'
 import { EditCardModal } from '../components/EditCardModal'
 import { Toast, useToast } from '../../contas/components/Toast'
 import '../../contas/contas.css'
+import '../cartoes.css'
 
 export function Cartoes() {
   const [cartoes, setCartoes] = useState<Cartao[]>([])

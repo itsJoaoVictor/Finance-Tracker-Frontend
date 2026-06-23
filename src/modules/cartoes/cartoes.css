@@ -1,0 +1,290 @@
+/* ===== REALISTIC PHYSICAL CREDIT CARD STYLES ===== */
+
+.physical-card {
+  aspect-ratio: 1.5858 / 1;
+  width: 100%;
+  max-width: 360px;
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden;
+  color: #ffffff;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 10px 24px rgba(28, 26, 23, 0.15), 
+              inset 0 1px 2px rgba(255, 255, 255, 0.25);
+  transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), 
+              box-shadow 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+  cursor: pointer;
+  user-select: none;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  perspective: 1000px;
+  z-index: 2;
+}
+
+.physical-card:hover {
+  transform: translateY(-4px) rotateX(2deg) rotateY(-2deg);
+  box-shadow: 0 15px 32px rgba(28, 26, 23, 0.22);
+}
+
+/* Glassmorphism shine overlay */
+.physical-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.18) 0%, transparent 65%);
+  transform: rotate(-25deg);
+  pointer-events: none;
+  transition: transform 0.6s ease;
+}
+
+.physical-card:hover::before {
+  transform: rotate(-25deg) translate(8%, 8%);
+}
+
+/* Top bar with menu and brand */
+.physical-card__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 2;
+}
+
+.physical-card__brand {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  opacity: 0.95;
+}
+
+.physical-card__options-btn {
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.physical-card__options-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+}
+
+/* Metallic chip and contactless signature */
+.physical-card__chip-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 10px;
+  z-index: 2;
+}
+
+.physical-card__chip {
+  width: 38px;
+  height: 28px;
+  background: linear-gradient(135deg, #ffd700 0%, #f0a500 100%);
+  border-radius: 5px;
+  position: relative;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4), 
+              0 1px 2px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.physical-card__chip::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 6px;
+  width: 24px;
+  height: 18px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 3px;
+}
+
+.physical-card__contactless {
+  display: flex;
+  align-items: center;
+  opacity: 0.8;
+  color: #fff;
+}
+
+/* Cardholder and details info */
+.physical-card__bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-top: auto;
+  z-index: 2;
+}
+
+.physical-card__holder {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.physical-card__label {
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  opacity: 0.65;
+  font-weight: 500;
+}
+
+.physical-card__name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Toggle limit style inside the card */
+.physical-card__limit-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 8px;
+  z-index: 2;
+}
+
+.physical-card__limit-val {
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.physical-card__toggle-btn {
+  background: rgba(255, 255, 255, 0.12);
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  padding: 4px 6px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+  font-size: 0.8rem;
+}
+
+.physical-card__toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* ===== REFINED UI/UX DETAILS PANEL ===== */
+
+.card-details-panel {
+  background: var(--card);
+  border: 1px solid rgba(28, 26, 23, 0.08);
+  border-top: none;
+  border-radius: 0 0 16px 16px;
+  padding: 24px 20px 18px;
+  margin-top: -12px;
+  box-shadow: 0 10px 25px rgba(28, 26, 23, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  z-index: 1;
+}
+
+.card-details-panel__stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 16px;
+  border-bottom: 1px solid rgba(28, 26, 23, 0.06);
+  padding-bottom: 12px;
+}
+
+.card-details-panel__stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.card-details-panel__stat-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  font-weight: 600;
+}
+
+.card-details-panel__stat-value {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.card-details-panel__progress-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.card-details-panel__progress-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.card-details-panel__progress-bar {
+  background: rgba(28, 26, 23, 0.06);
+  border-radius: 10px;
+  height: 6px;
+  width: 100%;
+  overflow: hidden;
+}
+
+.card-details-panel__progress-fill {
+  height: 100%;
+  transition: width 0.5s cubic-bezier(0.1, 0.8, 0.2, 1);
+}
+
+.card-details-panel__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.card-details-panel__account {
+  font-size: 0.75rem;
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-accent);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+.card-details-panel__percentage {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted);
+}
