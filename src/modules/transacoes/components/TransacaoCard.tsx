@@ -42,7 +42,7 @@ function formatDateTime(dateStr: string, criadoEmStr?: string): string {
 }
 
 export function TransacaoCard({ transacao, onEstornar, onExcluir }: TransacaoCardProps) {
-  const isEntrada = transacao.tipo === 'DEPOSITO'
+  const isEntrada = transacao.tipo === 'DEPOSITO' || transacao.tipo === 'TRANSFERENCIA'
   const valorFormatado = formatCurrency(Math.abs(transacao.valor))
 
   function getCorTipo(): string {
