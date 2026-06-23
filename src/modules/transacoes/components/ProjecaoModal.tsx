@@ -34,6 +34,12 @@ export function ProjecaoModal({ onClose }: ProjecaoModalProps) {
   }
 
   function formatDate(dateStr: string): string {
+    if (!dateStr) return ''
+    const parts = dateStr.split('T')[0].split('-')
+    if (parts.length === 3) {
+      const [year, month, day] = parts
+      return `${day}/${month}/${year}`
+    }
     return new Date(dateStr).toLocaleDateString('pt-BR')
   }
 

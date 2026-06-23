@@ -36,10 +36,62 @@ export function Transacoes() {
   const [loading, setLoading] = useState(true)
 
   // Filters
+  const formatISOToBr = (isoStr: string) => {
+    const parts = isoStr.split('-')
+    if (parts.length === 3) {
+      return `${parts[2]}/${parts[1]}/${parts[0]}`
+    }
+    return ''
+  }
+
   const [filtroTipo, setFiltroTipo] = useState<TipoFiltro>('ALL')
   const [filtroDataInicio, setFiltroDataInicio] = useState(getMonthRange().start)
+  const [dataInicioExibicao, setDataInicioExibicao] = useState(() => formatISOToBr(getMonthRange().start))
   const [filtroDataFim, setFiltroDataFim] = useState(getMonthRange().end)
+  const [dataFimExibicao, setDataFimExibicao] = useState(() => formatISOToBr(getMonthRange().end))
   const [filtroDescricao, setFiltroDescricao] = useState('')
+
+  const handleDataInicioChange = (valStr: string) => {
+    let val = valStr.replace(/\D/g, '')
+    if (val.length > 8) val = val.slice(0, 8)
+    let formatted = val
+    if (val.length > 4) {
+      formatted = `${val.slice(0, 2)}/${val.slice(2, 4)}/${val.slice(4)}`
+    } else if (val.length > 2) {
+      formatted = `${val.slice(0, 2)}/${val.slice(2)}`
+    }
+    setDataInicioExibicao(formatted)
+
+    if (val.length === 8) {
+      const day = val.slice(0, 2)
+      const month = val.slice(2, 4)
+      const year = val.slice(4)
+      setFiltroDataInicio(`${year}-${month}-${day}`)
+    } else if (val.length === 0) {
+      setFiltroDataInicio('')
+    }
+  }
+
+  const handleDataFimChange = (valStr: string) => {
+    let val = valStr.replace(/\D/g, '')
+    if (val.length > 8) val = val.slice(0, 8)
+    let formatted = val
+    if (val.length > 4) {
+      formatted = `${val.slice(0, 2)}/${val.slice(2, 4)}/${val.slice(4)}`
+    } else if (val.length > 2) {
+      formatted = `${val.slice(0, 2)}/${val.slice(2)}`
+    }
+    setDataFimExibicao(formatted)
+
+    if (val.length === 8) {
+      const day = val.slice(0, 2)
+      const month = val.slice(2, 4)
+      const year = val.slice(4)
+      setFiltroDataFim(`${year}-${month}-${day}`)
+    } else if (val.length === 0) {
+      setFiltroDataFim('')
+    }
+  }
 
   // Modals
   const [showCreate, setShowCreate] = useState(false)
@@ -198,22 +250,76 @@ export function Transacoes() {
 
         <div className="transacoes-filters__group">
           <label htmlFor="filtro-data-inicio">Data Início</label>
-          <input
-            id="filtro-data-inicio"
-            type="date"
-            value={filtroDataInicio}
-            onChange={(e) => setFiltroDataInicio(e.target.value)}
-          />
+          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+            <input
+              id="filtro-data-inicio"
+              type="text"
+              placeholder="DD/MM/AAAA"
+              value={dataInicioExibicao}
+              onChange={(e) => handleDataInicioChange(e.target.value)}
+              style={{ paddingRight: '36px', width: '100%' }}
+            />
+            <input
+              type="date"
+              value={filtroDataInicio}
+              onChange={(e) => {
+                const selectedDate = e.target.value
+                if (selectedDate) {
+                  const parts = selectedDate.split('-')
+                  handleDataInicioChange(`${parts[2]}/${parts[1]}/${parts[0]}`)
+                }
+              }}
+              style={{
+                position: 'absolute',
+                right: '8px',
+                width: '20px',
+                height: '20px',
+                opacity: 0,
+                cursor: 'pointer',
+                zIndex: 2
+              }}
+            />
+            <span style={{ position: 'absolute', right: '10px', pointerEvents: 'none', zIndex: 1 }}>
+              📅
+            </span>
+          </div>
         </div>
 
         <div className="transacoes-filters__group">
           <label htmlFor="filtro-data-fim">Data Fim</label>
-          <input
-            id="filtro-data-fim"
-            type="date"
-            value={filtroDataFim}
-            onChange={(e) => setFiltroDataFim(e.target.value)}
-          />
+          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+            <input
+              id="filtro-data-fim"
+              type="text"
+              placeholder="DD/MM/AAAA"
+              value={dataFimExibicao}
+              onChange={(e) => handleDataFimChange(e.target.value)}
+              style={{ paddingRight: '36px', width: '100%' }}
+            />
+            <input
+              type="date"
+              value={filtroDataFim}
+              onChange={(e) => {
+                const selectedDate = e.target.value
+                if (selectedDate) {
+                  const parts = selectedDate.split('-')
+                  handleDataFimChange(`${parts[2]}/${parts[1]}/${parts[0]}`)
+                }
+              }}
+              style={{
+                position: 'absolute',
+                right: '8px',
+                width: '20px',
+                height: '20px',
+                opacity: 0,
+                cursor: 'pointer',
+                zIndex: 2
+              }}
+            />
+            <span style={{ position: 'absolute', right: '10px', pointerEvents: 'none', zIndex: 1 }}>
+              📅
+            </span>
+          </div>
         </div>
 
         <div className="transacoes-filters__group">

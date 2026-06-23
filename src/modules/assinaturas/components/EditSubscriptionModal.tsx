@@ -25,9 +25,39 @@ export function EditSubscriptionModal({
   const [frequencia, setFrequencia] = useState(assinatura.frequencia?.toString() || '')
   const [unidadeFrequencia, setUnidadeFrequencia] = useState(assinatura.unidadeFrequencia || 'MESES')
   const [diaCobranca, setDiaCobranca] = useState(assinatura.diaCobranca.toString())
+  const formatISOToBr = (isoStr: string) => {
+    const parts = isoStr.split('-')
+    if (parts.length === 3) {
+      return `${parts[2]}/${parts[1]}/${parts[0]}`
+    }
+    return isoStr
+  }
+
   const [dataInicio, setDataInicio] = useState(assinatura.dataInicio.split('T')[0] || assinatura.dataInicio)
+  const [dataInicioExibicao, setDataInicioExibicao] = useState(() => formatISOToBr(assinatura.dataInicio.split('T')[0] || assinatura.dataInicio))
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
+
+  const handleDataInicioChange = (valStr: string) => {
+    let val = valStr.replace(/\D/g, '')
+    if (val.length > 8) val = val.slice(0, 8)
+    let formatted = val
+    if (val.length > 4) {
+      formatted = `${val.slice(0, 2)}/${val.slice(2, 4)}/${val.slice(4)}`
+    } else if (val.length > 2) {
+      formatted = `${val.slice(0, 2)}/${val.slice(2)}`
+    }
+    setDataInicioExibicao(formatted)
+
+    if (val.length === 8) {
+      const day = val.slice(0, 2)
+      const month = val.slice(2, 4)
+      const year = val.slice(4)
+      setDataInicio(`${year}-${month}-${day}`)
+    } else {
+      setDataInicio('')
+    }
+  }
 
   function validate(): boolean {
     const e: Record<string, string> = {}
@@ -44,7 +74,7 @@ export function EditSubscriptionModal({
     const dc = parseInt(diaCobranca)
     if (isNaN(dc) || dc < 1 || dc > 31) e.diaCobranca = 'Dia de cobrança inválido (1-31)'
 
-    if (!dataInicio) e.dataInicio = 'Data de início é obrigatória'
+    if (!dataInicio) e.dataInicio = 'Data de início inválida (formato DD/MM/AAAA)'
 
     if (tipoRecorrencia === 'PERSONALIZADO') {
       const freq = parseInt(frequencia)
@@ -220,13 +250,40 @@ export function EditSubscriptionModal({
       {/* Data Inicio */}
       <div className="form-group">
         <label htmlFor="editar-assinatura-data">Data de Início</label>
-        <input
-          id="editar-assinatura-data"
-          type="date"
-          value={dataInicio}
-          onChange={(e) => setDataInicio(e.target.value)}
-          className={errors.dataInicio ? 'error' : ''}
-        />
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+          <input
+            id="editar-assinatura-data"
+            type="text"
+            placeholder="DD/MM/AAAA"
+            value={dataInicioExibicao}
+            onChange={(e) => handleDataInicioChange(e.target.value)}
+            className={errors.dataInicio ? 'error' : ''}
+            style={{ paddingRight: '40px', width: '100%' }}
+          />
+          <input
+            type="date"
+            value={dataInicio}
+            onChange={(e) => {
+              const selectedDate = e.target.value
+              if (selectedDate) {
+                const parts = selectedDate.split('-')
+                handleDataInicioChange(`${parts[2]}/${parts[1]}/${parts[0]}`)
+              }
+            }}
+            style={{
+              position: 'absolute',
+              right: '10px',
+              width: '24px',
+              height: '24px',
+              opacity: 0,
+              cursor: 'pointer',
+              zIndex: 2
+            }}
+          />
+          <span style={{ position: 'absolute', right: '12px', pointerEvents: 'none', zIndex: 1 }}>
+            📅
+          </span>
+        </div>
         {errors.dataInicio && <p className="form-error">{errors.dataInicio}</p>}
       </div>
 

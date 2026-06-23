@@ -27,9 +27,37 @@ export function CreateTransacaoModal({ onClose, onSubmit }: CreateTransacaoModal
   const [contaDestinoId, setContaDestinoId] = useState('')
   const [cartaoId, setCartaoId] = useState('')
   const [categoriaId, setCategoriaId] = useState('')
-  const [data, setData] = useState(new Date().toISOString().split('T')[0])
+  const [data, setData] = useState(() => new Date().toISOString().split('T')[0])
+  const [dataExibicao, setDataExibicao] = useState(() => {
+    const today = new Date()
+    const d = String(today.getDate()).padStart(2, '0')
+    const m = String(today.getMonth() + 1).padStart(2, '0')
+    const y = today.getFullYear()
+    return `${d}/${m}/${y}`
+  })
   const [totalParcelas, setTotalParcelas] = useState('')
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([])
+
+  const handleDataChange = (valStr: string) => {
+    let val = valStr.replace(/\D/g, '')
+    if (val.length > 8) val = val.slice(0, 8)
+    let formatted = val
+    if (val.length > 4) {
+      formatted = `${val.slice(0, 2)}/${val.slice(2, 4)}/${val.slice(4)}`
+    } else if (val.length > 2) {
+      formatted = `${val.slice(0, 2)}/${val.slice(2)}`
+    }
+    setDataExibicao(formatted)
+
+    if (val.length === 8) {
+      const day = val.slice(0, 2)
+      const month = val.slice(2, 4)
+      const year = val.slice(4)
+      setData(`${year}-${month}-${day}`)
+    } else {
+      setData('')
+    }
+  }
 
   const [contas, setContas] = useState<Conta[]>([])
   const [tags, setTags] = useState<Tag[]>([])
@@ -114,7 +142,7 @@ export function CreateTransacaoModal({ onClose, onSubmit }: CreateTransacaoModal
     if (!tipo) e.tipo = 'Tipo é obrigatório'
     if (tipo === 'COMPRA_CREDITO' && !cartaoId) e.cartaoId = 'Cartão é obrigatório'
     if (!categoriaId) e.categoriaId = 'Categoria é obrigatória'
-    if (!data) e.data = 'Data é obrigatória'
+    if (!data) e.data = 'Data inválida (formato DD/MM/AAAA)'
 
     // Conta destino obrigatória para DEPOSITO e TRANSFERENCIA
     if ((tipo === 'DEPOSITO' || tipo === 'TRANSFERENCIA') && !contaDestinoId) {
@@ -381,14 +409,42 @@ export function CreateTransacaoModal({ onClose, onSubmit }: CreateTransacaoModal
           {/* Data */}
           <div className="form-group">
             <label htmlFor="criar-transacao-data">Data</label>
-            <input
-              id="criar-transacao-data"
-              type="date"
-              value={data}
-              onChange={(e) => setData(e.target.value)}
-              className={errors.data ? 'error' : ''}
-              disabled={loadingSubmit}
-            />
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+              <input
+                id="criar-transacao-data"
+                type="text"
+                placeholder="DD/MM/AAAA"
+                value={dataExibicao}
+                onChange={(e) => handleDataChange(e.target.value)}
+                className={errors.data ? 'error' : ''}
+                disabled={loadingSubmit}
+                style={{ paddingRight: '40px', width: '100%' }}
+              />
+              <input
+                type="date"
+                value={data}
+                onChange={(e) => {
+                  const selectedDate = e.target.value
+                  if (selectedDate) {
+                    const parts = selectedDate.split('-')
+                    handleDataChange(`${parts[2]}/${parts[1]}/${parts[0]}`)
+                  }
+                }}
+                disabled={loadingSubmit}
+                style={{
+                  position: 'absolute',
+                  right: '10px',
+                  width: '24px',
+                  height: '24px',
+                  opacity: 0,
+                  cursor: 'pointer',
+                  zIndex: 2
+                }}
+              />
+              <span style={{ position: 'absolute', right: '12px', pointerEvents: 'none', zIndex: 1 }}>
+                📅
+              </span>
+            </div>
             {errors.data && <p className="form-error">{errors.data}</p>}
           </div>
 
