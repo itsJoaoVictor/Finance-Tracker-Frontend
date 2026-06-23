@@ -5,7 +5,20 @@ import {
 } from '../types'
 
 export const transacaoService = {
-  getAll: () => api.get<Transacao[]>('/api/transacoes'),
+  getAll: (params?: {
+    tipo?: string
+    descricao?: string
+    dataInicio?: string
+    dataFim?: string
+    page?: number
+    size?: number
+  }) => api.get<{
+    content: Transacao[]
+    totalPages: number
+    totalElements: number
+    number: number
+    size: number
+  }>('/api/transacoes', { params }),
   create: (payload: TransacaoCriacaoRequest) => api.post<Transacao>('/api/transacoes', payload),
   transferir: (payload: TransferenciaRequest) => api.post<Transacao>('/api/transacoes/transferir', payload),
   pagarFatura: (payload: PagamentoFaturaRequest) => api.post<Transacao>('/api/transacoes/pagar-fatura', payload),

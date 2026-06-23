@@ -1,7 +1,6 @@
 import { useState, FormEvent, useEffect } from 'react'
-import { TransferenciaRequest, Conta, Category } from '../../../types'
+import { TransferenciaRequest, Conta } from '../../../types'
 import { contaService } from '../../../services/contaService'
-import { categoryService } from '../../../services/categoryService'
 
 interface TransferenciaModalProps {
   onClose: () => void
@@ -13,10 +12,8 @@ export function TransferenciaModal({ onClose, onSubmit }: TransferenciaModalProp
   const [contaDestinoId, setContaDestinoId] = useState('')
   const [valor, setValor] = useState('')
   const [descricao, setDescricao] = useState('')
-  const [categoriaId, setCategoriaId] = useState('')
 
   const [contas, setContas] = useState<Conta[]>([])
-  const [categorias, setCategorias] = useState<Category[]>([])
   const [loadingData, setLoadingData] = useState(true)
   const [loadingSubmit, setLoadingSubmit] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -24,12 +21,8 @@ export function TransferenciaModal({ onClose, onSubmit }: TransferenciaModalProp
   useEffect(() => {
     async function load() {
       try {
-        const [contasRes, catsRes] = await Promise.all([
-          contaService.getAll(),
-          categoryService.getAll(),
-        ])
+        const contasRes = await contaService.getAll()
         setContas(contasRes.data)
-        setCategorias(catsRes.data)
       } catch {
         // ignore
       } finally {
@@ -48,7 +41,6 @@ export function TransferenciaModal({ onClose, onSubmit }: TransferenciaModalProp
     }
     const v = parseFloat(valor)
     if (valor === '' || isNaN(v) || v <= 0) e.valor = 'Valor deve ser maior que zero'
-    if (!categoriaId) e.categoriaId = 'Categoria é obrigatória'
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -63,7 +55,7 @@ export function TransferenciaModal({ onClose, onSubmit }: TransferenciaModalProp
         contaDestinoId,
         valor: parseFloat(valor),
         descricao: descricao.trim() || undefined,
-        categoriaId,
+        categoriaId: undefined,
       })
     } finally {
       setLoadingSubmit(false)
@@ -157,24 +149,6 @@ export function TransferenciaModal({ onClose, onSubmit }: TransferenciaModalProp
               maxLength={200}
               disabled={loadingSubmit}
             />
-          </div>
-
-          {/* Categoria */}
-          <div className="form-group">
-            <label htmlFor="transferencia-categoria">Categoria</label>
-            <select
-              id="transferencia-categoria"
-              value={categoriaId}
-              onChange={(e) => setCategoriaId(e.target.value)}
-              className={errors.categoriaId ? 'error' : ''}
-              disabled={loadingSubmit}
-            >
-              <option value="">Selecione uma categoria</option>
-              {categorias.map((cat) => (
-                <option key={cat.id} value={cat.id}>{cat.nome}</option>
-              ))}
-            </select>
-            {errors.categoriaId && <p className="form-error">{errors.categoriaId}</p>}
           </div>
 
           {/* Ações */}

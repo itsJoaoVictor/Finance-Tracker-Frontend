@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 
 export interface ToastItem {
   id: number
@@ -106,15 +106,15 @@ function getFriendlyMessage(message: string): string {
 export function useToast() {
   const [toasts, setToasts] = useState<ToastItem[]>([])
 
-  const addToast = (message: string, type: 'success' | 'error') => {
+  const addToast = useCallback((message: string, type: 'success' | 'error') => {
     const id = Date.now()
     const mappedMessage = type === 'error' ? getFriendlyMessage(message) : message
     setToasts((prev) => [...prev, { id, message: mappedMessage, type }])
-  }
+  }, [])
 
-  const dismiss = (id: number) => {
+  const dismiss = useCallback((id: number) => {
     setToasts((prev) => prev.filter((t) => t.id !== id))
-  }
+  }, [])
 
   return { toasts, addToast, dismiss }
 }

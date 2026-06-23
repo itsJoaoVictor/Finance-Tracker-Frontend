@@ -12,6 +12,8 @@ export interface Transacao {
   tipo: TipoTransacao
   contaOrigemId?: string
   contaDestinoId?: string
+  contaOrigemNome?: string
+  contaDestinoNome?: string
   cartaoId?: string
   faturaId?: string
   categoriaId?: string
@@ -37,7 +39,7 @@ export interface TransacaoCriacaoRequest {
   contaOrigemId?: string
   contaDestinoId?: string
   cartaoId?: string
-  categoriaId: string
+  categoriaId?: string
   data: string
   totalParcelas?: number
   tagIds?: string[]
@@ -50,7 +52,7 @@ export interface TransferenciaRequest {
   contaDestinoId: string
   valor: number
   descricao?: string
-  categoriaId: string
+  categoriaId?: string
 }
 
 export interface PagamentoFaturaRequest {

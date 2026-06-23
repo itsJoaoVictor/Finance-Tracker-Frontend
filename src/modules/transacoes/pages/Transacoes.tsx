@@ -34,6 +34,8 @@ function getMonthRange() {
 export function Transacoes() {
   const [transacoes, setTransacoes] = useState<Transacao[]>([])
   const [loading, setLoading] = useState(true)
+  const [paginaAtual, setPaginaAtual] = useState(0)
+  const [totalPaginas, setTotalPaginas] = useState(1)
 
   // Filters
   const formatISOToBr = (isoStr: string) => {
@@ -67,8 +69,10 @@ export function Transacoes() {
       const month = val.slice(2, 4)
       const year = val.slice(4)
       setFiltroDataInicio(`${year}-${month}-${day}`)
+      setPaginaAtual(0)
     } else if (val.length === 0) {
       setFiltroDataInicio('')
+      setPaginaAtual(0)
     }
   }
 
@@ -88,8 +92,10 @@ export function Transacoes() {
       const month = val.slice(2, 4)
       const year = val.slice(4)
       setFiltroDataFim(`${year}-${month}-${day}`)
+      setPaginaAtual(0)
     } else if (val.length === 0) {
       setFiltroDataFim('')
+      setPaginaAtual(0)
     }
   }
 
@@ -105,33 +111,28 @@ export function Transacoes() {
   const loadTransacoes = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await transacaoService.getAll()
-      setTransacoes(res.data)
+      const res = await transacaoService.getAll({
+        tipo: filtroTipo !== 'ALL' ? filtroTipo : undefined,
+        descricao: filtroDescricao.trim() || undefined,
+        dataInicio: filtroDataInicio || undefined,
+        dataFim: filtroDataFim || undefined,
+        page: paginaAtual,
+        size: 10
+      })
+      setTransacoes(res.data.content)
+      setTotalPaginas(res.data.totalPages)
     } catch {
       addToast('Erro ao carregar transações.', 'error')
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [filtroTipo, filtroDescricao, filtroDataInicio, filtroDataFim, paginaAtual, addToast])
 
   useEffect(() => {
     loadTransacoes()
   }, [loadTransacoes])
 
-  // ─── Filtragem local ─────────────────────────────────────────
-  const filtered = transacoes.filter((t) => {
-    if (filtroTipo !== 'ALL' && t.tipo !== filtroTipo) return false
-    if (filtroDescricao.trim()) {
-      const q = filtroDescricao.toLowerCase().trim()
-      if (!t.descricao.toLowerCase().includes(q)) return false
-    }
-    if (filtroDataInicio && t.data < filtroDataInicio) return false
-    if (filtroDataFim && t.data > filtroDataFim) return false
-    return true
-  })
-
-  // Ordenar por data decrescente
-  const sorted = [...filtered].sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime())
+  const sorted = transacoes
 
   // ─── Criar Transação ──────────────────────────────────────────
   async function handleCreate(data: TransacaoCriacaoRequest) {
@@ -240,7 +241,10 @@ export function Transacoes() {
           <select
             id="filtro-tipo"
             value={filtroTipo}
-            onChange={(e) => setFiltroTipo(e.target.value as TipoFiltro)}
+            onChange={(e) => {
+              setFiltroTipo(e.target.value as TipoFiltro)
+              setPaginaAtual(0)
+            }}
           >
             {TIPO_FILTER_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -329,7 +333,10 @@ export function Transacoes() {
             type="text"
             placeholder="Descrição..."
             value={filtroDescricao}
-            onChange={(e) => setFiltroDescricao(e.target.value)}
+            onChange={(e) => {
+              setFiltroDescricao(e.target.value)
+              setPaginaAtual(0)
+            }}
           />
         </div>
 
@@ -341,6 +348,7 @@ export function Transacoes() {
             setFiltroDataInicio(getMonthRange().start)
             setFiltroDataFim(getMonthRange().end)
             setFiltroDescricao('')
+            setPaginaAtual(0)
           }}
         >
           Limpar Filtros
@@ -391,16 +399,43 @@ export function Transacoes() {
           </p>
         </div>
       ) : (
-        <div className="transacoes-list">
-          {sorted.map((t) => (
-            <TransacaoCard
-              key={t.id}
-              transacao={t}
-              onEstornar={handleEstornar}
-              onExcluir={handleExcluir}
-            />
-          ))}
-        </div>
+        <>
+          <div className="transacoes-list">
+            {sorted.map((t) => (
+              <TransacaoCard
+                key={t.id}
+                transacao={t}
+                onEstornar={handleEstornar}
+                onExcluir={handleExcluir}
+              />
+            ))}
+          </div>
+
+          {/* Pagination Controls */}
+          {totalPaginas > 0 && (
+            <div className="pagination">
+              <button
+                type="button"
+                className="pagination__btn"
+                disabled={paginaAtual === 0 || loading}
+                onClick={() => setPaginaAtual((prev) => Math.max(0, prev - 1))}
+              >
+                Anterior
+              </button>
+              <span className="pagination__info">
+                Página {paginaAtual + 1} de {totalPaginas}
+              </span>
+              <button
+                type="button"
+                className="pagination__btn"
+                disabled={paginaAtual >= totalPaginas - 1 || loading}
+                onClick={() => setPaginaAtual((prev) => Math.min(totalPaginas - 1, prev + 1))}
+              >
+                Próxima
+              </button>
+            </div>
+          )}
+        </>
       )}
 
       {/* Modals */}

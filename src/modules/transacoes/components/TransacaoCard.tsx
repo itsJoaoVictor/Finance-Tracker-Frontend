@@ -20,14 +20,25 @@ function formatCurrency(value: number): string {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
 }
 
-function formatDate(dateStr: string): string {
+function formatDateTime(dateStr: string, criadoEmStr?: string): string {
   if (!dateStr) return ''
-  const parts = dateStr.split('T')[0].split('-')
-  if (parts.length === 3) {
-    const [year, month, day] = parts
-    return `${day}/${month}/${year}`
+  const dateParts = dateStr.split('T')[0].split('-')
+  let displayDate = dateStr
+  if (dateParts.length === 3) {
+    const [year, month, day] = dateParts
+    displayDate = `${day}/${month}/${year}`
+  } else {
+    displayDate = new Date(dateStr).toLocaleDateString('pt-BR')
   }
-  return new Date(dateStr).toLocaleDateString('pt-BR')
+
+  if (criadoEmStr) {
+    const timeParts = criadoEmStr.split('T')
+    if (timeParts.length === 2) {
+      const timeOnly = timeParts[1].substring(0, 5) // HH:mm
+      return `${displayDate} às ${timeOnly}`
+    }
+  }
+  return displayDate
 }
 
 export function TransacaoCard({ transacao, onEstornar, onExcluir }: TransacaoCardProps) {
@@ -60,11 +71,29 @@ export function TransacaoCard({ transacao, onEstornar, onExcluir }: TransacaoCar
           <p className="transacao-card__description">{transacao.descricao}</p>
 
           <div className="transacao-card__meta">
-            <span className="transacao-card__date">{formatDate(transacao.data)}</span>
+            <span className="transacao-card__date">{formatDateTime(transacao.data, transacao.criadoEm)}</span>
 
             {transacao.categoriaId && (
               <span className="transacao-card__categoria">
                 {transacao.categoriaId}
+              </span>
+            )}
+
+            {transacao.tipo === 'TRANSFERENCIA' && transacao.contaOrigemNome && transacao.contaDestinoNome && (
+              <span className="transacao-card__conta" title="Transferência entre contas">
+                {transacao.contaOrigemNome} ➔ {transacao.contaDestinoNome}
+              </span>
+            )}
+
+            {transacao.tipo === 'DEPOSITO' && transacao.contaDestinoNome && (
+              <span className="transacao-card__conta" title="Conta de depósito">
+                Conta: {transacao.contaDestinoNome}
+              </span>
+            )}
+
+            {(transacao.tipo === 'SAQUE' || transacao.tipo === 'PIX' || transacao.tipo === 'COMPRA_CREDITO') && transacao.contaOrigemNome && (
+              <span className="transacao-card__conta" title="Conta de origem">
+                Conta: {transacao.contaOrigemNome}
               </span>
             )}
 

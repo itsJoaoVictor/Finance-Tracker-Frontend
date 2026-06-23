@@ -269,6 +269,17 @@
   border-radius: 6px;
 }
 
+.transacao-card__conta {
+  font-size: 0.75rem;
+  color: var(--muted);
+  background: var(--bg-accent);
+  padding: 2px 8px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .transacao-card__parcela {
   font-size: 0.72rem;
   font-weight: 600;
@@ -494,4 +505,46 @@
   padding: 12px;
   background: var(--bg);
   border-radius: 12px;
+}
+
+/* ===== PAGINATION ===== */
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 24px;
+  padding: 12px 0;
+}
+
+.pagination__btn {
+  background: var(--card);
+  border: 1px solid rgba(28, 26, 23, 0.08);
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 2px 4px rgba(28, 26, 23, 0.03);
+}
+
+.pagination__btn:hover:not(:disabled) {
+  background: var(--bg-accent);
+  border-color: rgba(28, 26, 23, 0.15);
+  transform: translateY(-1px);
+}
+
+.pagination__btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.pagination__info {
+  font-size: 0.85rem;
+  color: var(--muted);
+  font-weight: 500;
 }

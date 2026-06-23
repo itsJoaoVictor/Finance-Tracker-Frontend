@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 
 export interface ToastItem {
   id: number
@@ -38,14 +38,14 @@ function ToastSingle({ toast, onDismiss }: { toast: ToastItem; onDismiss: (id: n
 export function useToast() {
   const [toasts, setToasts] = useState<ToastItem[]>([])
 
-  const addToast = (message: string, type: 'success' | 'error') => {
+  const addToast = useCallback((message: string, type: 'success' | 'error') => {
     const id = Date.now()
     setToasts((prev) => [...prev, { id, message, type }])
-  }
+  }, [])
 
-  const dismiss = (id: number) => {
+  const dismiss = useCallback((id: number) => {
     setToasts((prev) => prev.filter((t) => t.id !== id))
-  }
+  }, [])
 
   return { toasts, addToast, dismiss }
 }

@@ -136,12 +136,12 @@ export function CreateTransacaoModal({ onClose, onSubmit }: CreateTransacaoModal
   // ─── Validação ───────────────────────────────────────────────
   function validate(): boolean {
     const e: Record<string, string> = {}
-    if (!descricao.trim()) e.descricao = 'Descrição é obrigatória'
+    if (tipo === 'COMPRA_CREDITO' && !descricao.trim()) e.descricao = 'Descrição é obrigatória'
     const v = parseFloat(valor)
     if (valor === '' || isNaN(v) || v <= 0) e.valor = 'Valor deve ser maior que zero'
     if (!tipo) e.tipo = 'Tipo é obrigatório'
     if (tipo === 'COMPRA_CREDITO' && !cartaoId) e.cartaoId = 'Cartão é obrigatório'
-    if (!categoriaId) e.categoriaId = 'Categoria é obrigatória'
+    if (!['DEPOSITO', 'SAQUE', 'PIX'].includes(tipo) && !categoriaId) e.categoriaId = 'Categoria é obrigatória'
     if (!data) e.data = 'Data inválida (formato DD/MM/AAAA)'
 
     // Conta destino obrigatória para DEPOSITO e TRANSFERENCIA
@@ -176,7 +176,7 @@ export function CreateTransacaoModal({ onClose, onSubmit }: CreateTransacaoModal
       contaOrigemId: contaOrigemId || undefined,
       contaDestinoId: contaDestinoId || undefined,
       cartaoId: cartaoId || undefined,
-      categoriaId,
+      categoriaId: categoriaId || undefined,
       data,
       totalParcelas: tipo === 'COMPRA_CREDITO' && totalParcelas ? parseInt(totalParcelas, 10) : undefined,
       tagIds: selectedTagIds.length > 0 ? selectedTagIds : undefined,
@@ -200,6 +200,10 @@ export function CreateTransacaoModal({ onClose, onSubmit }: CreateTransacaoModal
 
   function requiresCartao(): boolean {
     return tipo === 'COMPRA_CREDITO'
+  }
+
+  function requiresCategoria(): boolean {
+    return !['DEPOSITO', 'SAQUE'].includes(tipo)
   }
 
   const getTipoLabel = (t: TipoTransacao): string => {
@@ -236,7 +240,9 @@ export function CreateTransacaoModal({ onClose, onSubmit }: CreateTransacaoModal
 
           {/* Descrição */}
           <div className="form-group">
-            <label htmlFor="criar-transacao-descricao">Descrição</label>
+            <label htmlFor="criar-transacao-descricao">
+              Descrição {tipo !== 'COMPRA_CREDITO' && '(opcional)'}
+            </label>
             <input
               id="criar-transacao-descricao"
               type="text"
@@ -389,22 +395,24 @@ export function CreateTransacaoModal({ onClose, onSubmit }: CreateTransacaoModal
           )}
 
           {/* Categoria */}
-          <div className="form-group">
-            <label htmlFor="criar-transacao-categoria">Categoria</label>
-            <select
-              id="criar-transacao-categoria"
-              value={categoriaId}
-              onChange={(e) => setCategoriaId(e.target.value)}
-              className={errors.categoriaId ? 'error' : ''}
-              disabled={loadingSubmit}
-            >
-              <option value="">Selecione uma categoria</option>
-              {categorias.map((cat) => (
-                <option key={cat.id} value={cat.id}>{cat.nome}</option>
-              ))}
-            </select>
-            {errors.categoriaId && <p className="form-error">{errors.categoriaId}</p>}
-          </div>
+          {requiresCategoria() && (
+            <div className="form-group">
+              <label htmlFor="criar-transacao-categoria">Categoria</label>
+              <select
+                id="criar-transacao-categoria"
+                value={categoriaId}
+                onChange={(e) => setCategoriaId(e.target.value)}
+                className={errors.categoriaId ? 'error' : ''}
+                disabled={loadingSubmit}
+              >
+                <option value="">Selecione uma categoria</option>
+                {categorias.map((cat) => (
+                  <option key={cat.id} value={cat.id}>{cat.nome}</option>
+                ))}
+              </select>
+              {errors.categoriaId && <p className="form-error">{errors.categoriaId}</p>}
+            </div>
+          )}
 
           {/* Data */}
           <div className="form-group">
