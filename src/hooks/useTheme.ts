@@ -11,6 +11,7 @@ export const THEMES = {
     '--card': '#ffffff',
     '--accent': '#2563eb',
     '--accent-2': '#475569',
+    '--green-positive': '#16a34a',
     '--field-bg': '#ffffff',
     '--field-border': 'rgba(15, 23, 42, 0.16)',
     background: 'linear-gradient(140deg, #f8fafc 0%, #e2e8f0 100%)'
@@ -23,6 +24,7 @@ export const THEMES = {
     '--card': '#1f2937',
     '--accent': '#00f5a0',
     '--accent-2': '#3b82f6',
+    '--green-positive': '#10b981',
     '--field-bg': '#1f2937',
     '--field-border': 'rgba(243, 244, 246, 0.16)',
     background: 'linear-gradient(140deg, #0b0c0e 0%, #16181c 100%)'

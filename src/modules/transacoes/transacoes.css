@@ -315,7 +315,7 @@
 }
 
 .transacao-card__value--positive {
-  color: var(--accent-2);
+  color: var(--green-positive);
 }
 
 .transacao-card__value--negative {
