@@ -1,0 +1,103 @@
+/* ===== TAGS MODULE ===== */
+
+.tags-page {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.tags-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.tags-header__title {
+  font-family: 'Instrument Serif', serif;
+  font-size: 2rem;
+  font-weight: 400;
+  color: var(--ink);
+  margin: 0;
+}
+
+.tags-header__subtitle {
+  font-size: 0.875rem;
+  color: var(--muted);
+  margin: 4px 0 0;
+}
+
+.btn-nova-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 22px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+  box-shadow: 0 4px 16px rgba(240, 90, 60, 0.25);
+}
+
+.btn-nova-tag:hover {
+  background: #d94e33;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(240, 90, 60, 0.35);
+}
+
+.btn-nova-tag:active {
+  transform: translateY(0);
+}
+
+/* ===== GRID DE TAGS ===== */
+
+.tags-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.tag-card {
+  background: var(--card);
+  border-radius: 16px;
+  padding: 18px 20px;
+  border: 1px solid rgba(28, 26, 23, 0.07);
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.tag-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(28, 26, 23, 0.06);
+}
+
+.tag-card__dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 2px solid rgba(28, 26, 23, 0.08);
+}
+
+.tag-card__name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0;
+}
+
+.tags-empty {
+  text-align: center;
+  padding: 64px 16px;
+  color: var(--muted);
+  font-size: 1rem;
+}

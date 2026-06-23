@@ -1,0 +1,148 @@
+/* ===== ORCAMENTOS MODULE ===== */
+
+.orcamentos-page {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.orcamentos-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.orcamentos-header__title {
+  font-family: 'Instrument Serif', serif;
+  font-size: 2rem;
+  font-weight: 400;
+  color: var(--ink);
+  margin: 0;
+}
+
+.orcamentos-header__subtitle {
+  font-size: 0.875rem;
+  color: var(--muted);
+  margin: 4px 0 0;
+}
+
+.btn-novo-orcamento {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 22px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+  box-shadow: 0 4px 16px rgba(240, 90, 60, 0.25);
+}
+
+.btn-novo-orcamento:hover {
+  background: #d94e33;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(240, 90, 60, 0.35);
+}
+
+.btn-novo-orcamento:active {
+  transform: translateY(0);
+}
+
+/* ===== TABELA DE ORCAMENTOS ===== */
+
+.orcamentos-table-wrapper {
+  background: var(--card);
+  border-radius: 20px;
+  border: 1px solid rgba(28, 26, 23, 0.07);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.orcamentos-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.orcamentos-table th {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  font-weight: 600;
+  padding: 16px 20px;
+  text-align: left;
+  border-bottom: 1px solid rgba(28, 26, 23, 0.07);
+  background: var(--bg-accent);
+}
+
+.orcamentos-table td {
+  padding: 16px 20px;
+  font-size: 0.9rem;
+  color: var(--ink);
+  border-bottom: 1px solid rgba(28, 26, 23, 0.04);
+  vertical-align: middle;
+}
+
+.orcamentos-table tr:last-child td {
+  border-bottom: none;
+}
+
+.orcamentos-table tr:hover td {
+  background: rgba(28, 26, 23, 0.02);
+}
+
+/* ===== PROGRESS BAR IN TABLE ===== */
+
+.orcamentos-progress-cell {
+  min-width: 140px;
+}
+
+.orcamentos-progress-track {
+  width: 100%;
+  height: 6px;
+  background: rgba(28, 26, 23, 0.08);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.orcamentos-progress-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.4s ease;
+}
+
+.orcamentos-progress-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+/* ===== STATUS COLORS ===== */
+
+.orcamentos-status--ok {
+  color: #2c9040;
+}
+
+.orcamentos-status--warning {
+  color: #d4a017;
+}
+
+.orcamentos-status--danger {
+  color: #e03a2a;
+}
+
+/* ===== EMPTY STATE ===== */
+
+.orcamentos-empty {
+  text-align: center;
+  padding: 64px 16px;
+  color: var(--muted);
+  font-size: 1rem;
+}

@@ -9,6 +9,11 @@ import { Perfil } from './modules/usuario/pages/Perfil'
 import { Contas } from './modules/contas/pages/Contas'
 import { Cartoes } from './modules/cartoes/pages/Cartoes'
 import { Categorias } from './modules/categorias/pages/Categorias'
+import { Transacoes } from './modules/transacoes/pages/Transacoes'
+import { Tags } from './modules/tags/pages/Tags'
+import { Assinaturas } from './modules/assinaturas/pages/Assinaturas'
+import { Metas } from './modules/metas/pages/Metas'
+import { Orcamentos } from './modules/orcamentos/pages/Orcamentos'
 
 import { useTheme } from './hooks/useTheme'
 import { Sidebar } from './components/Sidebar'
@@ -59,6 +64,16 @@ function AppShell({
         navigate('/cartoes')
       } else if (item === 'categorias') {
         navigate('/categorias')
+      } else if (item === 'transacoes') {
+        navigate('/transacoes')
+      } else if (item === 'assinaturas') {
+        navigate('/assinaturas')
+      } else if (item === 'tags') {
+        navigate('/tags')
+      } else if (item === 'metas' || item === 'cofrinhos') {
+        navigate('/metas')
+      } else if (item === 'orcamentos') {
+        navigate('/orcamentos')
       } else {
         navigate('/construction', { state: { activeItem: item } })
       }
@@ -124,6 +139,16 @@ function DashboardLayout() {
       navigate('/cartoes')
     } else if (item === 'categorias') {
       navigate('/categorias')
+    } else if (item === 'transacoes') {
+      navigate('/transacoes')
+    } else if (item === 'assinaturas') {
+      navigate('/assinaturas')
+    } else if (item === 'tags') {
+      navigate('/tags')
+    } else if (item === 'metas' || item === 'cofrinhos') {
+      navigate('/metas')
+    } else if (item === 'orcamentos') {
+      navigate('/orcamentos')
     } else {
       setActiveItem(item)
       navigate('/construction', { state: { activeItem: item }, replace: true })
@@ -173,6 +198,51 @@ function CategoriasLayout() {
   return (
     <AppShell pageTitle="Categorias" activeItem="categorias">
       <Categorias />
+    </AppShell>
+  )
+}
+
+// ─── Transações Layout ────────────────────────────────────────────────────────
+function TransacoesLayout() {
+  return (
+    <AppShell pageTitle="Transações" activeItem="transacoes">
+      <Transacoes />
+    </AppShell>
+  )
+}
+
+// ─── Assinaturas Layout ───────────────────────────────────────────────────────
+function AssinaturasLayout() {
+  return (
+    <AppShell pageTitle="Assinaturas" activeItem="assinaturas">
+      <Assinaturas />
+    </AppShell>
+  )
+}
+
+// ─── Tags Layout ──────────────────────────────────────────────────────────────
+function TagsLayout() {
+  return (
+    <AppShell pageTitle="Tags" activeItem="tags">
+      <Tags />
+    </AppShell>
+  )
+}
+
+// ─── Metas (Cofrinhos) Layout ─────────────────────────────────────────────────
+function MetasLayout() {
+  return (
+    <AppShell pageTitle="Cofrinhos" activeItem="metas">
+      <Metas />
+    </AppShell>
+  )
+}
+
+// ─── Orçamentos Layout ────────────────────────────────────────────────────────
+function OrcamentosLayout() {
+  return (
+    <AppShell pageTitle="Orçamentos" activeItem="orcamentos">
+      <Orcamentos />
     </AppShell>
   )
 }
@@ -364,6 +434,46 @@ function AppContent() {
           element={
             <PrivateRoute>
               <CategoriasLayout />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/transacoes"
+          element={
+            <PrivateRoute>
+              <TransacoesLayout />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/assinaturas"
+          element={
+            <PrivateRoute>
+              <AssinaturasLayout />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/tags"
+          element={
+            <PrivateRoute>
+              <TagsLayout />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/metas"
+          element={
+            <PrivateRoute>
+              <MetasLayout />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/orcamentos"
+          element={
+            <PrivateRoute>
+              <OrcamentosLayout />
             </PrivateRoute>
           }
         />

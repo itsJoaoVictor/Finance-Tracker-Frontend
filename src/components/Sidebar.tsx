@@ -88,6 +88,37 @@ export function Sidebar({ activeItem, onSelectItem, onLogout }: SidebarProps) {
       )
     },
     {
+      id: 'tags',
+      label: 'Tags',
+      icon: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+          <line x1="7" y1="7" x2="7.01" y2="7" />
+        </svg>
+      )
+    },
+    {
+      id: 'metas',
+      label: 'Cofrinhos',
+      icon: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          <line x1="9" y1="10" x2="15" y2="10" />
+        </svg>
+      )
+    },
+    {
+      id: 'orcamentos',
+      label: 'Orçamentos',
+      icon: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="2" y="3" width="20" height="14" rx="2" />
+          <path d="M8 21h8" />
+          <path d="M12 17v4" />
+        </svg>
+      )
+    },
+    {
       id: 'relatorios',
       label: 'Relatórios',
       icon: (
