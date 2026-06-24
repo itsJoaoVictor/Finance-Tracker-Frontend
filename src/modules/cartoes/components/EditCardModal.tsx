@@ -22,14 +22,16 @@ export function EditCardModal({ cartao, contas, onClose, onSubmit }: EditCardMod
   const handleContaChange = (id: string) => {
     setContaId(id)
     const selecionada = contas.find(c => c.id === id)
-    if (selecionada?.corHexadecimal) {
-      setCor(selecionada.corHexadecimal)
+    if (selecionada) {
+      if (selecionada.corHexadecimal) {
+        setCor(selecionada.corHexadecimal)
+      }
+      setNome(selecionada.nome)
     }
   }
 
   function validate(): boolean {
     const e: Record<string, string> = {}
-    if (!nome.trim()) e.nome = 'Nome do cartão é obrigatório'
     const lim = parseFloat(limite)
     if (limite === '' || isNaN(lim)) e.limite = 'Limite é obrigatório'
     else if (lim < 0) e.limite = 'Limite não pode ser negativo'
@@ -49,10 +51,12 @@ export function EditCardModal({ cartao, contas, onClose, onSubmit }: EditCardMod
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     if (!validate()) return
+    const selecionada = contas.find(c => c.id === contaId)
+    const cardName = selecionada ? selecionada.nome : nome
     setLoading(true)
     try {
       await onSubmit(cartao.id, {
-        nome: nome.trim(),
+        nome: cardName.trim() || 'Cartão',
         limite: parseFloat(limite),
         diaFechamento: parseInt(diaFechamento),
         diaVencimento: parseInt(diaVencimento),
@@ -72,20 +76,6 @@ export function EditCardModal({ cartao, contas, onClose, onSubmit }: EditCardMod
       onSubmit={handleSubmit}
       isLoading={loading}
     >
-      <div className="form-group">
-        <label htmlFor="editar-cartao-nome">Nome do Cartão</label>
-        <input
-          id="editar-cartao-nome"
-          type="text"
-          placeholder="Ex: Nubank Ultravioleta"
-          value={nome}
-          onChange={(e) => setNome(e.target.value)}
-          className={errors.nome ? 'error' : ''}
-          maxLength={100}
-        />
-        {errors.nome && <p className="form-error">{errors.nome}</p>}
-      </div>
-
       <div className="form-group">
         <label htmlFor="editar-cartao-limite">Limite de Crédito (R$)</label>
         <input

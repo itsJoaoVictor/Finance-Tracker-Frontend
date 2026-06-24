@@ -1,9 +1,11 @@
 import { useEffect, useState, useCallback } from 'react'
-import { Conta, ContaCriacaoRequest, ContaEdicaoRequest } from '../../../types'
+import { Conta, ContaCriacaoRequest, ContaEdicaoRequest, TransacaoCriacaoRequest } from '../../../types'
 import { contaService } from '../../../services/contaService'
+import { transacaoService } from '../../../services/transacaoService'
 import { AccountList } from '../components/AccountList'
 import { CreateAccountModal } from '../components/CreateAccountModal'
 import { EditAccountModal } from '../components/EditAccountModal'
+import { CreateTransacaoModal } from '../../transacoes/components/CreateTransacaoModal'
 import { Toast, useToast } from '../components/Toast'
 import '../contas.css'
 
@@ -13,6 +15,7 @@ export function Contas() {
   const [totalSaldo, setTotalSaldo] = useState<number>(0)
   const [showCreate, setShowCreate] = useState(false)
   const [editConta, setEditConta] = useState<Conta | null>(null)
+  const [novaTransacaoConta, setNovaTransacaoConta] = useState<Conta | null>(null)
   const { toasts, addToast, dismiss } = useToast()
 
   const loadContas = useCallback(async () => {
@@ -102,6 +105,20 @@ export function Contas() {
     }
   }
 
+  async function handleNovaTransacaoSubmit(data: TransacaoCriacaoRequest) {
+    try {
+      await transacaoService.create(data)
+      addToast('Transação registrada com sucesso!', 'success')
+      setNovaTransacaoConta(null)
+      loadContas()
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { error?: string } } }
+      const msg = axiosErr?.response?.data?.error || 'Erro ao registrar transação.'
+      addToast(msg, 'error')
+      throw err
+    }
+  }
+
   function formatCurrency(value: number) {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
   }
@@ -145,6 +162,7 @@ export function Contas() {
         loading={loading}
         onEdit={setEditConta}
         onDelete={handleDelete}
+        onNovaTransacao={setNovaTransacaoConta}
       />
 
       {/* Modais */}
@@ -159,6 +177,13 @@ export function Contas() {
           conta={editConta}
           onClose={() => setEditConta(null)}
           onSubmit={handleEdit}
+        />
+      )}
+      {novaTransacaoConta && (
+        <CreateTransacaoModal
+          onClose={() => setNovaTransacaoConta(null)}
+          onSubmit={handleNovaTransacaoSubmit}
+          initialContaId={novaTransacaoConta.id}
         />
       )}
 

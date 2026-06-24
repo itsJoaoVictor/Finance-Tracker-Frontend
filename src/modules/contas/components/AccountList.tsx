@@ -6,9 +6,10 @@ interface AccountListProps {
   loading: boolean
   onEdit: (conta: Conta) => void
   onDelete: (conta: Conta) => void
+  onNovaTransacao: (conta: Conta) => void
 }
 
-export function AccountList({ contas, loading, onEdit, onDelete }: AccountListProps) {
+export function AccountList({ contas, loading, onEdit, onDelete, onNovaTransacao }: AccountListProps) {
   if (loading) {
     return (
       <div className="account-list">
@@ -39,7 +40,13 @@ export function AccountList({ contas, loading, onEdit, onDelete }: AccountListPr
   return (
     <div className="account-list">
       {contas.map((conta) => (
-        <AccountCard key={conta.id} conta={conta} onEdit={onEdit} onDelete={onDelete} />
+        <AccountCard
+          key={conta.id}
+          conta={conta}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          onNovaTransacao={onNovaTransacao}
+        />
       ))}
     </div>
   )

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { InsightNotificationCenter } from './InsightNotificationCenter'
 import './Navbar.css'
 
 interface NavbarProps {
@@ -88,6 +89,9 @@ export function Navbar({
 
       {/* Right side: Profile Menu */}
       <div className="navbar__right">
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <InsightNotificationCenter />
+        </div>
 
         <div className="navbar__user-menu">
           <button

@@ -1,10 +1,15 @@
 import { useEffect, useState, useCallback } from 'react'
-import { Cartao, CartaoCriacaoRequest, CartaoEdicaoRequest, Conta } from '../../../types'
+import { Cartao, CartaoCriacaoRequest, CartaoEdicaoRequest, Conta, TransacaoCriacaoRequest, PagamentoFaturaRequest } from '../../../types'
 import { cartaoService } from '../../../services/cartaoService'
 import { contaService } from '../../../services/contaService'
+import { transacaoService } from '../../../services/transacaoService'
+import { iaService, IaInsight } from '../../../services/iaService'
 import { CardList } from '../components/CardList'
 import { CreateCardModal } from '../components/CreateCardModal'
 import { EditCardModal } from '../components/EditCardModal'
+import { CartaoFaturasModal } from '../components/CartaoFaturasModal'
+import { CreateTransacaoModal } from '../../transacoes/components/CreateTransacaoModal'
+import { PagamentoFaturaModal } from '../../transacoes/components/PagamentoFaturaModal'
 import { Toast, useToast } from '../../contas/components/Toast'
 import '../../contas/contas.css'
 import '../cartoes.css'
@@ -12,6 +17,7 @@ import '../cartoes.css'
 export function Cartoes() {
   const [cartoes, setCartoes] = useState<Cartao[]>([])
   const [contas, setContas] = useState<Conta[]>([])
+  const [insights, setInsights] = useState<IaInsight[]>([])
   const [loading, setLoading] = useState(true)
   const [resumo, setResumo] = useState({
     totalLimite: 0,
@@ -20,18 +26,23 @@ export function Cartoes() {
   })
   const [showCreate, setShowCreate] = useState(false)
   const [editCartao, setEditCartao] = useState<Cartao | null>(null)
+  const [viewFaturasCartao, setViewFaturasCartao] = useState<Cartao | null>(null)
+  const [novaTransacaoCartao, setNovaTransacaoCartao] = useState<Cartao | null>(null)
+  const [pagarFaturaCartao, setPagarFaturaCartao] = useState<Cartao | null>(null)
   const { toasts, addToast, dismiss } = useToast()
 
   const loadDados = useCallback(async () => {
     setLoading(true)
     try {
-      const [cartoesRes, contasRes, resumoRes] = await Promise.all([
+      const [cartoesRes, contasRes, resumoRes, insightsRes] = await Promise.all([
         cartaoService.getAll(),
         contaService.getAll(),
         cartaoService.getResumo(),
+        iaService.getInsights().catch(() => ({ data: [] as IaInsight[] })),
       ])
       setCartoes(cartoesRes.data)
       setContas(contasRes.data)
+      setInsights(insightsRes.data)
       setResumo({
         totalLimite: resumoRes.data.totalLimite,
         totalLimiteDisponivel: resumoRes.data.totalLimiteDisponivel,
@@ -145,8 +156,52 @@ export function Cartoes() {
     }
   }
 
+  async function handleNovaTransacaoSubmit(data: TransacaoCriacaoRequest) {
+    try {
+      await transacaoService.create(data)
+      addToast('Transação registrada com sucesso!', 'success')
+      setNovaTransacaoCartao(null)
+      loadDados()
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { error?: string } } }
+      const msg = axiosErr?.response?.data?.error || 'Erro ao registrar transação.'
+      addToast(msg, 'error')
+      throw err
+    }
+  }
+
+  async function handlePagarFaturaSubmit(data: PagamentoFaturaRequest) {
+    try {
+      await transacaoService.pagarFatura(data)
+      addToast('Pagamento de fatura registrado com sucesso!', 'success')
+      setPagarFaturaCartao(null)
+      loadDados()
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { error?: string } } }
+      const msg = axiosErr?.response?.data?.error || 'Erro ao registrar pagamento.'
+      addToast(msg, 'error')
+      throw err
+    }
+  }
+
   function formatCurrency(value: number) {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
+  }
+
+  const [processandoIa, setProcessandoIa] = useState(false)
+
+  async function handleAnalisarIa() {
+    setProcessandoIa(true)
+    try {
+      await iaService.processarInsightsCartao()
+      // Recarrega insights e dados atualizados
+      await loadDados()
+      addToast('Análise de cartões concluída com sucesso!', 'success')
+    } catch {
+      addToast('Erro ao processar análise da IA.', 'error')
+    } finally {
+      setProcessandoIa(false)
+    }
   }
 
   return (
@@ -157,19 +212,29 @@ export function Cartoes() {
           <h1 className="contas-header__title">Meus Cartões de Crédito</h1>
           <p className="contas-header__subtitle">Gerencie os limites e datas das faturas de seus cartões</p>
         </div>
-        <button
-          className="btn-nova-conta"
-          onClick={() => {
-            if (contas.length === 0) {
-              addToast('Você precisa criar uma conta antes de cadastrar um cartão.', 'error')
-            } else {
-              setShowCreate(true)
-            }
-          }}
-          id="btn-novo-cartao"
-        >
-          + Novo Cartão
-        </button>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <button
+            className="btn-nova-conta"
+            onClick={handleAnalisarIa}
+            disabled={processandoIa || loading}
+            style={{ background: 'rgba(138, 5, 190, 0.15)', border: '1px solid var(--primary)', color: 'var(--primary-light)' }}
+          >
+            {processandoIa ? '🤖 Analisando...' : '🤖 Analisar com IA'}
+          </button>
+          <button
+            className="btn-nova-conta"
+            onClick={() => {
+              if (contas.length === 0) {
+                addToast('Você precisa criar uma conta antes de cadastrar um cartão.', 'error')
+              } else {
+                setShowCreate(true)
+              }
+            }}
+            id="btn-novo-cartao"
+          >
+            + Novo Cartão
+          </button>
+        </div>
       </div>
 
       {/* Resumos */}
@@ -203,8 +268,13 @@ export function Cartoes() {
         cartoes={cartoes}
         contas={contas}
         loading={loading}
+        insights={insights}
         onEdit={setEditCartao}
         onDelete={handleDelete}
+        onViewFaturas={setViewFaturasCartao}
+        onNovaTransacao={setNovaTransacaoCartao}
+        onPagarFatura={setPagarFaturaCartao}
+        onRefreshInsights={loadDados}
       />
 
       {/* Modais */}
@@ -221,6 +291,27 @@ export function Cartoes() {
           contas={contas}
           onClose={() => setEditCartao(null)}
           onSubmit={handleEdit}
+        />
+      )}
+      {viewFaturasCartao && (
+        <CartaoFaturasModal
+          cartao={viewFaturasCartao}
+          onClose={() => setViewFaturasCartao(null)}
+        />
+      )}
+      {novaTransacaoCartao && (
+        <CreateTransacaoModal
+          onClose={() => setNovaTransacaoCartao(null)}
+          onSubmit={handleNovaTransacaoSubmit}
+          initialCartaoId={novaTransacaoCartao.id}
+          initialTipo="COMPRA_CREDITO"
+        />
+      )}
+      {pagarFaturaCartao && (
+        <PagamentoFaturaModal
+          onClose={() => setPagarFaturaCartao(null)}
+          onSubmit={handlePagarFaturaSubmit}
+          initialCartaoId={pagarFaturaCartao.id}
         />
       )}
 

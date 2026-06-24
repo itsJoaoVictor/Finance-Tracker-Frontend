@@ -5,6 +5,8 @@ import { FinanceCard } from '../../../components/FinanceCard'
 interface SubscriptionCardProps {
   assinatura: Assinatura
   categoriaNome: string
+  categoriaCor?: string
+  categoriaIcone?: string
   cartaoNome: string
   periodicidadeLabel: string
   onEdit: (assinatura: Assinatura) => void
@@ -29,6 +31,8 @@ function formatDate(dateStr: string): string {
 export function SubscriptionCard({
   assinatura,
   categoriaNome,
+  categoriaCor,
+  categoriaIcone,
   cartaoNome,
   periodicidadeLabel,
   onEdit,
@@ -50,13 +54,40 @@ export function SubscriptionCard({
 
   const badgeText = assinatura.ativo ? 'Ativa' : 'Pausada'
 
+  // Normaliza o nome da assinatura para gerar a URL do logotipo dinamicamente
+  const cleanName = assinatura.nome
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // remove acentos
+    .split(/\s+/)[0] // pega a primeira palavra
+
+  const logoUrl = `https://icons.duckduckgo.com/ip3/www.${cleanName}.com.ico`
+  const cardColor = categoriaCor || '#ccc'
+
+  const iconNode = (
+    <img
+      src={logoUrl}
+      alt={assinatura.nome}
+      style={{ width: 24, height: 24, borderRadius: 4, objectFit: 'contain' }}
+      onError={(e) => {
+        ;(e.target as HTMLElement).style.display = 'none'
+        const parent = (e.target as HTMLElement).parentElement
+        if (parent) {
+          parent.innerText = categoriaIcone || '🔄'
+        }
+      }}
+    />
+  )
+
   return (
     <div style={{ position: 'relative' }}>
       <FinanceCard
         titulo={assinatura.nome}
         subtitulo={`${categoriaNome} \u2022 ${periodicidadeLabel}`}
         valorPrincipal={formatCurrency(assinatura.valor)}
-        icone={'\u{1F504}'}
+        corHexadecimal={cardColor}
+        icone={iconNode}
         badgeText={badgeText}
         onClickOptions={() => setMenuOpen((o) => !o)}
       >

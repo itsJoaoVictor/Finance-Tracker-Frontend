@@ -1,4 +1,4 @@
-import { useState, FormEvent, useEffect, useCallback } from 'react'
+import { useState, FormEvent, useEffect, useCallback, useRef } from 'react'
 import {
   TransacaoCriacaoRequest,
   TipoTransacao,
@@ -6,9 +6,7 @@ import {
   Tag,
   Category,
   Cartao,
-  SugestaoResponse,
 } from '../../../types'
-import { transacaoService } from '../../../services/transacaoService'
 import { contaService } from '../../../services/contaService'
 import { tagService } from '../../../services/tagService'
 import { cartaoService } from '../../../services/cartaoService'
@@ -17,15 +15,19 @@ import { categoryService } from '../../../services/categoryService'
 interface CreateTransacaoModalProps {
   onClose: () => void
   onSubmit: (data: TransacaoCriacaoRequest) => Promise<void>
+  initialCartaoId?: string
+  initialTipo?: TipoTransacao
+  initialContaId?: string
 }
 
-export function CreateTransacaoModal({ onClose, onSubmit }: CreateTransacaoModalProps) {
+export function CreateTransacaoModal({ onClose, onSubmit, initialCartaoId, initialTipo, initialContaId }: CreateTransacaoModalProps) {
+  const dateInputRef = useRef<HTMLInputElement>(null)
   const [descricao, setDescricao] = useState('')
   const [valor, setValor] = useState('')
-  const [tipo, setTipo] = useState<TipoTransacao>('SAQUE')
-  const [contaOrigemId, setContaOrigemId] = useState('')
-  const [contaDestinoId, setContaDestinoId] = useState('')
-  const [cartaoId, setCartaoId] = useState('')
+  const [tipo, setTipo] = useState<TipoTransacao>(initialTipo || 'SAQUE')
+  const [contaOrigemId, setContaOrigemId] = useState(initialContaId || '')
+  const [contaDestinoId, setContaDestinoId] = useState(initialContaId || '')
+  const [cartaoId, setCartaoId] = useState(initialCartaoId || '')
   const [categoriaId, setCategoriaId] = useState('')
   const [data, setData] = useState(() => new Date().toISOString().split('T')[0])
   const [dataExibicao, setDataExibicao] = useState(() => {
@@ -64,7 +66,6 @@ export function CreateTransacaoModal({ onClose, onSubmit }: CreateTransacaoModal
   const [cartoes, setCartoes] = useState<Cartao[]>([])
   const [categorias, setCategorias] = useState<Category[]>([])
 
-  const [sugestao, setSugestao] = useState<SugestaoResponse | null>(null)
   const [loadingData, setLoadingData] = useState(true)
   const [loadingSubmit, setLoadingSubmit] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -95,35 +96,73 @@ export function CreateTransacaoModal({ onClose, onSubmit }: CreateTransacaoModal
     load()
   }, [])
 
-  // ─── Sugestão ao digitar descrição ───────────────────────────
-  const sugerir = useCallback(async (desc: string) => {
-    if (desc.trim().length < 3) {
-      setSugestao(null)
+  // ─── Sugestão de Categorização Inteligente via IA ─────────────────
+  const [iaSugestao, setIaSugestao] = useState<{ categoriaId: string; categoriaNome: string; justificativa: string } | null>(null)
+  const [carregandoIa, setCarregandoIa] = useState(false)
+
+  const categorizarComIa = useCallback(async (desc: string) => {
+    if (desc.trim().length < 3 || ['DEPOSITO', 'SAQUE'].includes(tipo)) {
+      setIaSugestao(null)
       return
     }
+    setCarregandoIa(true)
     try {
-      const res = await transacaoService.sugerir(desc.trim())
-      setSugestao(res.data)
+      const { iaService } = await import('../../../services/iaService')
+      const res = await iaService.categorizar(desc.trim())
+      if (res.data) {
+        setIaSugestao({
+          categoriaId: res.data.categoriaId || '',
+          categoriaNome: res.data.categoriaSugerida,
+          justificativa: res.data.justificativa
+        })
+      } else {
+        setIaSugestao(null)
+      }
     } catch {
-      setSugestao(null)
+      setIaSugestao(null)
+    } finally {
+      setCarregandoIa(false)
     }
-  }, [])
+  }, [tipo])
 
   useEffect(() => {
     if (debounceRef[0]) clearTimeout(debounceRef[0])
     const id = setTimeout(() => {
-      sugerir(descricao)
-    }, 400)
+      categorizarComIa(descricao)
+    }, 500)
     debounceRef[0] = id
     return () => clearTimeout(id)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [descricao])
 
-  function aplicarSugestao() {
-    if (!sugestao) return
-    if (sugestao.categoriaId) setCategoriaId(sugestao.categoriaId)
-    if (sugestao.tagIds) setSelectedTagIds(sugestao.tagIds)
-    setSugestao(null)
+  const [criandoCategoriaPorIa, setCriandoCategoriaPorIa] = useState(false)
+
+  async function aplicarSugestao() {
+    if (!iaSugestao) return
+    if (iaSugestao.categoriaId) {
+      setCategoriaId(iaSugestao.categoriaId)
+      setIaSugestao(null)
+    } else {
+      // Criar nova categoria
+      setCriandoCategoriaPorIa(true)
+      try {
+        const { categoryService } = await import('../../../services/categoryService')
+        const novaCatRes = await categoryService.create({
+          nome: iaSugestao.categoriaNome,
+          corHexadecimal: '#8A05BE',
+          icone: 'FaQuestion'
+        })
+        const novaCat = novaCatRes.data
+        // Atualiza a lista de categorias locais
+        setCategorias((prev) => [...prev, novaCat])
+        setCategoriaId(novaCat.id)
+        setIaSugestao(null)
+      } catch {
+        // Ignora erro
+      } finally {
+        setCriandoCategoriaPorIa(false)
+      }
+    }
   }
 
   // ─── Toggle tag ──────────────────────────────────────────────
@@ -255,14 +294,22 @@ export function CreateTransacaoModal({ onClose, onSubmit }: CreateTransacaoModal
             />
             {errors.descricao && <p className="form-error">{errors.descricao}</p>}
 
-            {/* Sugestão */}
-            {sugestao && (
-              <div className="suggestion-badge" onClick={aplicarSugestao}>
-                💡 Sugestão: {sugestao.categoriaNome || 'categoria'} detectada
-                {sugestao.tags && sugestao.tags.length > 0 && (
-                  <> · {sugestao.tags.map((t) => t.nome).join(', ')}</>
+            {/* Sugestão da IA */}
+            {carregandoIa && (
+              <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: '4px' }}>
+                🤖 Inteligência Artificial analisando a descrição...
+              </div>
+            )}
+            {iaSugestao && (
+              <div className="suggestion-badge" onClick={aplicarSugestao} style={{ marginTop: '6px', cursor: 'pointer', background: 'rgba(138, 5, 190, 0.1)', border: '1px solid var(--primary)', borderRadius: '4px', padding: '6px 10px', fontSize: '0.8rem', color: 'var(--primary-light)' }}>
+                {criandoCategoriaPorIa ? (
+                  <span>⏳ Criando nova categoria '{iaSugestao.categoriaNome}'...</span>
+                ) : (
+                  <span>
+                    🤖 Sugestão da IA: <strong>{iaSugestao.categoriaNome}</strong> {iaSugestao.categoriaId ? '(clique para aplicar)' : '(clique para criar categoria)'}
+                  </span>
                 )}
-                (clique para aplicar)
+                <div style={{ fontSize: '0.7rem', color: 'var(--muted)', marginTop: '2px' }}>{iaSugestao.justificativa}</div>
               </div>
             )}
           </div>
@@ -429,6 +476,7 @@ export function CreateTransacaoModal({ onClose, onSubmit }: CreateTransacaoModal
                 style={{ paddingRight: '40px', width: '100%' }}
               />
               <input
+                ref={dateInputRef}
                 type="date"
                 value={data}
                 onChange={(e) => {
@@ -449,7 +497,10 @@ export function CreateTransacaoModal({ onClose, onSubmit }: CreateTransacaoModal
                   zIndex: 2
                 }}
               />
-              <span style={{ position: 'absolute', right: '12px', pointerEvents: 'none', zIndex: 1 }}>
+              <span 
+                style={{ position: 'absolute', right: '12px', cursor: 'pointer', zIndex: 3 }}
+                onClick={() => dateInputRef.current?.showPicker()}
+              >
                 📅
               </span>
             </div>

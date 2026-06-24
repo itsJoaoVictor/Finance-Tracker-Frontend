@@ -1,4 +1,4 @@
-import { useState, FormEvent } from 'react'
+import { useState, FormEvent, useEffect, useCallback } from 'react'
 import { AssinaturaCriacaoRequest, Cartao, Category } from '../../../types'
 import { FormModal } from '../../../components/FormModal'
 
@@ -7,6 +7,7 @@ interface CreateSubscriptionModalProps {
   categorias: Category[]
   onClose: () => void
   onSubmit: (data: AssinaturaCriacaoRequest) => Promise<void>
+  onAddCategoryLocal?: (newCat: Category) => void
 }
 
 export function CreateSubscriptionModal({
@@ -14,6 +15,7 @@ export function CreateSubscriptionModal({
   categorias,
   onClose,
   onSubmit,
+  onAddCategoryLocal,
 }: CreateSubscriptionModalProps) {
   const [nome, setNome] = useState('')
   const [valor, setValor] = useState('')
@@ -27,6 +29,75 @@ export function CreateSubscriptionModal({
   const [dataInicioExibicao, setDataInicioExibicao] = useState('')
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
+
+  // IA Categorization states & logic
+  const [iaSugestao, setIaSugestao] = useState<{ categoriaId: string; categoriaNome: string; justificativa: string } | null>(null)
+  const [carregandoIa, setCarregandoIa] = useState(false)
+  const [criandoCategoriaPorIa, setCriandoCategoriaPorIa] = useState(false)
+  const debounceRef = useState<ReturnType<typeof setTimeout> | null>(null)
+
+  const categorizarComIa = useCallback(async (desc: string) => {
+    if (desc.trim().length < 3) {
+      setIaSugestao(null)
+      return
+    }
+    setCarregandoIa(true)
+    try {
+      const { iaService } = await import('../../../services/iaService')
+      const res = await iaService.categorizar(desc.trim())
+      if (res.data) {
+        setIaSugestao({
+          categoriaId: res.data.categoriaId || '',
+          categoriaNome: res.data.categoriaSugerida,
+          justificativa: res.data.justificativa
+        })
+      } else {
+        setIaSugestao(null)
+      }
+    } catch {
+      setIaSugestao(null)
+    } finally {
+      setCarregandoIa(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (debounceRef[0]) clearTimeout(debounceRef[0])
+    const id = setTimeout(() => {
+      categorizarComIa(nome)
+    }, 500)
+    debounceRef[0] = id
+    return () => clearTimeout(id)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nome])
+
+  async function aplicarSugestao() {
+    if (!iaSugestao) return
+    if (iaSugestao.categoriaId) {
+      setCategoriaId(iaSugestao.categoriaId)
+      setIaSugestao(null)
+    } else {
+      setCriandoCategoriaPorIa(true)
+      try {
+        const { categoryService } = await import('../../../services/categoryService')
+        const novaCatRes = await categoryService.create({
+          nome: iaSugestao.categoriaNome,
+          corHexadecimal: '#8A05BE',
+          icone: 'FaQuestion'
+        })
+        const novaCat = novaCatRes.data
+        if (onAddCategoryLocal) {
+          onAddCategoryLocal(novaCat)
+        }
+        setCategoriaId(novaCat.id)
+        setIaSugestao(null)
+      } catch {
+        // Ignora erro
+      } finally {
+        setCriandoCategoriaPorIa(false)
+      }
+    }
+  }
 
   const handleDataInicioChange = (valStr: string) => {
     let val = valStr.replace(/\D/g, '')
@@ -44,6 +115,7 @@ export function CreateSubscriptionModal({
       const month = val.slice(2, 4)
       const year = val.slice(4)
       setDataInicio(`${year}-${month}-${day}`)
+      setDiaCobranca(parseInt(day, 10).toString())
     } else {
       setDataInicio('')
     }
@@ -122,6 +194,25 @@ export function CreateSubscriptionModal({
           maxLength={100}
         />
         {errors.nome && <p className="form-error">{errors.nome}</p>}
+
+        {/* Sugestão da IA */}
+        {carregandoIa && (
+          <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: '4px' }}>
+            🤖 Inteligência Artificial analisando a descrição...
+          </div>
+        )}
+        {iaSugestao && (
+          <div className="suggestion-badge" onClick={aplicarSugestao} style={{ marginTop: '6px', cursor: 'pointer', background: 'rgba(138, 5, 190, 0.1)', border: '1px solid var(--primary)', borderRadius: '4px', padding: '6px 10px', fontSize: '0.8rem', color: 'var(--primary-light)' }}>
+            {criandoCategoriaPorIa ? (
+              <span>⏳ Criando nova categoria '{iaSugestao.categoriaNome}'...</span>
+            ) : (
+              <span>
+                🤖 Sugestão da IA: <strong>{iaSugestao.categoriaNome}</strong> {iaSugestao.categoriaId ? '(clique para aplicar)' : '(clique para criar categoria)'}
+              </span>
+            )}
+            <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: '2px' }}>{iaSugestao.justificativa}</div>
+          </div>
+        )}
       </div>
 
       {/* Valor */}
@@ -221,21 +312,7 @@ export function CreateSubscriptionModal({
         </div>
       )}
 
-      {/* Dia Cobranca */}
-      <div className="form-group">
-        <label htmlFor="criar-assinatura-dia">Dia da Cobrança</label>
-        <input
-          id="criar-assinatura-dia"
-          type="number"
-          min="1"
-          max="31"
-          placeholder="1 a 31"
-          value={diaCobranca}
-          onChange={(e) => setDiaCobranca(e.target.value)}
-          className={errors.diaCobranca ? 'error' : ''}
-        />
-        {errors.diaCobranca && <p className="form-error">{errors.diaCobranca}</p>}
-      </div>
+
 
       {/* Data Inicio */}
       <div className="form-group">

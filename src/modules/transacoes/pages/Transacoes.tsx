@@ -37,20 +37,13 @@ export function Transacoes() {
   const [paginaAtual, setPaginaAtual] = useState(0)
   const [totalPaginas, setTotalPaginas] = useState(1)
 
-  // Filters
-  const formatISOToBr = (isoStr: string) => {
-    const parts = isoStr.split('-')
-    if (parts.length === 3) {
-      return `${parts[2]}/${parts[1]}/${parts[0]}`
-    }
-    return ''
-  }
+
 
   const [filtroTipo, setFiltroTipo] = useState<TipoFiltro>('ALL')
-  const [filtroDataInicio, setFiltroDataInicio] = useState(getMonthRange().start)
-  const [dataInicioExibicao, setDataInicioExibicao] = useState(() => formatISOToBr(getMonthRange().start))
-  const [filtroDataFim, setFiltroDataFim] = useState(getMonthRange().end)
-  const [dataFimExibicao, setDataFimExibicao] = useState(() => formatISOToBr(getMonthRange().end))
+  const [filtroDataInicio, setFiltroDataInicio] = useState('')
+  const [dataInicioExibicao, setDataInicioExibicao] = useState('')
+  const [filtroDataFim, setFiltroDataFim] = useState('')
+  const [dataFimExibicao, setDataFimExibicao] = useState('')
   const [filtroDescricao, setFiltroDescricao] = useState('')
 
   const handleDataInicioChange = (valStr: string) => {

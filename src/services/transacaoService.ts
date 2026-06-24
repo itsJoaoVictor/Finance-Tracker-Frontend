@@ -26,4 +26,5 @@ export const transacaoService = {
   excluir: (id: string) => api.delete(`/api/transacoes/${id}`),
   sugerir: (descricao: string) => api.get<SugestaoResponse>(`/api/transacoes/sugestao?descricao=${encodeURIComponent(descricao)}`),
   projetar: (dias: number = 30) => api.get<Projecao[]>(`/api/transacoes/projecao?dias=${dias}`),
+  getByFatura: (faturaId: string) => api.get<Transacao[]>(`/api/transacoes/fatura/${faturaId}`),
 }

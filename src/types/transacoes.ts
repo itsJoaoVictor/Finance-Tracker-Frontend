@@ -17,6 +17,7 @@ export interface Transacao {
   cartaoId?: string
   faturaId?: string
   categoriaId?: string
+  categoriaNome?: string
   data: string
   numeroParcela?: number
   totalParcelas?: number

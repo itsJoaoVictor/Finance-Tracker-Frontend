@@ -224,6 +224,13 @@
   gap: 2px;
 }
 
+.card-details-panel__stat-item--highlight {
+  grid-column: span 2;
+  border-bottom: 1px dashed var(--field-border, rgba(28, 26, 23, 0.08));
+  padding-bottom: 8px;
+  margin-bottom: 2px;
+}
+
 .card-details-panel__stat-label {
   font-size: 0.7rem;
   text-transform: uppercase;
@@ -287,4 +294,29 @@
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--muted);
+}
+
+/* Fatura Status Badges */
+.fatura-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.fatura-badge--closed {
+  background: rgba(230, 57, 70, 0.12);
+  color: #E63946;
+  border: 1px solid rgba(230, 57, 70, 0.2);
+}
+
+.fatura-badge--open {
+  background: rgba(16, 163, 74, 0.12);
+  color: var(--green-positive, #16a34a);
+  border: 1px solid rgba(16, 163, 74, 0.2);
 }

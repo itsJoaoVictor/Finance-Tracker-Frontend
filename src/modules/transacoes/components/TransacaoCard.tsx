@@ -43,7 +43,14 @@ function formatDateTime(dateStr: string, criadoEmStr?: string): string {
 
 export function TransacaoCard({ transacao, onEstornar, onExcluir }: TransacaoCardProps) {
   const isEntrada = transacao.tipo === 'DEPOSITO' || transacao.tipo === 'TRANSFERENCIA'
-  const valorFormatado = formatCurrency(Math.abs(transacao.valor))
+  const isTransferencia = transacao.tipo === 'TRANSFERENCIA'
+  
+  // Calculate total value if it has installments
+  const totalValor = transacao.totalParcelas && transacao.totalParcelas > 1 
+    ? transacao.valor * transacao.totalParcelas 
+    : transacao.valor
+    
+  const valorFormatado = formatCurrency(Math.abs(totalValor))
 
   function getCorTipo(): string {
     switch (transacao.tipo) {
@@ -56,8 +63,6 @@ export function TransacaoCard({ transacao, onEstornar, onExcluir }: TransacaoCar
       default: return '#999'
     }
   }
-
-  const isTransferencia = transacao.tipo === 'TRANSFERENCIA'
 
   return (
     <div className="transacao-card">
@@ -73,9 +78,13 @@ export function TransacaoCard({ transacao, onEstornar, onExcluir }: TransacaoCar
           <div className="transacao-card__meta">
             <span className="transacao-card__date">{formatDateTime(transacao.data, transacao.criadoEm)}</span>
 
-            {transacao.categoriaId && (
-              <span className="transacao-card__categoria">
-                {transacao.categoriaId}
+            <span className="transacao-card__id" style={{ fontSize: '0.75rem', opacity: 0.6 }}>
+              {transacao.id}
+            </span>
+
+            {transacao.tipo === 'COMPRA_CREDITO' && transacao.contaOrigemNome && (
+              <span className="transacao-card__conta" title="Cartão de crédito">
+                Cartão: {transacao.contaOrigemNome}
               </span>
             )}
 
@@ -91,15 +100,15 @@ export function TransacaoCard({ transacao, onEstornar, onExcluir }: TransacaoCar
               </span>
             )}
 
-            {(transacao.tipo === 'SAQUE' || transacao.tipo === 'PIX' || transacao.tipo === 'COMPRA_CREDITO') && transacao.contaOrigemNome && (
+            {(transacao.tipo === 'SAQUE' || transacao.tipo === 'PIX') && transacao.contaOrigemNome && (
               <span className="transacao-card__conta" title="Conta de origem">
                 Conta: {transacao.contaOrigemNome}
               </span>
             )}
 
-            {transacao.numeroParcela !== undefined && transacao.totalParcelas !== undefined && transacao.totalParcelas > 1 && (
-              <span className="transacao-card__parcela">
-                {transacao.numeroParcela}/{transacao.totalParcelas}
+            {transacao.totalParcelas !== undefined && transacao.totalParcelas > 1 && (
+              <span className="transacao-card__parcela" style={{ background: 'rgba(124, 92, 252, 0.1)', color: '#7c5cfc' }}>
+                dividido em {transacao.totalParcelas} de {formatCurrency(Math.abs(transacao.valor))}
               </span>
             )}
 

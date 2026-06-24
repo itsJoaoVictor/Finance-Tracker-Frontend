@@ -54,6 +54,7 @@ export function EditSubscriptionModal({
       const month = val.slice(2, 4)
       const year = val.slice(4)
       setDataInicio(`${year}-${month}-${day}`)
+      setDiaCobranca(parseInt(day, 10).toString())
     } else {
       setDataInicio('')
     }
@@ -231,21 +232,7 @@ export function EditSubscriptionModal({
         </div>
       )}
 
-      {/* Dia Cobranca */}
-      <div className="form-group">
-        <label htmlFor="editar-assinatura-dia">Dia da Cobrança</label>
-        <input
-          id="editar-assinatura-dia"
-          type="number"
-          min="1"
-          max="31"
-          placeholder="1 a 31"
-          value={diaCobranca}
-          onChange={(e) => setDiaCobranca(e.target.value)}
-          className={errors.diaCobranca ? 'error' : ''}
-        />
-        {errors.diaCobranca && <p className="form-error">{errors.diaCobranca}</p>}
-      </div>
+
 
       {/* Data Inicio */}
       <div className="form-group">

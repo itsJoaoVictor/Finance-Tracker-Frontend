@@ -5,6 +5,7 @@ interface AccountCardProps {
   conta: Conta
   onEdit: (conta: Conta) => void
   onDelete: (conta: Conta) => void
+  onNovaTransacao: (conta: Conta) => void
 }
 
 const TIPO_ICON: Record<string, string> = {
@@ -21,7 +22,7 @@ function formatCurrency(value: number): string {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
 }
 
-export function AccountCard({ conta, onEdit, onDelete }: AccountCardProps) {
+export function AccountCard({ conta, onEdit, onDelete, onNovaTransacao }: AccountCardProps) {
   const [balanceVisible, setBalanceVisible] = useState(true)
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -67,6 +68,12 @@ export function AccountCard({ conta, onEdit, onDelete }: AccountCardProps) {
             </button>
             {menuOpen && (
               <div className="account-card__dropdown">
+                <button
+                  className="account-card__dropdown-item"
+                  onClick={() => { setMenuOpen(false); onNovaTransacao(conta) }}
+                >
+                  ➕ Nova Transação
+                </button>
                 <button
                   className="account-card__dropdown-item"
                   onClick={() => { setMenuOpen(false); onEdit(conta) }}

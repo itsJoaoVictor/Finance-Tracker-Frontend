@@ -16,6 +16,8 @@ import { EditSubscriptionModal } from '../components/EditSubscriptionModal'
 import { Toast, useToast } from '../../contas/components/Toast'
 import '../assinaturas.css'
 
+import { iaService } from '../../../services/iaService'
+
 const PERIODICIDADE_LABEL: Record<string, string> = {
   MENSAL: 'Mensal',
   ANUAL: 'Anual',
@@ -59,11 +61,12 @@ export function Assinaturas() {
   const [proximasDias, setProximasDias] = useState(7)
   const [showCreate, setShowCreate] = useState(false)
   const [editAssinatura, setEditAssinatura] = useState<Assinatura | null>(null)
+  const [processandoIa, setProcessandoIa] = useState(false)
   const { toasts, addToast, dismiss } = useToast()
 
   // Cria um mapa de cartaoId -> nome para lookup r\u00e1pido
   const cartaoMap = new Map(cartoes.map((c) => [c.id, c.nome]))
-  const categoriaMap = new Map(categorias.map((c) => [c.id, c.nome]))
+  const categoryObjMap = new Map(categorias.map((c) => [c.id, c]))
 
   const loadDados = useCallback(async () => {
     setLoading(true)
@@ -171,6 +174,18 @@ export function Assinaturas() {
     }
   }
 
+  async function handleAnalisarIa() {
+    setProcessandoIa(true)
+    try {
+      await iaService.processarInsightsAssinatura()
+      addToast('Análise de assinaturas concluída! Verifique os insights no robô 🤖 no topo.', 'success')
+    } catch {
+      addToast('Erro ao processar análise da IA.', 'error')
+    } finally {
+      setProcessandoIa(false)
+    }
+  }
+
   const ativas = assinaturas.filter((a) => a.ativo)
   const inativas = assinaturas.filter((a) => !a.ativo)
 
@@ -184,13 +199,23 @@ export function Assinaturas() {
             Gerencie suas assinaturas e acompanhe os próximos vencimentos
           </p>
         </div>
-        <button
-          className="btn-nova-assinatura"
-          onClick={() => setShowCreate(true)}
-          id="btn-nova-assinatura"
-        >
-          + Adicionar Assinatura
-        </button>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <button
+            className="btn-nova-assinatura"
+            onClick={handleAnalisarIa}
+            disabled={processandoIa || loading}
+            style={{ background: 'rgba(138, 5, 190, 0.15)', border: '1px solid var(--primary)', color: 'var(--primary-light)' }}
+          >
+            {processandoIa ? '🤖 Analisando...' : '🤖 Analisar com IA'}
+          </button>
+          <button
+            className="btn-nova-assinatura"
+            onClick={() => setShowCreate(true)}
+            id="btn-nova-assinatura"
+          >
+            + Adicionar Assinatura
+          </button>
+        </div>
       </div>
 
       {/* Próximas Cobranças */}
@@ -256,18 +281,23 @@ export function Assinaturas() {
           </div>
         ) : (
           <div className="assinaturas-grid">
-            {ativas.map((a) => (
-              <SubscriptionCard
-                key={a.id}
-                assinatura={a}
-                categoriaNome={categoriaMap.get(a.categoriaId) || 'Sem categoria'}
-                cartaoNome={cartaoMap.get(a.cartaoId) || 'Sem cart\u00e3o'}
-                periodicidadeLabel={getPeriodicidadeLabel(a)}
-                onEdit={setEditAssinatura}
-                onPauseResume={handlePauseResume}
-                onDelete={handleDelete}
-              />
-            ))}
+            {ativas.map((a) => {
+              const catObj = categoryObjMap.get(a.categoriaId)
+              return (
+                <SubscriptionCard
+                  key={a.id}
+                  assinatura={a}
+                  categoriaNome={catObj?.nome || 'Sem categoria'}
+                  categoriaCor={catObj?.corHexadecimal}
+                  categoriaIcone={catObj?.icone}
+                  cartaoNome={cartaoMap.get(a.cartaoId) || 'Sem cart\u00e3o'}
+                  periodicidadeLabel={getPeriodicidadeLabel(a)}
+                  onEdit={setEditAssinatura}
+                  onPauseResume={handlePauseResume}
+                  onDelete={handleDelete}
+                />
+              )
+            })}
           </div>
         )}
       </div>
@@ -277,18 +307,23 @@ export function Assinaturas() {
         <div>
           <h3 className="assinaturas-section__title">Inativas / Pausadas</h3>
           <div className="assinaturas-grid">
-            {inativas.map((a) => (
-              <SubscriptionCard
-                key={a.id}
-                assinatura={a}
-                categoriaNome={categoriaMap.get(a.categoriaId) || 'Sem categoria'}
-                cartaoNome={cartaoMap.get(a.cartaoId) || 'Sem cart\u00e3o'}
-                periodicidadeLabel={getPeriodicidadeLabel(a)}
-                onEdit={setEditAssinatura}
-                onPauseResume={handlePauseResume}
-                onDelete={handleDelete}
-              />
-            ))}
+            {inativas.map((a) => {
+              const catObj = categoryObjMap.get(a.categoriaId)
+              return (
+                <SubscriptionCard
+                  key={a.id}
+                  assinatura={a}
+                  categoriaNome={catObj?.nome || 'Sem categoria'}
+                  categoriaCor={catObj?.corHexadecimal}
+                  categoriaIcone={catObj?.icone}
+                  cartaoNome={cartaoMap.get(a.cartaoId) || 'Sem cart\u00e3o'}
+                  periodicidadeLabel={getPeriodicidadeLabel(a)}
+                  onEdit={setEditAssinatura}
+                  onPauseResume={handlePauseResume}
+                  onDelete={handleDelete}
+                />
+              )
+            })}
           </div>
         </div>
       )}
@@ -300,6 +335,9 @@ export function Assinaturas() {
           categorias={categorias}
           onClose={() => setShowCreate(false)}
           onSubmit={handleCreate}
+          onAddCategoryLocal={(novaCat) => {
+            setCategorias((prev) => [...prev, novaCat])
+          }}
         />
       )}
 
