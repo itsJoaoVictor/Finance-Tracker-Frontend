@@ -215,7 +215,8 @@ export function CreditCard({ cartao, contas, insights = [], onEdit, onDelete, on
             if (
               ins.tipo !== 'CARTAO_PREVISAO' &&
               ins.tipo !== 'ESTOURO_FATURA' &&
-              ins.tipo !== 'MELHOR_CARTAO'
+              ins.tipo !== 'MELHOR_CARTAO' &&
+              ins.tipo !== 'AVISO_FECHAMENTO'
             ) return false
             if (!ins.metadados) return false
             try {

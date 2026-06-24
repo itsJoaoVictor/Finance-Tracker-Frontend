@@ -43,7 +43,7 @@ export function UltimasTransacoesWidget({ transacoes }: UltimasTransacoesWidgetP
         {transacoes.length === 0 && (
           <p className="ultimas-transacoes-widget__empty">Nenhuma transação recente</p>
         )}
-        {transacoes.map((t) => (
+        {transacoes.slice(0, 5).map((t) => (
           <div key={t.id} className="ultimas-transacoes-widget__item">
             <div
               className="ultimas-transacoes-widget__icon"

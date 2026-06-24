@@ -94,7 +94,16 @@ export function TransacaoCard({ transacao, onEstornar, onExcluir }: TransacaoCar
               </span>
             )}
 
-            {transacao.tipo === 'DEPOSITO' && transacao.contaDestinoNome && (
+            {transacao.tipo === 'DEPOSITO' && transacao.metaOrigemNome && (
+              <span className="transacao-card__conta" title="Origem do cofrinho">
+                Cofrinho: {transacao.metaOrigemNome}
+                {transacao.contaDestinoNome && (
+                  <> ➔ Conta: {transacao.contaDestinoNome}</>
+                )}
+              </span>
+            )}
+
+            {transacao.tipo === 'DEPOSITO' && !transacao.metaOrigemNome && transacao.contaDestinoNome && (
               <span className="transacao-card__conta" title="Conta de depósito">
                 Conta: {transacao.contaDestinoNome}
               </span>
@@ -103,6 +112,9 @@ export function TransacaoCard({ transacao, onEstornar, onExcluir }: TransacaoCar
             {(transacao.tipo === 'SAQUE' || transacao.tipo === 'PIX') && transacao.contaOrigemNome && (
               <span className="transacao-card__conta" title="Conta de origem">
                 Conta: {transacao.contaOrigemNome}
+                {transacao.metaDestinoNome && (
+                  <> ➔ Cofrinho: {transacao.metaDestinoNome}</>
+                )}
               </span>
             )}
 
