@@ -14,6 +14,8 @@ import { Tags } from './modules/tags/pages/Tags'
 import { Assinaturas } from './modules/assinaturas/pages/Assinaturas'
 import { Metas } from './modules/metas/pages/Metas'
 import { Orcamentos } from './modules/orcamentos/pages/Orcamentos'
+import { Dashboard } from './modules/dashboard/Dashboard'
+import { Relatorios } from './modules/relatorios/Relatorios'
 
 import { useTheme } from './hooks/useTheme'
 import { Sidebar } from './components/Sidebar'
@@ -30,7 +32,7 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 // PublicRoute to redirect authenticated users away from auth pages
 function PublicRoute({ children }: { children: React.ReactNode }) {
   const token = sessionStorage.getItem('token')
-  return token ? <Navigate to="/construction" replace /> : <>{children}</>
+  return token ? <Navigate to="/dashboard" replace /> : <>{children}</>
 }
 
 // ─── Shared layout helper ─────────────────────────────────────────────────────
@@ -58,7 +60,9 @@ function AppShell({
     if (onSelectItem) {
       onSelectItem(item)
     } else {
-      if (item === 'contas') {
+      if (item === 'dashboard') {
+        navigate('/dashboard')
+      } else if (item === 'contas') {
         navigate('/contas')
       } else if (item === 'cartoes') {
         navigate('/cartoes')
@@ -74,6 +78,8 @@ function AppShell({
         navigate('/metas')
       } else if (item === 'orcamentos') {
         navigate('/orcamentos')
+      } else if (item === 'relatorios') {
+        navigate('/relatorios')
       } else {
         navigate('/construction', { state: { activeItem: item } })
       }
@@ -149,6 +155,8 @@ function DashboardLayout() {
       navigate('/metas')
     } else if (item === 'orcamentos') {
       navigate('/orcamentos')
+    } else if (item === 'relatorios') {
+      navigate('/relatorios')
     } else {
       setActiveItem(item)
       navigate('/construction', { state: { activeItem: item }, replace: true })
@@ -161,7 +169,7 @@ function DashboardLayout() {
       activeItem={activeItem}
       onSelectItem={handleSelectItem}
     >
-      <EmConstrucao moduleName={itemLabels[activeItem] || activeItem} />
+      <Dashboard />
     </AppShell>
   )
 }
@@ -243,6 +251,15 @@ function OrcamentosLayout() {
   return (
     <AppShell pageTitle="Orçamentos" activeItem="orcamentos">
       <Orcamentos />
+    </AppShell>
+  )
+}
+
+// ─── Relatórios Layout ─────────────────────────────────────────────────────────
+function RelatoriosLayout() {
+  return (
+    <AppShell pageTitle="Relatórios" activeItem="relatorios">
+      <Relatorios />
     </AppShell>
   )
 }
@@ -374,7 +391,7 @@ function AppContent() {
   const handleLoginSuccess = useCallback(() => {
     setIsTransitioning(true)
     window.setTimeout(() => {
-      navigate('/construction')
+      navigate('/dashboard')
       setIsTransitioning(false)
     }, 450)
   }, [navigate])
@@ -478,6 +495,22 @@ function AppContent() {
           }
         />
         <Route
+          path="/dashboard"
+          element={
+            <PrivateRoute>
+              <DashboardLayout />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/relatorios"
+          element={
+            <PrivateRoute>
+              <RelatoriosLayout />
+            </PrivateRoute>
+          }
+        />
+        <Route
           path="/perfil"
           element={
             <PrivateRoute>
@@ -490,7 +523,7 @@ function AppContent() {
           path="*"
           element={
             sessionStorage.getItem('token') ? (
-              <Navigate to="/construction" replace />
+              <Navigate to="/dashboard" replace />
             ) : (
               <Navigate to="/login" replace />
             )

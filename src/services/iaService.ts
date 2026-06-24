@@ -18,19 +18,44 @@ export interface IaInsight {
   metadados?: string
 }
 
+export interface IaSimulacaoParcela {
+  impactoNegativo: boolean
+  mensagem: string
+  valorParcela: number
+  percentualDoLimite: number
+  limiteDisponivel: number
+  projecoesMensais: {
+    mes: string
+    valorJaNaFatura: number
+    valorParcela: number
+    valorComParcela: number
+  }[]
+}
+
 export const iaService = {
-  categorizar: (descricaoFatura: string) => 
+  // RN-07 / RN-12: Categorização PLN
+  categorizar: (descricaoFatura: string) =>
     api.post<IaCategorizarResponse>('/api/ia/categorizar', { descricaoFatura }),
-  
-  getInsights: () => 
+
+  // RN-14: Feedback Loop — registrar correção manual de categoria
+  registrarCorrecao: (descricaoFatura: string, categoriaNovaId: string, categoriaAntigaId?: string) =>
+    api.post<{ success: boolean; message: string }>('/api/ia/correcao', {
+      descricaoFatura,
+      categoriaNovaId,
+      categoriaAntigaId,
+    }),
+
+  // Insights
+  getInsights: () =>
     api.get<IaInsight[]>('/api/ia/insights'),
-  
-  marcarComoLido: (id: string) => 
+
+  marcarComoLido: (id: string) =>
     api.put<void>(`/api/ia/insights/${id}/ler`),
-  
-  enviarFeedback: (id: string, relevante: boolean) => 
+
+  enviarFeedback: (id: string, relevante: boolean) =>
     api.post<void>(`/api/ia/insights/${id}/feedback`, { relevante }),
 
+  // Disparo manual de análise
   processarInsights: () =>
     api.post<{ message: string }>('/api/ia/insights/processar'),
 
@@ -38,5 +63,9 @@ export const iaService = {
     api.post<{ message: string }>('/api/ia/insights/processar/cartao'),
 
   processarInsightsAssinatura: () =>
-    api.post<{ message: string }>('/api/ia/insights/processar/assinatura')
+    api.post<{ message: string }>('/api/ia/insights/processar/assinatura'),
+
+  // RN-03: Simulação de compra parcelada
+  simularParcela: (cartaoId: string, valorTotal: number, parcelas: number) =>
+    api.post<IaSimulacaoParcela>('/api/ia/simular-parcela', { cartaoId, valorTotal, parcelas }),
 }
