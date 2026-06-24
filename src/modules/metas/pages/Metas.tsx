@@ -90,11 +90,13 @@ export function Metas() {
           {metas.map((meta) => (
             <GoalProgressBar
               key={meta.id}
+              metaId={meta.id}
               nomeMeta={meta.nome}
               valorAlvo={meta.valorAlvo}
               valorAcumulado={meta.valorAcumulado}
               corHexadecimal="#f05a3c"
               onDelete={() => handleDelete(meta)}
+              onDataChanged={() => loadMetas()}
             />
           ))}
         </div>

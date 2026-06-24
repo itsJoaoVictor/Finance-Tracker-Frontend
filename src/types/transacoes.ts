@@ -18,6 +18,10 @@ export interface Transacao {
   faturaId?: string
   categoriaId?: string
   categoriaNome?: string
+  metaOrigemId?: string
+  metaOrigemNome?: string
+  metaDestinoId?: string
+  metaDestinoNome?: string
   data: string
   numeroParcela?: number
   totalParcelas?: number

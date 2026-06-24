@@ -105,13 +105,58 @@
   justify-content: center;
   cursor: pointer;
   color: var(--muted);
-  font-size: 1rem;
   transition: background 0.15s, color 0.15s;
 }
 
 .meta-card__delete:hover {
   background: rgba(230, 57, 70, 0.1);
   color: #e63946;
+}
+
+/* ===== FOOTER ACTIONS (Depositar / Resgatar) ===== */
+
+.meta-card__footer-actions {
+  display: flex;
+  gap: 10px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(28, 26, 23, 0.07);
+}
+
+.meta-card__action-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: none;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, transform 0.15s;
+}
+
+.meta-card__action-btn:active {
+  transform: scale(0.97);
+}
+
+.meta-card__action-btn--deposit {
+  background: rgba(46, 160, 67, 0.1);
+  color: #2ea043;
+}
+
+.meta-card__action-btn--deposit:hover {
+  background: rgba(46, 160, 67, 0.2);
+}
+
+.meta-card__action-btn--withdraw {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+
+.meta-card__action-btn--withdraw:hover {
+  background: rgba(59, 130, 246, 0.2);
 }
 
 /* ===== PROGRESS BAR ===== */
@@ -159,4 +204,176 @@
   padding: 64px 16px;
   color: var(--muted);
   font-size: 1rem;
+}
+
+/* ===== MODAL (reutilizado do contas) ===== */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(27, 26, 23, 0.45);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: overlay-in 0.2s ease;
+}
+
+@keyframes overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal {
+  background: var(--card);
+  border-radius: 24px;
+  padding: 32px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 32px 80px rgba(28, 26, 23, 0.22);
+  animation: modal-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+}
+
+@keyframes modal-in {
+  from { opacity: 0; transform: scale(0.92) translateY(16px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.modal__title {
+  font-family: 'Instrument Serif', serif;
+  font-size: 1.5rem;
+  font-weight: 400;
+  color: var(--ink);
+  margin: 0;
+}
+
+.modal__close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 1.4rem;
+  line-height: 1;
+  padding: 4px;
+  border-radius: 8px;
+  transition: background 0.15s, color 0.15s;
+  display: flex;
+  align-items: center;
+}
+
+.modal__close:hover {
+  background: var(--bg-accent);
+  color: var(--ink);
+}
+
+.modal__form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.form-group input,
+.form-group select {
+  padding: 12px 16px;
+  border: 1.5px solid rgba(28, 26, 23, 0.12);
+  border-radius: 12px;
+  font-size: 0.95rem;
+  background: var(--card);
+  color: var(--ink);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(240, 90, 60, 0.15);
+}
+
+.form-group input.error,
+.form-group select.error {
+  border-color: #e63946;
+}
+
+.form-error {
+  font-size: 0.8rem;
+  color: #e63946;
+  margin: 0;
+}
+
+.modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.btn-cancel {
+  padding: 10px 20px;
+  border: 1.5px solid rgba(28, 26, 23, 0.12);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.btn-cancel:hover {
+  background: var(--bg-accent);
+  color: var(--ink);
+}
+
+.btn-submit {
+  padding: 10px 22px;
+  border: none;
+  border-radius: 12px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.15s;
+}
+
+.btn-submit:hover {
+  background: #d94e33;
+  transform: translateY(-1px);
+}
+
+.btn-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-submit--resgate {
+  background: #3b82f6;
+}
+
+.btn-submit--resgate:hover {
+  background: #2563eb;
 }
