@@ -212,7 +212,11 @@ export function CreditCard({ cartao, contas, insights = [], onEdit, onDelete, on
         {/* Insights da IA vinculados a este cartão */}
         {insights
           .filter((ins) => {
-            if (ins.tipo !== 'CARTAO_PREVISAO' && ins.tipo !== 'ESTOURO_FATURA') return false
+            if (
+              ins.tipo !== 'CARTAO_PREVISAO' &&
+              ins.tipo !== 'ESTOURO_FATURA' &&
+              ins.tipo !== 'MELHOR_CARTAO'
+            ) return false
             if (!ins.metadados) return false
             try {
               const meta = JSON.parse(ins.metadados)
@@ -221,7 +225,9 @@ export function CreditCard({ cartao, contas, insights = [], onEdit, onDelete, on
               return false
             }
           })
-          .map((ins) => (
+          .map((ins) => {
+            const isPositivo = ins.tipo === 'MELHOR_CARTAO' || ins.titulo?.startsWith('Fatura Abaixo')
+            return (
             <div 
               key={ins.id} 
               className="card-insight-banner" 
@@ -230,14 +236,14 @@ export function CreditCard({ cartao, contas, insights = [], onEdit, onDelete, on
                 marginTop: '10px',
                 padding: '12px',
                 borderRadius: '8px',
-                background: 'rgba(138, 5, 190, 0.08)',
-                border: '1px solid rgba(138, 5, 190, 0.25)',
+                background: isPositivo ? 'rgba(34, 197, 94, 0.08)' : 'rgba(138, 5, 190, 0.08)',
+                border: `1px solid ${isPositivo ? 'rgba(34, 197, 94, 0.3)' : 'rgba(138, 5, 190, 0.25)'}`,
                 fontSize: '0.85rem',
                 position: 'relative'
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px' }}>
-                <span style={{ fontWeight: 700, color: 'var(--primary-light)' }}>
+                <span style={{ fontWeight: 700, color: isPositivo ? '#22c55e' : 'var(--primary-light)' }}>
                   🤖 {ins.titulo}
                 </span>
                 <button
@@ -266,7 +272,9 @@ export function CreditCard({ cartao, contas, insights = [], onEdit, onDelete, on
                 {ins.mensagem}
               </p>
             </div>
-          ))}
+          )
+          })
+        }
 
       </div>
 
