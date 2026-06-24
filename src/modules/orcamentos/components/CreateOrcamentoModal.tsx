@@ -1,11 +1,12 @@
 import { useState, FormEvent, useEffect } from 'react'
-import { OrcamentoCriacaoRequest, Category } from '../../../types'
+import { OrcamentoCriacaoRequest, OrcamentoResumo, Category } from '../../../types'
 import { categoryService } from '../../../services/categoryService'
 import { Toast, useToast } from '../../../components/Toast'
 
 interface CreateOrcamentoModalProps {
   onClose: () => void
   onSubmit: (data: OrcamentoCriacaoRequest) => Promise<void>
+  orcamento?: OrcamentoResumo
 }
 
 function parseCurrencyInput(value: string): number {
@@ -13,17 +14,14 @@ function parseCurrencyInput(value: string): number {
   return parseFloat(cleaned) || 0
 }
 
-function getCurrentMonth(): string {
-  const now = new Date()
-  const y = now.getFullYear()
-  const m = String(now.getMonth() + 1).padStart(2, '0')
-  return `${y}-${m}`
+function formatCurrencyForInput(value: number): string {
+  return value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
-export function CreateOrcamentoModal({ onClose, onSubmit }: CreateOrcamentoModalProps) {
-  const [categoriaId, setCategoriaId] = useState('')
-  const [limiteMensal, setLimiteMensal] = useState('')
-  const [mesReferencia, setMesReferencia] = useState(getCurrentMonth())
+export function CreateOrcamentoModal({ onClose, onSubmit, orcamento }: CreateOrcamentoModalProps) {
+  const isEdit = !!orcamento
+  const [categoriaId, setCategoriaId] = useState(orcamento?.categoriaId || '')
+  const [limiteMensal, setLimiteMensal] = useState(orcamento ? formatCurrencyForInput(orcamento.limiteMensal) : '')
   const [categorias, setCategorias] = useState<Category[]>([])
   const [loading, setLoading] = useState(false)
   const [loadingCategorias, setLoadingCategorias] = useState(true)
@@ -53,9 +51,6 @@ export function CreateOrcamentoModal({ onClose, onSubmit }: CreateOrcamentoModal
     if (!limiteMensal.trim() || valor <= 0) {
       e.limiteMensal = 'Limite deve ser maior que zero'
     }
-    if (!mesReferencia) {
-      e.mesReferencia = 'Selecione o mês de referência'
-    }
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -65,12 +60,9 @@ export function CreateOrcamentoModal({ onClose, onSubmit }: CreateOrcamentoModal
     if (!validate()) return
     setLoading(true)
     try {
-      // Convert month picker format (YYYY-MM) to YYYY-MM-01
-      const mesFormatado = `${mesReferencia}-01`
       await onSubmit({
         categoriaId,
         limiteMensal: parseCurrencyInput(limiteMensal),
-        mesReferencia: mesFormatado,
       })
     } catch {
       addToast('Erro ao criar orçamento.', 'error')
@@ -88,7 +80,7 @@ export function CreateOrcamentoModal({ onClose, onSubmit }: CreateOrcamentoModal
     >
       <div className="modal" role="dialog" aria-modal="true" aria-labelledby="modal-criar-orcamento-title">
         <div className="modal__header">
-          <h2 className="modal__title" id="modal-criar-orcamento-title">Novo Orçamento</h2>
+          <h2 className="modal__title" id="modal-criar-orcamento-title">{isEdit ? 'Editar Orçamento' : 'Novo Orçamento'}</h2>
           <button className="modal__close" onClick={onClose} aria-label="Fechar" disabled={loading}>✕</button>
         </div>
 
@@ -130,27 +122,13 @@ export function CreateOrcamentoModal({ onClose, onSubmit }: CreateOrcamentoModal
             {errors.limiteMensal && <p className="form-error">{errors.limiteMensal}</p>}
           </div>
 
-          {/* Mês Referência */}
-          <div className="form-group">
-            <label htmlFor="criar-orcamento-mes">Mês de Referência</label>
-            <input
-              id="criar-orcamento-mes"
-              type="month"
-              value={mesReferencia}
-              onChange={(e) => setMesReferencia(e.target.value)}
-              className={errors.mesReferencia ? 'error' : ''}
-              disabled={loading}
-            />
-            {errors.mesReferencia && <p className="form-error">{errors.mesReferencia}</p>}
-          </div>
-
           {/* Ações */}
           <div className="modal__actions">
             <button type="button" className="btn-cancel" onClick={onClose} disabled={loading}>
               Cancelar
             </button>
             <button type="submit" className="btn-submit" disabled={loading} id="btn-criar-orcamento">
-              {loading ? 'Salvando...' : 'Criar Orçamento'}
+              {loading ? 'Salvando...' : isEdit ? 'Salvar Alterações' : 'Criar Orçamento'}
             </button>
           </div>
         </form>

@@ -119,16 +119,15 @@ export interface Orcamento {
   id: string
   categoriaId: string
   limiteMensal?: number
-  mesReferencia: string
 }
 
 export interface OrcamentoCriacaoRequest {
   categoriaId: string
   limiteMensal?: number
-  mesReferencia: string
 }
 
 export interface OrcamentoResumo {
+  id: string
   categoriaId: string
   categoriaNome: string
   limiteMensal: number
