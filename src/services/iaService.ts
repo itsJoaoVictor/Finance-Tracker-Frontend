@@ -1,4 +1,5 @@
 import api from './api'
+import { ProjecaoCartoesResponse } from '../types/cartoes'
 
 export interface IaCategorizarResponse {
   categoriaSugerida: string
@@ -68,4 +69,12 @@ export const iaService = {
   // RN-03: Simulação de compra parcelada
   simularParcela: (cartaoId: string, valorTotal: number, parcelas: number) =>
     api.post<IaSimulacaoParcela>('/api/ia/simular-parcela', { cartaoId, valorTotal, parcelas }),
+
+  // Projeção de Faturas (endpoint dedicado)
+  getProjecaoCartoes: () =>
+    api.post<ProjecaoCartoesResponse>('/api/ia/projecao-cartoes'),
+
+  // Aviso de Fechamento Iminente (endpoint dedicado)
+  verificarAvisosFechamento: () =>
+    api.post<{ message: string }>('/api/ia/aviso-fechamento'),
 }

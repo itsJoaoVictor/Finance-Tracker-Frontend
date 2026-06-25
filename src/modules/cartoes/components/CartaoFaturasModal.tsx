@@ -1,7 +1,8 @@
 import { useEffect, useState, useMemo } from 'react'
-import { Cartao, Fatura, Transacao } from '../../../types'
+import { Cartao, Fatura, ProjecaoCartao, Transacao } from '../../../types'
 import { cartaoService } from '../../../services/cartaoService'
 import { transacaoService } from '../../../services/transacaoService'
+import '../cartoes.css'
 import './CartaoFaturasModal.css'
 
 // Helper to parse dates in local timezone (avoiding UTC timezone shift issues)
@@ -17,10 +18,11 @@ function parseLocalDate(dateStr: string): Date {
 
 interface CartaoFaturasModalProps {
   cartao: Cartao
+  projecao?: ProjecaoCartao
   onClose: () => void
 }
 
-export function CartaoFaturasModal({ cartao, onClose }: CartaoFaturasModalProps) {
+export function CartaoFaturasModal({ cartao, projecao, onClose }: CartaoFaturasModalProps) {
   const [faturas, setFaturas] = useState<Fatura[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'historico' | 'atual' | 'proximas'>('atual')
@@ -244,6 +246,54 @@ export function CartaoFaturasModal({ cartao, onClose }: CartaoFaturasModalProps)
                   <span className="divider">•</span>
                   <span>🔒 Fechamento: {formatLongDate(selectedFatura.dataFechamento)}</span>
                 </div>
+              </div>
+            )}
+
+            {/* Banner de Projeção IA (se disponível) */}
+            {projecao && projecao.statusFatura !== 'SEM_FATURA' && (
+              <div
+                className="card-projecao-banner"
+                style={{
+                  borderLeftColor:
+                    projecao.classificacao === 'ACIMA' ? '#E63946' :
+                    projecao.classificacao === 'ABAIXO' ? '#22c55e' :
+                    projecao.classificacao === 'DENTRO' ? '#8A05BE' :
+                    '#999'
+                }}
+              >
+                <div className="card-projecao-banner__header">
+                  <span className="card-projecao-banner__icon">🤖</span>
+                  <span className="card-projecao-banner__label">
+                    {projecao.statusFatura === 'ABERTA' ? 'Projeção de Fechamento' : 'Análise Histórica'}
+                  </span>
+                  {projecao.mesesHistorico != null && (
+                    <span className="card-projecao-banner__periodo">
+                      Média de {projecao.mesesHistorico} meses
+                    </span>
+                  )}
+                </div>
+                <div className="card-projecao-banner__valor">
+                  {formatCurrency(
+                    projecao.statusFatura === 'FECHADA' && projecao.valorRealFechado != null
+                      ? projecao.valorRealFechado
+                      : projecao.projecaoFechamento
+                  )}
+                </div>
+                {projecao.mediaHistorica != null && projecao.desvioPercentual != null && (
+                  <div
+                    className="card-projecao-banner__comparacao"
+                    style={{
+                      color:
+                        projecao.desvioPercentual > 10 ? '#E63946' :
+                        projecao.desvioPercentual < -10 ? '#22c55e' :
+                        'var(--ink)'
+                    }}
+                  >
+                    {projecao.desvioPercentual > 0 ? '↑' : projecao.desvioPercentual < 0 ? '↓' : '='}{' '}
+                    {Math.abs(projecao.desvioPercentual).toFixed(0)}% vs média ({formatCurrency(projecao.mediaHistorica)})
+                  </div>
+                )}
+                <div className="card-projecao-banner__mensagem">{projecao.mensagemResumo}</div>
               </div>
             )}
  

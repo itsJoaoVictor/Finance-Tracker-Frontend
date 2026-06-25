@@ -320,3 +320,61 @@
   color: var(--green-positive, #16a34a);
   border: 1px solid rgba(16, 163, 74, 0.2);
 }
+
+/* ===== PROJECTION BANNER (IA DEDICADA) ===== */
+
+.card-projecao-banner {
+  grid-column: span 2;
+  background: var(--bg-accent, rgba(28, 26, 23, 0.03));
+  border-left: 3px solid #8A05BE;
+  border-radius: 8px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.card-projecao-banner__header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.card-projecao-banner__icon {
+  font-size: 0.9rem;
+}
+
+.card-projecao-banner__label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  flex: 1;
+}
+
+.card-projecao-banner__valor {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.3px;
+}
+
+.card-projecao-banner__comparacao {
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.card-projecao-banner__periodo {
+  font-weight: 400;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.card-projecao-banner__mensagem {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-top: 2px;
+  line-height: 1.4;
+}

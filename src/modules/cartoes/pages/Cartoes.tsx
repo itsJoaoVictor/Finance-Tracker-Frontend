@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { Cartao, CartaoCriacaoRequest, CartaoEdicaoRequest, Conta, TransacaoCriacaoRequest, PagamentoFaturaRequest } from '../../../types'
+import { Cartao, CartaoCriacaoRequest, CartaoEdicaoRequest, Conta, ProjecaoCartao, TransacaoCriacaoRequest, PagamentoFaturaRequest } from '../../../types'
 import { cartaoService } from '../../../services/cartaoService'
 import { contaService } from '../../../services/contaService'
 import { transacaoService } from '../../../services/transacaoService'
@@ -18,6 +18,7 @@ export function Cartoes() {
   const [cartoes, setCartoes] = useState<Cartao[]>([])
   const [contas, setContas] = useState<Conta[]>([])
   const [insights, setInsights] = useState<IaInsight[]>([])
+  const [projecoes, setProjecoes] = useState<ProjecaoCartao[]>([])
   const [loading, setLoading] = useState(true)
   const [resumo, setResumo] = useState({
     totalLimite: 0,
@@ -34,15 +35,20 @@ export function Cartoes() {
   const loadDados = useCallback(async () => {
     setLoading(true)
     try {
-      const [cartoesRes, contasRes, resumoRes, insightsRes] = await Promise.all([
+      // Processa avisos de fechamento iminente antes de buscar insights
+      await iaService.verificarAvisosFechamento().catch(() => {})
+
+      const [cartoesRes, contasRes, resumoRes, insightsRes, projecoesRes] = await Promise.all([
         cartaoService.getAll(),
         contaService.getAll(),
         cartaoService.getResumo(),
         iaService.getInsights().catch(() => ({ data: [] as IaInsight[] })),
+        iaService.getProjecaoCartoes().catch(() => ({ data: { projecoes: [] as ProjecaoCartao[] } })),
       ])
       setCartoes(cartoesRes.data)
       setContas(contasRes.data)
       setInsights(insightsRes.data)
+      setProjecoes(projecoesRes.data.projecoes)
       setResumo({
         totalLimite: resumoRes.data.totalLimite,
         totalLimiteDisponivel: resumoRes.data.totalLimiteDisponivel,
@@ -193,10 +199,10 @@ export function Cartoes() {
   async function handleAnalisarIa() {
     setProcessandoIa(true)
     try {
-      await iaService.processarInsightsCartao()
+      await iaService.processarInsights()
       // Recarrega insights e dados atualizados
       await loadDados()
-      addToast('Análise de cartões concluída com sucesso!', 'success')
+      addToast('Análise completa da IA concluída com sucesso! 🤖', 'success')
     } catch {
       addToast('Erro ao processar análise da IA.', 'error')
     } finally {
@@ -269,6 +275,7 @@ export function Cartoes() {
         contas={contas}
         loading={loading}
         insights={insights}
+        projecoes={projecoes}
         onEdit={setEditCartao}
         onDelete={handleDelete}
         onViewFaturas={setViewFaturasCartao}
@@ -296,6 +303,7 @@ export function Cartoes() {
       {viewFaturasCartao && (
         <CartaoFaturasModal
           cartao={viewFaturasCartao}
+          projecao={projecoes.find((p) => p.cartaoId === viewFaturasCartao.id)}
           onClose={() => setViewFaturasCartao(null)}
         />
       )}

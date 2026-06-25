@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Cartao, Conta } from '../../../types'
+import { Cartao, Conta, ProjecaoCartao } from '../../../types'
 import { IaInsight, iaService } from '../../../services/iaService'
 import '../cartoes.css'
 
@@ -7,6 +7,7 @@ interface CreditCardProps {
   cartao: Cartao
   contas: Conta[]
   insights?: IaInsight[]
+  projecoes?: ProjecaoCartao[]
   onEdit: (cartao: Cartao) => void
   onDelete: (cartao: Cartao) => void
   onViewFaturas: (cartao: Cartao) => void
@@ -19,7 +20,7 @@ function formatCurrency(value: number): string {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
 }
 
-export function CreditCard({ cartao, contas, insights = [], onEdit, onDelete, onViewFaturas, onNovaTransacao, onPagarFatura, onRefreshInsights }: CreditCardProps) {
+export function CreditCard({ cartao, contas, insights = [], projecoes = [], onEdit, onDelete, onViewFaturas, onNovaTransacao, onPagarFatura, onRefreshInsights }: CreditCardProps) {
   const [limitVisible, setLimitVisible] = useState(true)
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -36,6 +37,9 @@ export function CreditCard({ cartao, contas, insights = [], onEdit, onDelete, on
 
   const contaVinculada = contas.find((c) => c.id === cartao.contaId)
   const nomeConta = contaVinculada ? contaVinculada.nome : 'Sem conta'
+
+  // Projeção IA para este cartão
+  const projecao = projecoes.find((p) => p.cartaoId === cartao.id)
 
   const limiteConsumido = cartao.limite - cartao.limiteDisponivel
   const porcentagemConsumida = cartao.limite > 0 ? Math.min((limiteConsumido / cartao.limite) * 100, 100) : 0
@@ -139,27 +143,80 @@ export function CreditCard({ cartao, contas, insights = [], onEdit, onDelete, on
         
         {/* Métricas formatadas em grid */}
         <div className="card-details-panel__stats">
-          <div className="card-details-panel__stat-item card-details-panel__stat-item--highlight">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                <span className="card-details-panel__stat-label">
-                  Fatura Estimada{formatMonthYear(cartao.faturaMesReferencia)}
+          {/* ── Banner de Projeção IA (quando disponível) ── */}
+          {projecao ? (
+            <div
+              className="card-projecao-banner"
+              style={{
+                borderLeftColor:
+                  projecao.classificacao === 'ACIMA' ? '#E63946' :
+                  projecao.classificacao === 'ABAIXO' ? '#22c55e' :
+                  projecao.classificacao === 'DENTRO' ? '#8A05BE' :
+                  '#999'
+              }}
+            >
+              <div className="card-projecao-banner__header">
+                <span className="card-projecao-banner__icon">🤖</span>
+                <span className="card-projecao-banner__label">
+                  {projecao.statusFatura === 'ABERTA' ? 'Projeção de Fechamento' :
+                   projecao.statusFatura === 'FECHADA' ? 'Fatura Fechada' : 'Sem fatura'}
                 </span>
-                <span className="card-details-panel__stat-value" style={{ color: '#E63946', fontWeight: 700 }}>
-                  {formatCurrency(cartao.faturaEstimada || 0)}
+                <span className={`fatura-badge ${projecao.statusFatura === 'FECHADA' ? 'fatura-badge--closed' : 'fatura-badge--open'}`}>
+                  {projecao.statusFatura === 'FECHADA' ? '🔒 Fechada' : '🔓 Em aberto'}
                 </span>
               </div>
-              {cartao.faturaStatus === 'FECHADA' ? (
-                <span className="fatura-badge fatura-badge--closed">
-                  🔒 Fechada
-                </span>
-              ) : (
-                <span className="fatura-badge fatura-badge--open">
-                  🔓 Em aberto
-                </span>
+              <div className="card-projecao-banner__valor">
+                {formatCurrency(
+                  projecao.statusFatura === 'FECHADA' && projecao.valorRealFechado != null
+                    ? projecao.valorRealFechado
+                    : projecao.projecaoFechamento
+                )}
+              </div>
+              {projecao.mediaHistorica != null && projecao.desvioPercentual != null && (
+                <div
+                  className="card-projecao-banner__comparacao"
+                  style={{
+                    color:
+                      projecao.desvioPercentual > 10 ? '#E63946' :
+                      projecao.desvioPercentual < -10 ? '#22c55e' :
+                      'var(--ink)'
+                  }}
+                >
+                  {projecao.desvioPercentual > 0 ? '↑' : projecao.desvioPercentual < 0 ? '↓' : '='}{' '}
+                  {Math.abs(projecao.desvioPercentual).toFixed(0)}% vs média ({formatCurrency(projecao.mediaHistorica)})
+                  {projecao.mesesHistorico != null && (
+                    <span className="card-projecao-banner__periodo">
+                      {' '}· {projecao.mesesHistorico} meses
+                    </span>
+                  )}
+                </div>
               )}
+              <div className="card-projecao-banner__mensagem">{projecao.mensagemResumo}</div>
             </div>
-          </div>
+          ) : (
+            /* Fallback: Fatura Estimada original (quando não há projeção IA) */
+            <div className="card-details-panel__stat-item card-details-panel__stat-item--highlight">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                  <span className="card-details-panel__stat-label">
+                    Fatura Estimada{formatMonthYear(cartao.faturaMesReferencia)}
+                  </span>
+                  <span className="card-details-panel__stat-value" style={{ color: '#E63946', fontWeight: 700 }}>
+                    {formatCurrency(cartao.faturaEstimada || 0)}
+                  </span>
+                </div>
+                {cartao.faturaStatus === 'FECHADA' ? (
+                  <span className="fatura-badge fatura-badge--closed">
+                    🔒 Fechada
+                  </span>
+                ) : (
+                  <span className="fatura-badge fatura-badge--open">
+                    🔓 Em aberto
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
           <div className="card-details-panel__stat-item">
             <span className="card-details-panel__stat-label">Consumido</span>
             <span className="card-details-panel__stat-value" style={{ color: limiteConsumido > 0 ? '#E63946' : 'var(--ink)' }}>
@@ -218,6 +275,8 @@ export function CreditCard({ cartao, contas, insights = [], onEdit, onDelete, on
               ins.tipo !== 'MELHOR_CARTAO' &&
               ins.tipo !== 'AVISO_FECHAMENTO'
             ) return false
+            // Remove CARTAO_PREVISAO quando já existe projeção dedicada (evita duplicidade)
+            if (ins.tipo === 'CARTAO_PREVISAO' && projecao) return false
             if (!ins.metadados) return false
             try {
               const meta = JSON.parse(ins.metadados)

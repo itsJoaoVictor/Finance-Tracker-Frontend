@@ -177,8 +177,8 @@ export function Assinaturas() {
   async function handleAnalisarIa() {
     setProcessandoIa(true)
     try {
-      await iaService.processarInsightsAssinatura()
-      addToast('Análise de assinaturas concluída! Verifique os insights no robô 🤖 no topo.', 'success')
+      await iaService.processarInsights()
+      addToast('Análise completa da IA concluída! Verifique os insights no robô 🤖 no topo.', 'success')
     } catch {
       addToast('Erro ao processar análise da IA.', 'error')
     } finally {

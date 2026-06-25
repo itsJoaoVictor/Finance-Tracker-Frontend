@@ -1,4 +1,4 @@
-import { Cartao, Conta } from '../../../types'
+import { Cartao, Conta, ProjecaoCartao } from '../../../types'
 import { IaInsight } from '../../../services/iaService'
 import { CreditCard } from './CreditCard'
 
@@ -7,6 +7,7 @@ interface CardListProps {
   contas: Conta[]
   loading: boolean
   insights: IaInsight[]
+  projecoes: ProjecaoCartao[]
   onEdit: (cartao: Cartao) => void
   onDelete: (cartao: Cartao) => void
   onViewFaturas: (cartao: Cartao) => void
@@ -15,7 +16,7 @@ interface CardListProps {
   onRefreshInsights: () => void
 }
 
-export function CardList({ cartoes, contas, loading, insights, onEdit, onDelete, onViewFaturas, onNovaTransacao, onPagarFatura, onRefreshInsights }: CardListProps) {
+export function CardList({ cartoes, contas, loading, insights, projecoes, onEdit, onDelete, onViewFaturas, onNovaTransacao, onPagarFatura, onRefreshInsights }: CardListProps) {
   if (loading) {
     return (
       <div className="account-list">
@@ -51,6 +52,7 @@ export function CardList({ cartoes, contas, loading, insights, onEdit, onDelete,
           cartao={cartao}
           contas={contas}
           insights={insights}
+          projecoes={projecoes}
           onEdit={onEdit}
           onDelete={onDelete}
           onViewFaturas={onViewFaturas}
