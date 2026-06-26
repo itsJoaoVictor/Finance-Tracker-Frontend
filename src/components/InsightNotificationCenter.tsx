@@ -67,9 +67,23 @@ export function InsightNotificationCenter() {
         aria-label="Insights da IA"
       >
         🤖
-        {insights.filter((ins) => ins.tipo !== 'CARTAO_PREVISAO' && ins.tipo !== 'ESTOURO_FATURA').length > 0 && (
+        {insights.filter((ins) =>
+          ins.tipo !== 'CARTAO_PREVISAO' &&
+          ins.tipo !== 'ESTOURO_FATURA' &&
+          ins.tipo !== 'MELHOR_CARTAO' &&
+          ins.tipo !== 'AVISO_FECHAMENTO' &&
+          ins.tipo !== 'CONCENTRACAO_GASTOS_FATURA' &&
+          ins.tipo !== 'OTIMIZACAO_PARCELAMENTO'
+        ).length > 0 && (
           <span className="insight-badge">
-            {insights.filter((ins) => ins.tipo !== 'CARTAO_PREVISAO' && ins.tipo !== 'ESTOURO_FATURA').length}
+            {insights.filter((ins) =>
+              ins.tipo !== 'CARTAO_PREVISAO' &&
+              ins.tipo !== 'ESTOURO_FATURA' &&
+              ins.tipo !== 'MELHOR_CARTAO' &&
+              ins.tipo !== 'AVISO_FECHAMENTO' &&
+              ins.tipo !== 'CONCENTRACAO_GASTOS_FATURA' &&
+              ins.tipo !== 'OTIMIZACAO_PARCELAMENTO'
+            ).length}
           </span>
         )}
       </button>
@@ -97,7 +111,14 @@ export function InsightNotificationCenter() {
             {!loading && !processando && insights.length === 0 && <p className="insight-info">Nenhum alerta ou anomalia no momento. Bom trabalho! 🎉</p>}
 
             {insights
-              .filter((insight) => insight.tipo !== 'CARTAO_PREVISAO' && insight.tipo !== 'ESTOURO_FATURA')
+              .filter((insight) =>
+                insight.tipo !== 'CARTAO_PREVISAO' &&
+                insight.tipo !== 'ESTOURO_FATURA' &&
+                insight.tipo !== 'MELHOR_CARTAO' &&
+                insight.tipo !== 'AVISO_FECHAMENTO' &&
+                insight.tipo !== 'CONCENTRACAO_GASTOS_FATURA' &&
+                insight.tipo !== 'OTIMIZACAO_PARCELAMENTO'
+              )
               .map((insight) => (
                 <div key={insight.id} className={`insight-card insight-card--${insight.tipo.toLowerCase()}`}>
                   <div className="insight-card__header">

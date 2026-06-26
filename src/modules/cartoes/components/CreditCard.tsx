@@ -287,11 +287,15 @@ export function CreditCard({ cartao, contas, insights = [], projecoes = [], onEd
           })
           .map((ins) => {
             const isPositivo = ins.tipo === 'MELHOR_CARTAO' || ins.titulo?.startsWith('Fatura Abaixo')
+            // Insights informativos: sem botão dispensar (sempre visíveis)
+            const podeDispensar = ins.tipo !== 'CARTAO_PREVISAO'
+                && ins.tipo !== 'AVISO_FECHAMENTO'
+                && ins.tipo !== 'MELHOR_CARTAO'
             return (
-            <div 
-              key={ins.id} 
-              className="card-insight-banner" 
-              onClick={(e) => e.stopPropagation()} 
+            <div
+              key={ins.id}
+              className="card-insight-banner"
+              onClick={(e) => e.stopPropagation()}
               style={{
                 marginTop: '10px',
                 padding: '12px',
@@ -306,27 +310,29 @@ export function CreditCard({ cartao, contas, insights = [], projecoes = [], onEd
                 <span style={{ fontWeight: 700, color: isPositivo ? '#22c55e' : 'var(--primary-light)' }}>
                   🤖 {ins.titulo}
                 </span>
-                <button
-                  type="button"
-                  onClick={async (e) => {
-                    e.stopPropagation()
-                    try {
-                      await iaService.marcarComoLido(ins.id)
-                      if (onRefreshInsights) onRefreshInsights()
-                    } catch {}
-                  }}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    color: 'var(--muted)',
-                    cursor: 'pointer',
-                    fontSize: '0.9rem',
-                    padding: '0 2px'
-                  }}
-                  title="Dispensar alerta"
-                >
-                  ✕
-                </button>
+                {podeDispensar && (
+                  <button
+                    type="button"
+                    onClick={async (e) => {
+                      e.stopPropagation()
+                      try {
+                        await iaService.marcarComoLido(ins.id)
+                        if (onRefreshInsights) onRefreshInsights()
+                      } catch {}
+                    }}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--muted)',
+                      cursor: 'pointer',
+                      fontSize: '0.9rem',
+                      padding: '0 2px'
+                    }}
+                    title="Dispensar alerta"
+                  >
+                    ✕
+                  </button>
+                )}
               </div>
               <p style={{ margin: 0, color: 'var(--ink)', fontSize: '0.8rem', lineHeight: '1.4' }}>
                 {ins.mensagem}

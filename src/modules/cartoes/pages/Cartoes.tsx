@@ -4,6 +4,7 @@ import { cartaoService } from '../../../services/cartaoService'
 import { contaService } from '../../../services/contaService'
 import { transacaoService } from '../../../services/transacaoService'
 import { iaService, IaInsight } from '../../../services/iaService'
+import { AICardHighlights } from '../components/AICardHighlights'
 import { CardList } from '../components/CardList'
 import { CreateCardModal } from '../components/CreateCardModal'
 import { EditCardModal } from '../components/EditCardModal'
@@ -35,8 +36,8 @@ export function Cartoes() {
   const loadDados = useCallback(async () => {
     setLoading(true)
     try {
-      // Processa avisos de fechamento iminente antes de buscar insights
-      await iaService.verificarAvisosFechamento().catch(() => {})
+      // Processa TODOS os insights dedicados de cartão em uma única chamada
+      await iaService.processarTodosInsightsCartao().catch(() => {})
 
       const [cartoesRes, contasRes, resumoRes, insightsRes, projecoesRes] = await Promise.all([
         cartaoService.getAll(),
@@ -47,7 +48,17 @@ export function Cartoes() {
       ])
       setCartoes(cartoesRes.data)
       setContas(contasRes.data)
-      setInsights(insightsRes.data)
+      // Deduplica insights por tipo único (MELHOR_CARTAO deve aparecer só uma vez)
+      const TIPOS_UNICOS = new Set(['MELHOR_CARTAO'])
+      const seenTipos = new Set<string>()
+      const insightsDedupados = insightsRes.data.filter((ins) => {
+        if (!TIPOS_UNICOS.has(ins.tipo)) return true
+        if (seenTipos.has(ins.tipo)) return false
+        seenTipos.add(ins.tipo)
+        return true
+      })
+      setInsights(insightsDedupados)
+
       setProjecoes(projecoesRes.data.projecoes)
       setResumo({
         totalLimite: resumoRes.data.totalLimite,
@@ -194,6 +205,10 @@ export function Cartoes() {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
   }
 
+  function handleDismissHighlight(id: string) {
+    setInsights((prev) => prev.filter((ins) => ins.id !== id))
+  }
+
   const [processandoIa, setProcessandoIa] = useState(false)
 
   async function handleAnalisarIa() {
@@ -268,6 +283,12 @@ export function Cartoes() {
           <span className="contas-resumo__value">{loading ? '...' : cartoes.length}</span>
         </div>
       </div>
+
+      {/* Destaques da IA */}
+      <AICardHighlights
+        insights={insights}
+        onDismiss={handleDismissHighlight}
+      />
 
       {/* Lista de Cartões */}
       <CardList

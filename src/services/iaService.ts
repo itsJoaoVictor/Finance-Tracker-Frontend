@@ -77,4 +77,20 @@ export const iaService = {
   // Aviso de Fechamento Iminente (endpoint dedicado)
   verificarAvisosFechamento: () =>
     api.post<{ message: string }>('/api/ia/aviso-fechamento'),
+
+  // Melhor Cartão para o Momento (endpoint dedicado)
+  verificarMelhorCartao: () =>
+    api.post<{ message: string }>('/api/ia/melhor-cartao'),
+
+  // Todos os insights de cartão (chamada atômica única)
+  processarTodosInsightsCartao: () =>
+    api.post<{ message: string }>('/api/ia/insights/cartao'),
+
+  // Concentração de Gastos na Fatura (Category Spike)
+  verificarConcentracaoGastos: () =>
+    api.post<{ message: string }>('/api/ia/concentracao-gastos-fatura'),
+
+  // Otimização de Parcelamentos Futuros (Folga de Limite)
+  verificarOtimizacaoParcelamento: () =>
+    api.post<{ message: string }>('/api/ia/otimizacao-parcelamento'),
 }

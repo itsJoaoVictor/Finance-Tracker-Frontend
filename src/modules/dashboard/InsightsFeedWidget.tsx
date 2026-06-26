@@ -11,6 +11,7 @@ const insightIcons: Record<string, { icon: React.ReactNode; color: string }> = {
   COBRANCA_DUPLICADA: { icon: <AlertTriangle size={20} />, color: '#FF3B30' },
   ESTOURO_FATURA: { icon: <TrendingUp size={20} />, color: '#FF9500' },
   GASTO_INCOMUM: { icon: <AlertTriangle size={20} />, color: '#FF9500' },
+  CARTAO_PREVISAO: { icon: <TrendingUp size={20} />, color: '#007AFF' },
   // Novos insights comportamentais
   MICRO_TRANSACOES: { icon: <Coins size={20} />, color: '#AF52DE' },
   ORCAMENTO_SOBRA_META: { icon: <PiggyBank size={20} />, color: '#34C759' },
@@ -20,6 +21,9 @@ const insightIcons: Record<string, { icon: React.ReactNode; color: string }> = {
   REFORCO_POSITIVO: { icon: <Trophy size={20} />, color: '#FFD60A' },
   ACELERADOR_METAS: { icon: <Rocket size={20} />, color: '#007AFF' },
   INFLACAO_PESSOAL: { icon: <ShoppingCart size={20} />, color: '#FF9500' },
+  // Insights de cartão (apenas projeção aparece no Dashboard)
+  PROJECAO_PARCELAS: { icon: <TrendingUp size={20} />, color: '#007AFF' },
+  SUGESTAO_VENCIMENTO: { icon: <Bell size={20} />, color: '#5AC8FA' },
 }
 
 export function InsightsFeedWidget({ insights, onDispensar }: InsightsFeedWidgetProps) {

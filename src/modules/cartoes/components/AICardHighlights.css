@@ -1,0 +1,176 @@
+/* ===== DESTAQUES DA IA - SEÇÃO DEDICADA ===== */
+
+.ai-highlights-section {
+  background: var(--card);
+  border: 1px solid rgba(28, 26, 23, 0.08);
+  border-radius: 16px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 12px rgba(28, 26, 23, 0.04);
+}
+
+.ai-highlights-section__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.ai-highlights-section__icon {
+  font-size: 1.1rem;
+}
+
+.ai-highlights-section__title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0;
+  letter-spacing: -0.2px;
+}
+
+.ai-highlights-section__subtitle {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin: 0 0 16px 0;
+  line-height: 1.4;
+}
+
+.ai-highlights-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ===== CARD INDIVIDUAL ===== */
+
+.ai-highlight-card {
+  background: rgba(28, 26, 23, 0.02);
+  border-left: 4px solid var(--primary, #8a05be);
+  border-radius: 8px;
+  padding: 14px 16px;
+  position: relative;
+  transition: background 0.2s ease;
+}
+
+.ai-highlight-card:hover {
+  background: rgba(28, 26, 23, 0.04);
+}
+
+/* Tipo: Concentração de Gastos (alerta) */
+.ai-highlight-card--concentracao {
+  border-left-color: #E63946;
+  background: rgba(230, 57, 70, 0.04);
+}
+
+.ai-highlight-card--concentracao:hover {
+  background: rgba(230, 57, 70, 0.06);
+}
+
+/* Tipo: Otimização de Parcelamento (positivo) */
+.ai-highlight-card--otimizacao {
+  border-left-color: #22c55e;
+  background: rgba(34, 197, 94, 0.04);
+}
+
+.ai-highlight-card--otimizacao:hover {
+  background: rgba(34, 197, 94, 0.06);
+}
+
+/* Header do card */
+.ai-highlight-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 6px;
+}
+
+.ai-highlight-card__title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ai-highlight-card__title-icon {
+  font-size: 0.9rem;
+}
+
+/* Botão dispensar */
+.ai-highlight-card__dismiss {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0;
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.ai-highlight-card__dismiss:hover {
+  color: var(--ink);
+}
+
+/* Mensagem */
+.ai-highlight-card__message {
+  font-size: 0.82rem;
+  color: var(--ink-secondary, #555);
+  margin: 0 0 10px 0;
+  line-height: 1.5;
+}
+
+/* Ações (feedback) */
+.ai-highlight-card__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.ai-highlight-card__feedback-btn {
+  background: rgba(28, 26, 23, 0.04);
+  border: 1px solid rgba(28, 26, 23, 0.08);
+  color: var(--muted);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.ai-highlight-card__feedback-btn:hover {
+  background: rgba(28, 26, 23, 0.08);
+  color: var(--ink);
+}
+
+.ai-highlight-card__feedback-btn--yes:hover {
+  border-color: #22c55e;
+  color: #22c55e;
+}
+
+.ai-highlight-card__feedback-btn--no:hover {
+  border-color: #E63946;
+  color: #E63946;
+}
+
+/* ===== RESPONSIVO ===== */
+
+@media (max-width: 640px) {
+  .ai-highlights-section {
+    padding: 16px;
+    border-radius: 12px;
+  }
+
+  .ai-highlight-card {
+    padding: 12px 14px;
+  }
+
+  .ai-highlight-card__title {
+    font-size: 0.82rem;
+  }
+
+  .ai-highlight-card__message {
+    font-size: 0.78rem;
+  }
+}
