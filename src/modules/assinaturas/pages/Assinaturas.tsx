@@ -16,7 +16,8 @@ import { EditSubscriptionModal } from '../components/EditSubscriptionModal'
 import { Toast, useToast } from '../../contas/components/Toast'
 import '../assinaturas.css'
 
-import { iaService } from '../../../services/iaService'
+import { iaService, ReajusteDetectado } from '../../../services/iaService'
+import { FadigaInsights } from '../components/FadigaInsights'
 
 const PERIODICIDADE_LABEL: Record<string, string> = {
   MENSAL: 'Mensal',
@@ -62,6 +63,7 @@ export function Assinaturas() {
   const [showCreate, setShowCreate] = useState(false)
   const [editAssinatura, setEditAssinatura] = useState<Assinatura | null>(null)
   const [processandoIa, setProcessandoIa] = useState(false)
+  const [reajusteMap, setReajusteMap] = useState<Map<string, ReajusteDetectado>>(new Map())
   const { toasts, addToast, dismiss } = useToast()
 
   // Cria um mapa de cartaoId -> nome para lookup r\u00e1pido
@@ -79,6 +81,17 @@ export function Assinaturas() {
       setAssinaturas(assinaturasRes.data)
       setCartoes(cartoesRes.data)
       setCategorias(categoriasRes.data)
+
+      // Buscar reajustes detectados
+      iaService.getInteligenciaAssinatura()
+        .then(res => {
+          const map = new Map<string, ReajusteDetectado>()
+          for (const r of res.data.reajustes) {
+            map.set(r.assinaturaId, r)
+          }
+          setReajusteMap(map)
+        })
+        .catch(() => {})
     } catch {
       addToast('Erro ao carregar assinaturas.', 'error')
     } finally {
@@ -218,6 +231,9 @@ export function Assinaturas() {
         </div>
       </div>
 
+      {/* Insights de Fadiga — hero element */}
+      <FadigaInsights />
+
       {/* Próximas Cobranças */}
       <div className="assinaturas-proximas">
         <div className="assinaturas-proximas__header">
@@ -292,6 +308,7 @@ export function Assinaturas() {
                   categoriaIcone={catObj?.icone}
                   cartaoNome={cartaoMap.get(a.cartaoId) || 'Sem cart\u00e3o'}
                   periodicidadeLabel={getPeriodicidadeLabel(a)}
+                  reajuste={reajusteMap.get(a.id)}
                   onEdit={setEditAssinatura}
                   onPauseResume={handlePauseResume}
                   onDelete={handleDelete}

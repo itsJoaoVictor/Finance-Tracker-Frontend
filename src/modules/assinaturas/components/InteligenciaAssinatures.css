@@ -1,0 +1,228 @@
+/* ═══════════════════════════════════════════════════════════════════
+   REAJUSTES DETECTADOS — Warning Card
+   Matches FadigaInsights visual language: layered card, glow, serif display
+   ═══════════════════════════════════════════════════════════════════ */
+
+.reajustes {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.reajustes--montado {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Main card ── */
+.reajustes__card {
+  position: relative;
+  z-index: 1;
+  background: var(--card);
+  border: 1px solid rgba(240, 90, 60, 0.12);
+  border-radius: 20px;
+  padding: 22px 26px;
+  box-shadow:
+    0 1px 2px rgba(28, 26, 23, 0.04),
+    0 4px 12px rgba(240, 90, 60, 0.06),
+    0 12px 32px rgba(28, 26, 23, 0.06);
+  transition: box-shadow 0.3s ease;
+}
+
+.reajustes__card:hover {
+  box-shadow:
+    0 1px 2px rgba(28, 26, 23, 0.04),
+    0 6px 18px rgba(240, 90, 60, 0.09),
+    0 18px 48px rgba(28, 26, 23, 0.09);
+}
+
+/* ── Glow effect (same pattern as FadigaInsights) ── */
+.reajustes__glow {
+  position: absolute;
+  inset: -2px;
+  border-radius: 22px;
+  z-index: 0;
+  background: linear-gradient(135deg, rgba(240, 90, 60, 0.06) 0%, rgba(240, 90, 60, 0.02) 100%);
+  transition: background 0.8s ease;
+}
+
+/* ── Skeleton ── */
+.reajustes--skeleton {
+  opacity: 1;
+  transform: none;
+}
+
+.reajustes--skeleton .reajustes__card {
+  padding: 22px 26px;
+  display: flex;
+  flex-direction: column;
+}
+
+.reajustes__skeleton-bar {
+  border-radius: 6px;
+  background: var(--bg);
+}
+
+/* ── Header strip ── */
+.reajustes__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.reajustes__header-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: rgba(240, 90, 60, 0.10);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.reajustes__header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.reajustes__titulo {
+  font-family: 'Instrument Serif', serif;
+  font-size: 1.1rem;
+  font-weight: 400;
+  color: var(--ink);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.reajustes__subtitulo {
+  font-size: 0.68rem;
+  color: var(--muted);
+}
+
+/* ── Cards list ── */
+.reajustes__lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ── Individual reajuste card ── */
+.reajuste {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+  background: var(--bg);
+  border-radius: 12px;
+  border-left: 3px solid rgba(240, 90, 60, 0.25);
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.35s ease, transform 0.35s ease, box-shadow 0.2s ease;
+}
+
+.reajuste--visivel {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reajuste:hover {
+  box-shadow: 0 2px 8px rgba(28, 26, 23, 0.06);
+}
+
+.reajuste:last-child {
+  margin-bottom: 0;
+}
+
+/* ── Left: info ── */
+.reajuste__info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.reajuste__nome {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.2;
+}
+
+.reajuste__categoria {
+  font-size: 0.65rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 500;
+}
+
+.reajuste__valores {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.reajuste__valor-antigo {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.72rem;
+  color: var(--muted);
+  text-decoration: line-through;
+  text-decoration-color: rgba(28, 26, 23, 0.25);
+}
+
+.reajuste__seta {
+  font-size: 0.6rem;
+  color: var(--muted);
+}
+
+.reajuste__valor-novo {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* ── Right: impact ── */
+.reajuste__impacto {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+  gap: 1px;
+}
+
+.reajuste__pct {
+  font-family: 'Instrument Serif', serif;
+  font-size: 1.3rem;
+  font-weight: 400;
+  color: var(--accent);
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.reajuste__impacto-label {
+  font-size: 0.55rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 500;
+}
+
+.reajuste__impacto-valor {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}

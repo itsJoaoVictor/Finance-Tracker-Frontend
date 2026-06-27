@@ -1,6 +1,8 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { Assinatura } from '../../../types'
+import { ReajusteDetectado } from '../../../services/iaService'
 import { FinanceCard } from '../../../components/FinanceCard'
+import { TrendingUp, TrendingDown } from 'lucide-react'
 
 interface SubscriptionCardProps {
   assinatura: Assinatura
@@ -9,6 +11,7 @@ interface SubscriptionCardProps {
   categoriaIcone?: string
   cartaoNome: string
   periodicidadeLabel: string
+  reajuste?: ReajusteDetectado
   onEdit: (assinatura: Assinatura) => void
   onPauseResume: (assinatura: Assinatura) => void
   onDelete: (assinatura: Assinatura) => void
@@ -35,12 +38,17 @@ export function SubscriptionCard({
   categoriaIcone,
   cartaoNome,
   periodicidadeLabel,
+  reajuste,
   onEdit,
   onPauseResume,
   onDelete,
 }: SubscriptionCardProps) {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [tooltipOpen, setTooltipOpen] = useState(false)
+  const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 })
   const menuRef = useRef<HTMLDivElement>(null)
+  const badgeRef = useRef<HTMLDivElement>(null)
+  const wrapperRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -54,13 +62,12 @@ export function SubscriptionCard({
 
   const badgeText = assinatura.ativo ? 'Ativa' : 'Pausada'
 
-  // Normaliza o nome da assinatura para gerar a URL do logotipo dinamicamente
   const cleanName = assinatura.nome
     .trim()
     .toLowerCase()
     .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '') // remove acentos
-    .split(/\s+/)[0] // pega a primeira palavra
+    .replace(/[\u0300-\u036f]/g, '')
+    .split(/\s+/)[0]
 
   const logoUrl = `https://icons.duckduckgo.com/ip3/www.${cleanName}.com.ico`
   const cardColor = categoriaCor || '#ccc'
@@ -80,8 +87,41 @@ export function SubscriptionCard({
     />
   )
 
+  const isAumento = reajuste ? reajuste.valorAtual > reajuste.valorAnterior : false
+
+  const showTooltip = useCallback(() => {
+    if (!badgeRef.current || !wrapperRef.current) return
+    const badgeRect = badgeRef.current.getBoundingClientRect()
+    const wrapperRect = wrapperRef.current.getBoundingClientRect()
+    setTooltipPos({
+      x: badgeRect.left - wrapperRect.left,
+      y: badgeRect.top - wrapperRect.top - 8,
+    })
+    setTooltipOpen(true)
+  }, [])
+
+  // Badge inline com o valor
+  const reajusteBadge = reajuste ? (
+    <div
+      ref={badgeRef}
+      className="assinatura-card__reajuste"
+      onMouseEnter={showTooltip}
+      onMouseLeave={() => setTooltipOpen(false)}
+      onClick={() => setTooltipOpen(t => !t)}
+    >
+      {isAumento ? (
+        <TrendingUp size={11} strokeWidth={2.5} />
+      ) : (
+        <TrendingDown size={11} strokeWidth={2.5} />
+      )}
+      <span className="assinatura-card__reajuste-pct">
+        {isAumento ? '+' : ''}{reajuste.percentualAumento.toFixed(1)}%
+      </span>
+    </div>
+  ) : null
+
   return (
-    <div style={{ position: 'relative' }}>
+    <div ref={wrapperRef} style={{ position: 'relative' }}>
       <FinanceCard
         titulo={assinatura.nome}
         subtitulo={`${categoriaNome} \u2022 ${periodicidadeLabel}`}
@@ -89,6 +129,7 @@ export function SubscriptionCard({
         corHexadecimal={cardColor}
         icone={iconNode}
         badgeText={badgeText}
+        valorExtra={reajusteBadge}
         onClickOptions={() => setMenuOpen((o) => !o)}
       >
         <p className="assinatura-card__proxima">
@@ -98,6 +139,28 @@ export function SubscriptionCard({
           Cart&atilde;o: {cartaoNome}
         </p>
       </FinanceCard>
+
+      {/* Tooltip fora do card — não sofre clipping */}
+      {tooltipOpen && reajuste && (
+        <div
+          className="assinatura-card__reajuste-tooltip"
+          style={{
+            position: 'absolute',
+            left: tooltipPos.x,
+            top: tooltipPos.y,
+            transform: 'translateY(-100%)',
+          }}
+        >
+          <span>
+            {isAumento ? 'Aumento' : 'Redução'} de{' '}
+            <strong>{Math.abs(reajuste.percentualAumento).toFixed(1)}%</strong> no valor.
+          </span>
+          <span>
+            Impacto: {isAumento ? '+' : '-'}
+            {formatCurrency(Math.abs(reajuste.impactoAnual))}/ano
+          </span>
+        </div>
+      )}
 
       {menuOpen && (
         <div

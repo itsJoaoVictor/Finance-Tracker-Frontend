@@ -7,6 +7,7 @@ interface FinanceCardProps {
   corHexadecimal?: string
   icone: string | React.ReactNode
   badgeText?: string
+  valorExtra?: React.ReactNode
   onClickOptions?: (e: React.MouseEvent) => void
   children?: React.ReactNode
 }
@@ -18,6 +19,7 @@ export function FinanceCard({
   corHexadecimal = '#ccc',
   icone,
   badgeText,
+  valorExtra,
   onClickOptions,
   children,
 }: FinanceCardProps) {
@@ -57,6 +59,7 @@ export function FinanceCard({
           <span className="account-card__balance">
             {valorPrincipal}
           </span>
+          {valorExtra}
         </div>
 
         {badgeText && (

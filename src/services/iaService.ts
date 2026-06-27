@@ -93,4 +93,77 @@ export const iaService = {
   // Otimização de Parcelamentos Futuros (Folga de Limite)
   verificarOtimizacaoParcelamento: () =>
     api.post<{ message: string }>('/api/ia/otimizacao-parcelamento'),
+
+  // Análise de Fadiga de Assinatura (dedicada)
+  getFadigaAssinatura: () =>
+    api.post<FadigaAssinaturaResponse>('/api/ia/fadiga-assinatura'),
+
+  // Central de Inteligência: reajuste + score (chamada atômica única)
+  getInteligenciaAssinatura: () =>
+    api.post<InteligenciaAssinaturaResponse>('/api/ia/assinaturas/inteligencia'),
+
+  // Classificação de Assinaturas — perguntas pendentes da IA
+  getPendentesConfirmacao: () =>
+    api.get<PendenteConfirmacao[]>('/api/ia/assinaturas/pendentes-confirmacao'),
+
+  confirmarClassificacao: (assinaturaId: string, essencialidade: string) =>
+    api.post<{ success: boolean }>('/api/ia/assinaturas/confirmar-classificacao', {
+      assinaturaId,
+      essencialidade,
+    }),
+
+  // Classificação comportamental — como o usuário usa a assinatura
+  classificarComportamento: (assinaturaId: string, perfil: string) =>
+    api.post<{ success: boolean }>('/api/ia/assinaturas/classificar-comportamento', {
+      assinaturaId,
+      perfil,
+    }),
+}
+
+export interface PendenteConfirmacao {
+  assinaturaId: string
+  nome: string
+  categoria: string
+  valorMensal: number
+  essencialidade: string
+  justificativa: string
+}
+
+// ── Central de Inteligência de Assinaturas ──────────────────────────
+
+export interface InteligenciaAssinaturaResponse {
+  reajustes: ReajusteDetectado[]
+}
+
+export interface ReajusteDetectado {
+  assinaturaId: string
+  nome: string
+  categoria: string
+  valorAnterior: number
+  valorAtual: number
+  percentualAumento: number
+  impactoAnual: number
+  alteracaoVoluntaria: boolean
+}
+
+export interface FadigaAssinaturaResponse {
+  totalAssinaturas: number
+  totalEssenciais: number
+  totalImportantes: number
+  totalDiscricionarias: number
+  totalGeral: number
+  indiceAssinaturas: number
+  indiceNaoEssencial: number
+  classificacaoGlobal: string
+  nivelAlerta: string
+  itens: {
+    nome: string
+    categoria: string
+    valorMensal: number
+    essencialidade: string
+    nivelEmoji: string
+  }[]
+  duplicadasPorCategoria: Record<string, number>
+  servicosSemelhantes: string[]
+  mensagem: string
 }
