@@ -93,14 +93,19 @@ export function InsightNotificationCenter() {
           <div className="insight-dropdown__header">
             <h3>🤖 Insights Preditivos da IA</h3>
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-              <button 
-                className="insight-dropdown__refresh" 
+              <button
+                className="insight-dropdown__refresh"
                 onClick={handleProcessar}
                 disabled={processando || loading}
-                title="Recalcular Insights"
-                style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', fontSize: '0.9rem' }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 5,
+                  background: 'rgba(138, 5, 190, 0.1)', border: '1px solid rgba(138, 5, 190, 0.25)',
+                  borderRadius: 6, padding: '4px 10px', cursor: processando ? 'wait' : 'pointer',
+                  color: '#fff', fontSize: '0.75rem', fontWeight: 500,
+                  opacity: processando ? 0.6 : 1, transition: 'all 0.15s ease',
+                }}
               >
-                {processando ? '⏳' : '🔄'}
+                {processando ? '⏳' : '✨'} {processando ? 'Analisando...' : 'Analisar'}
               </button>
               <button className="insight-dropdown__close" onClick={() => setIsOpen(false)}>✕</button>
             </div>

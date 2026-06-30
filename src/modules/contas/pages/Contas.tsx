@@ -127,10 +127,6 @@ export function Contas() {
     <div className="contas-page">
       {/* Header */}
       <div className="contas-header">
-        <div>
-          <h1 className="contas-header__title">Minhas Contas</h1>
-          <p className="contas-header__subtitle">Gerencie seus repositórios financeiros</p>
-        </div>
         <button
           className="btn-nova-conta"
           onClick={() => setShowCreate(true)}

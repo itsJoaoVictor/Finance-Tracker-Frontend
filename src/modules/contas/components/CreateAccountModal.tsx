@@ -19,8 +19,8 @@ export function CreateAccountModal({ onClose, onSubmit }: CreateAccountModalProp
     const e: Record<string, string> = {}
     if (!nome.trim()) e.nome = 'Nome é obrigatório'
     if (!tipo) e.tipo = 'Tipo é obrigatório'
-    const s = parseFloat(saldo)
-    if (saldo === '' || isNaN(s)) e.saldo = 'Saldo é obrigatório'
+    const s = parseFloat(saldo || '0')
+    if (isNaN(s)) e.saldo = 'Saldo inválido'
     else if (s < 0) e.saldo = 'Saldo não pode ser negativo'
     setErrors(e)
     return Object.keys(e).length === 0
@@ -34,7 +34,7 @@ export function CreateAccountModal({ onClose, onSubmit }: CreateAccountModalProp
       await onSubmit({
         nome: nome.trim(),
         tipo,
-        saldo: parseFloat(saldo),
+        saldo: parseFloat(saldo || '0'),
         corHexadecimal: cor,
         contaPadrao,
       })

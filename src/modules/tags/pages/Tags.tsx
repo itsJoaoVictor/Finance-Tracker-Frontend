@@ -46,10 +46,6 @@ export function Tags() {
     <div className="tags-page">
       {/* Header */}
       <div className="tags-header">
-        <div>
-          <h1 className="tags-header__title">Tags</h1>
-          <p className="tags-header__subtitle">Organize suas transações com tags coloridas</p>
-        </div>
         <button
           className="btn-nova-tag"
           onClick={() => setShowCreate(true)}

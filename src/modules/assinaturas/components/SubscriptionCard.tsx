@@ -4,6 +4,12 @@ import { ReajusteDetectado } from '../../../services/iaService'
 import { FinanceCard } from '../../../components/FinanceCard'
 import { TrendingUp, TrendingDown } from 'lucide-react'
 
+interface AuditoriaInfo {
+  mesesAtivos: number
+  custoAcumulado: number
+  essencialidade: string
+}
+
 interface SubscriptionCardProps {
   assinatura: Assinatura
   categoriaNome: string
@@ -12,9 +18,12 @@ interface SubscriptionCardProps {
   cartaoNome: string
   periodicidadeLabel: string
   reajuste?: ReajusteDetectado
+  auditoriaAtiva?: boolean
+  auditoriaInfo?: AuditoriaInfo
   onEdit: (assinatura: Assinatura) => void
   onPauseResume: (assinatura: Assinatura) => void
   onDelete: (assinatura: Assinatura) => void
+  onAuditoriaFeedback?: (assinaturaId: string, opcao: 'manter' | 'nao_utilizo') => void
 }
 
 function formatCurrency(value: number): string {
@@ -39,13 +48,17 @@ export function SubscriptionCard({
   cartaoNome,
   periodicidadeLabel,
   reajuste,
+  auditoriaAtiva,
   onEdit,
   onPauseResume,
   onDelete,
+  onAuditoriaFeedback,
+  auditoriaInfo,
 }: SubscriptionCardProps) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [tooltipOpen, setTooltipOpen] = useState(false)
   const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 })
+  const [auditoriaExpandida, setAuditoriaExpandida] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const badgeRef = useRef<HTMLDivElement>(null)
   const wrapperRef = useRef<HTMLDivElement>(null)
@@ -122,23 +135,144 @@ export function SubscriptionCard({
 
   return (
     <div ref={wrapperRef} style={{ position: 'relative' }}>
-      <FinanceCard
-        titulo={assinatura.nome}
-        subtitulo={`${categoriaNome} \u2022 ${periodicidadeLabel}`}
-        valorPrincipal={formatCurrency(assinatura.valor)}
-        corHexadecimal={cardColor}
-        icone={iconNode}
-        badgeText={badgeText}
-        valorExtra={reajusteBadge}
-        onClickOptions={() => setMenuOpen((o) => !o)}
+      <div
+        className={auditoriaAtiva ? 'assinatura-card--zumbi' : ''}
+        style={auditoriaAtiva ? {
+          border: '2px dashed rgba(200, 150, 12, 0.5)',
+          borderRadius: 16,
+          background: 'rgba(200, 150, 12, 0.03)',
+          position: 'relative',
+        } : undefined}
       >
-        <p className="assinatura-card__proxima">
-          Pr&oacute;xima cobran&ccedil;a: {formatDate(assinatura.dataProximaCobranca)}
-        </p>
-        <p className="assinatura-card__cartao">
-          Cart&atilde;o: {cartaoNome}
-        </p>
-      </FinanceCard>
+        {auditoriaAtiva && (
+          <span style={{
+            position: 'absolute', top: 8, right: 8,
+            fontSize: '0.7rem', fontWeight: 600,
+            color: 'var(--primary)', background: 'rgba(200, 150, 12, 0.12)',
+            padding: '2px 8px', borderRadius: 6, zIndex: 5,
+          }}>
+            👻 Zumbi
+          </span>
+        )}
+        <FinanceCard
+          titulo={assinatura.nome}
+          subtitulo={`${categoriaNome} \u2022 ${periodicidadeLabel}`}
+          valorPrincipal={formatCurrency(assinatura.valor)}
+          corHexadecimal={cardColor}
+          icone={iconNode}
+          badgeText={badgeText}
+          valorExtra={reajusteBadge}
+          onClickOptions={() => setMenuOpen((o) => !o)}
+        >
+          <p className="assinatura-card__proxima">
+            Pr&oacute;xima cobran&ccedil;a: {formatDate(assinatura.dataProximaCobranca)}
+          </p>
+          <p className="assinatura-card__cartao">
+            Cart&atilde;o: {cartaoNome}
+          </p>
+          {auditoriaAtiva && (
+            <button
+              onClick={(e) => { e.stopPropagation(); setAuditoriaExpandida(v => !v) }}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                background: 'rgba(200, 150, 12, 0.08)',
+                border: '1px solid rgba(200, 150, 12, 0.25)',
+                borderRadius: 8, padding: '5px 12px', marginTop: 6,
+                cursor: 'pointer', fontSize: '0.78rem', fontWeight: 500,
+                color: 'var(--primary)', width: 'fit-content',
+                transition: 'all 0.15s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(200, 150, 12, 0.15)'
+                e.currentTarget.style.borderColor = 'rgba(200, 150, 12, 0.4)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(200, 150, 12, 0.08)'
+                e.currentTarget.style.borderColor = 'rgba(200, 150, 12, 0.25)'
+              }}
+            >
+              <span style={{ fontSize: '0.85rem' }}>👻</span>
+              {auditoriaExpandida ? 'Ocultar detalhes' : 'Revisar uso'}
+              <span style={{
+                display: 'inline-block', fontSize: '0.65rem',
+                transform: auditoriaExpandida ? 'rotate(180deg)' : 'rotate(0)',
+                transition: 'transform 0.15s ease',
+              }}>▾</span>
+            </button>
+          )}
+        </FinanceCard>
+
+        {/* Painel expandido de auditoria zumbi */}
+        {auditoriaAtiva && auditoriaExpandida && (
+          <div
+            style={{
+              margin: '0 12px 12px', padding: '12px 14px',
+              background: 'rgba(200, 150, 12, 0.04)',
+              border: '1px solid rgba(200, 150, 12, 0.15)',
+              borderRadius: 10, fontSize: '0.82rem',
+              color: 'var(--text-secondary)', lineHeight: 1.5,
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+              <span style={{ fontSize: '0.9rem' }}>👻</span>
+              <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>Auditoria de Assinatura</span>
+            </div>
+            {auditoriaInfo ? (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 12px', marginBottom: 8 }}>
+                <div>
+                  <span style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: 0.5 }}>Meses ativos</span>
+                  <p style={{ margin: 0, fontWeight: 600, color: 'var(--text-primary)' }}>{auditoriaInfo.mesesAtivos} meses</p>
+                </div>
+                <div>
+                  <span style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: 0.5 }}>Custo total</span>
+                  <p style={{ margin: 0, fontWeight: 600, color: 'var(--text-primary)' }}>{formatCurrency(auditoriaInfo.custoAcumulado)}</p>
+                </div>
+                <div>
+                  <span style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: 0.5 }}>Classificação</span>
+                  <p style={{ margin: 0, fontWeight: 600, color: 'var(--text-primary)' }}>{auditoriaInfo.essencialidade}</p>
+                </div>
+              </div>
+            ) : (
+              <p style={{ margin: '0 0 8px' }}>
+                Assinatura ativa há bastante tempo. Vale revisar se ainda faz sentido na sua rotina.
+              </p>
+            )}
+            <div style={{ borderTop: '1px solid rgba(200, 150, 12, 0.15)', paddingTop: 10 }}>
+              <p style={{ margin: '0 0 8px', fontSize: '0.78rem', fontWeight: 500, color: 'var(--text-primary)' }}>
+                O que deseja fazer?
+              </p>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <button
+                  onClick={(e) => { e.stopPropagation(); onAuditoriaFeedback?.(assinatura.id, 'manter') }}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 5,
+                    background: 'rgba(47, 91, 75, 0.1)', border: '1px solid rgba(47, 91, 75, 0.3)',
+                    borderRadius: 6, padding: '5px 12px', fontSize: '0.76rem', cursor: 'pointer',
+                    color: 'var(--accent-2)', fontWeight: 500, transition: 'all 0.15s ease',
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(47, 91, 75, 0.18)' }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(47, 91, 75, 0.1)' }}
+                >
+                  ✅ Manter
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); onAuditoriaFeedback?.(assinatura.id, 'nao_utilizo') }}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 5,
+                    background: 'rgba(240, 90, 60, 0.08)', border: '1px solid rgba(240, 90, 60, 0.25)',
+                    borderRadius: 6, padding: '5px 12px', fontSize: '0.76rem', cursor: 'pointer',
+                    color: 'var(--accent)', fontWeight: 500, transition: 'all 0.15s ease',
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(240, 90, 60, 0.15)' }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(240, 90, 60, 0.08)' }}
+                >
+                  🚫 Não utilizo
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Tooltip fora do card — não sofre clipping */}
       {tooltipOpen && reajuste && (

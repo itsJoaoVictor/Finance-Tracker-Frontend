@@ -113,10 +113,6 @@ export function Orcamentos() {
     <div className="orcamentos-page">
       {/* Header */}
       <div className="orcamentos-header">
-        <div>
-          <h1 className="orcamentos-header__title">Orçamentos</h1>
-          <p className="orcamentos-header__subtitle">Defina limites mensais por categoria</p>
-        </div>
         <button
           className="btn-novo-orcamento"
           onClick={() => setShowCreate(true)}

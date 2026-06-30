@@ -63,10 +63,6 @@ export function Metas() {
     <div className="metas-page">
       {/* Header */}
       <div className="metas-header">
-        <div>
-          <h1 className="metas-header__title">Cofrinhos</h1>
-          <p className="metas-header__subtitle">Metas de economia para realizar seus sonhos</p>
-        </div>
         <button
           className="btn-nova-meta"
           onClick={() => setShowCreate(true)}

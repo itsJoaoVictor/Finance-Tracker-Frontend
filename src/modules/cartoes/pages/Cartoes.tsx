@@ -209,39 +209,11 @@ export function Cartoes() {
     setInsights((prev) => prev.filter((ins) => ins.id !== id))
   }
 
-  const [processandoIa, setProcessandoIa] = useState(false)
-
-  async function handleAnalisarIa() {
-    setProcessandoIa(true)
-    try {
-      await iaService.processarInsights()
-      // Recarrega insights e dados atualizados
-      await loadDados()
-      addToast('Análise completa da IA concluída com sucesso! 🤖', 'success')
-    } catch {
-      addToast('Erro ao processar análise da IA.', 'error')
-    } finally {
-      setProcessandoIa(false)
-    }
-  }
-
   return (
     <div className="contas-page">
       {/* Header */}
       <div className="contas-header">
-        <div>
-          <h1 className="contas-header__title">Meus Cartões de Crédito</h1>
-          <p className="contas-header__subtitle">Gerencie os limites e datas das faturas de seus cartões</p>
-        </div>
         <div style={{ display: 'flex', gap: '12px' }}>
-          <button
-            className="btn-nova-conta"
-            onClick={handleAnalisarIa}
-            disabled={processandoIa || loading}
-            style={{ background: 'rgba(138, 5, 190, 0.15)', border: '1px solid var(--primary)', color: 'var(--primary-light)' }}
-          >
-            {processandoIa ? '🤖 Analisando...' : '🤖 Analisar com IA'}
-          </button>
           <button
             className="btn-nova-conta"
             onClick={() => {

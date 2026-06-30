@@ -324,57 +324,140 @@
 /* ===== PROJECTION BANNER (IA DEDICADA) ===== */
 
 .card-projecao-banner {
+  --accent: #8A05BE;
   grid-column: span 2;
-  background: var(--bg-accent, rgba(28, 26, 23, 0.03));
-  border-left: 3px solid #8A05BE;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 4%, transparent), transparent 60%);
+  border-left: 3px solid var(--accent);
   border-radius: 8px;
-  padding: 12px 14px;
+  padding: 14px 14px 12px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 10px;
 }
 
 .card-projecao-banner__header {
   display: flex;
   align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-.card-projecao-banner__icon {
-  font-size: 0.9rem;
+  gap: 8px;
 }
 
 .card-projecao-banner__label {
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   text-transform: uppercase;
   color: var(--muted);
-  font-weight: 600;
-  letter-spacing: 0.06em;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   flex: 1;
 }
 
-.card-projecao-banner__valor {
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: var(--ink);
-  letter-spacing: -0.3px;
+/* ── Valores principais: Atual → Projeção ── */
+
+.card-projecao-banner__valores {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.card-projecao-banner__comparacao {
-  font-size: 0.82rem;
+.card-projecao-banner__valor-item {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.card-projecao-banner__valor-label {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
   font-weight: 600;
 }
 
-.card-projecao-banner__periodo {
-  font-weight: 400;
+.card-projecao-banner__valor-atual {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.3px;
+  opacity: 0.85;
+}
+
+.card-projecao-banner__valor-sep {
+  font-size: 0.85rem;
+  color: var(--accent);
+  opacity: 0.6;
+  margin-top: 10px;
+  font-weight: 300;
+}
+
+.card-projecao-banner__valor-projetado {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--accent);
+  letter-spacing: -0.5px;
+}
+
+.card-projecao-banner__valor-unico {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: -0.5px;
+}
+
+/* ── Barra de progresso ── */
+
+.card-projecao-banner__progresso {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.card-projecao-banner__progresso-bar {
+  background: rgba(28, 26, 23, 0.06);
+  border-radius: 10px;
+  height: 4px;
+  width: 100%;
+  overflow: hidden;
+}
+
+.card-projecao-banner__progresso-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 10px;
+  transition: width 0.6s cubic-bezier(0.1, 0.8, 0.2, 1);
+  opacity: 0.7;
+}
+
+.card-projecao-banner__progresso-dias {
+  font-size: 0.65rem;
+  color: var(--muted);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+/* ── Classificação compacta ── */
+
+.card-projecao-banner__classificacao {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted);
+  padding-top: 6px;
+  border-top: 1px solid rgba(28, 26, 23, 0.05);
+}
+
+.card-projecao-banner__classificacao-ic {
+  font-size: 0.8rem;
+}
+
+.card-projecao-banner__ref {
+  font-weight: 500;
+  text-transform: capitalize;
   color: var(--muted);
 }
 
-.card-projecao-banner__mensagem {
-  font-size: 0.78rem;
-  color: var(--muted);
-  margin-top: 2px;
-  line-height: 1.4;
+.card-projecao-banner__media-val {
+  font-weight: 700;
+  color: var(--ink);
+  opacity: 0.85;
 }

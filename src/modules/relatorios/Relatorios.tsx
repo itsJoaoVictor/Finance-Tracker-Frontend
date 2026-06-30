@@ -102,7 +102,6 @@ export function Relatorios() {
   return (
     <div className="relatorios">
       <div className="relatorios__toolbar">
-        <h2 className="relatorios__title">Relatórios</h2>
         <ExportarDropdown onExportar={handleExportar} loading={exportLoading} />
       </div>
 

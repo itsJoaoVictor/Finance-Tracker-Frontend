@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { Expense, RegisterRequest, LoginRequest, LoginResponse } from '../types'
 
-const API_BASE_URL = 'http://localhost:8080' // Base URL points to the running backend port 8080
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
 
 const api = axios.create({
   baseURL: API_BASE_URL,

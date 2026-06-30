@@ -128,11 +128,6 @@ export function Categorias() {
     <div className="categorias-page">
       {/* Header */}
       <div className="categorias-header">
-        <div>
-          <h1 className="categorias-header__title">Categorias</h1>
-          <p className="categorias-header__subtitle">Classifique e gerencie suas despesas e receitas</p>
-        </div>
-        
         <div className="categorias-header__actions">
           <label className="toggle-filter" id="toggle-inativas">
             <input

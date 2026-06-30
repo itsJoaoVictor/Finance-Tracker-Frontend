@@ -53,7 +53,6 @@ export function Dashboard() {
     return (
       <div className="dashboard">
         <div className="dashboard__toolbar">
-          <h2 className="dashboard__title">Dashboard</h2>
           <div className="dashboard__periodo-selector">
             {['Mês Atual', 'Últimos 30 Dias', 'Mês Anterior'].map((label) => (
               <span key={label} className="dashboard__periodo-btn" style={{ opacity: 0.5 }}>
@@ -137,7 +136,6 @@ export function Dashboard() {
   return (
     <div className="dashboard">
       <div className="dashboard__toolbar">
-        <h2 className="dashboard__title">Dashboard</h2>
         <div className="dashboard__periodo-selector">
           {periodos.map((p) => (
             <button

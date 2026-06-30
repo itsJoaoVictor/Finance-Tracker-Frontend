@@ -18,6 +18,7 @@ import '../assinaturas.css'
 
 import { iaService, ReajusteDetectado } from '../../../services/iaService'
 import { FadigaInsights } from '../components/FadigaInsights'
+import { AlertaCritico } from '../components/AlertaCritico'
 
 const PERIODICIDADE_LABEL: Record<string, string> = {
   MENSAL: 'Mensal',
@@ -62,8 +63,9 @@ export function Assinaturas() {
   const [proximasDias, setProximasDias] = useState(7)
   const [showCreate, setShowCreate] = useState(false)
   const [editAssinatura, setEditAssinatura] = useState<Assinatura | null>(null)
-  const [processandoIa, setProcessandoIa] = useState(false)
   const [reajusteMap, setReajusteMap] = useState<Map<string, ReajusteDetectado>>(new Map())
+  const [auditoriaSet, setAuditoriaSet] = useState<Set<string>>(new Set())
+  const [auditoriaMap, setAuditoriaMap] = useState<Map<string, { mesesAtivos: number; custoAcumulado: number; essencialidade: string }>>(new Map())
   const { toasts, addToast, dismiss } = useToast()
 
   // Cria um mapa de cartaoId -> nome para lookup r\u00e1pido
@@ -90,6 +92,22 @@ export function Assinaturas() {
             map.set(r.assinaturaId, r)
           }
           setReajusteMap(map)
+        })
+        .catch(() => {})
+
+      // Buscar insights de auditoria zumbi
+      iaService.getInsights()
+        .then(res => {
+          const ids = new Set<string>()
+          for (const ins of res.data) {
+            if (ins.tipo === 'ASSINATURA_ESQUECIDA' && ins.metadados) {
+              try {
+                const meta = JSON.parse(ins.metadados)
+                if (meta.assinaturaId) ids.add(meta.assinaturaId)
+              } catch {}
+            }
+          }
+          setAuditoriaSet(ids)
         })
         .catch(() => {})
     } catch {
@@ -165,6 +183,23 @@ export function Assinaturas() {
     }
   }
 
+  // ─── Feedback de Auditoria Zumbi (Manter/Não utilizo) ────────────────────────
+  async function handleAuditoriaFeedback(assinaturaId: string, opcao: 'manter' | 'nao_utilizo') {
+    setAuditoriaSet(prev => { const next = new Set(prev); next.delete(assinaturaId); return next })
+    setAuditoriaMap(prev => { const next = new Map(prev); next.delete(assinaturaId); return next })
+
+    if (opcao === 'nao_utilizo') {
+      try {
+        await iaService.classificarComportamento(assinaturaId, 'pouco_uso')
+        addToast('Classificação atualizada: OPCIONAL. Próximo lembrete em 3 meses.', 'success')
+      } catch {
+        addToast('Erro ao atualizar classificação.', 'error')
+      }
+    } else {
+      addToast('Auditoria registrada: Mantida. Próximo lembrete em 6 meses.', 'success')
+    }
+  }
+
   // ─── Pausar / Reativar ───────────────────────────────────────
   async function handlePauseResume(assinatura: Assinatura) {
     const previous = assinaturas
@@ -187,18 +222,6 @@ export function Assinaturas() {
     }
   }
 
-  async function handleAnalisarIa() {
-    setProcessandoIa(true)
-    try {
-      await iaService.processarInsights()
-      addToast('Análise completa da IA concluída! Verifique os insights no robô 🤖 no topo.', 'success')
-    } catch {
-      addToast('Erro ao processar análise da IA.', 'error')
-    } finally {
-      setProcessandoIa(false)
-    }
-  }
-
   const ativas = assinaturas.filter((a) => a.ativo)
   const inativas = assinaturas.filter((a) => !a.ativo)
 
@@ -206,21 +229,7 @@ export function Assinaturas() {
     <div className="assinaturas-page">
       {/* Header */}
       <div className="assinaturas-header">
-        <div>
-          <h1 className="assinaturas-header__title">Assinaturas</h1>
-          <p className="assinaturas-header__subtitle">
-            Gerencie suas assinaturas e acompanhe os próximos vencimentos
-          </p>
-        </div>
         <div style={{ display: 'flex', gap: '12px' }}>
-          <button
-            className="btn-nova-assinatura"
-            onClick={handleAnalisarIa}
-            disabled={processandoIa || loading}
-            style={{ background: 'rgba(138, 5, 190, 0.15)', border: '1px solid var(--primary)', color: 'var(--primary-light)' }}
-          >
-            {processandoIa ? '🤖 Analisando...' : '🤖 Analisar com IA'}
-          </button>
           <button
             className="btn-nova-assinatura"
             onClick={() => setShowCreate(true)}
@@ -233,6 +242,9 @@ export function Assinaturas() {
 
       {/* Insights de Fadiga — hero element */}
       <FadigaInsights />
+
+      {/* Alerta Crítico — Efeito Dominó (condicional) */}
+      <AlertaCritico />
 
       {/* Próximas Cobranças */}
       <div className="assinaturas-proximas">
@@ -309,9 +321,12 @@ export function Assinaturas() {
                   cartaoNome={cartaoMap.get(a.cartaoId) || 'Sem cart\u00e3o'}
                   periodicidadeLabel={getPeriodicidadeLabel(a)}
                   reajuste={reajusteMap.get(a.id)}
+                  auditoriaAtiva={auditoriaSet.has(a.id)}
+                  auditoriaInfo={auditoriaMap.get(a.id)}
                   onEdit={setEditAssinatura}
                   onPauseResume={handlePauseResume}
                   onDelete={handleDelete}
+                  onAuditoriaFeedback={handleAuditoriaFeedback}
                 />
               )
             })}
@@ -335,9 +350,12 @@ export function Assinaturas() {
                   categoriaIcone={catObj?.icone}
                   cartaoNome={cartaoMap.get(a.cartaoId) || 'Sem cart\u00e3o'}
                   periodicidadeLabel={getPeriodicidadeLabel(a)}
+                  auditoriaAtiva={auditoriaSet.has(a.id)}
+                  auditoriaInfo={auditoriaMap.get(a.id)}
                   onEdit={setEditAssinatura}
                   onPauseResume={handlePauseResume}
                   onDelete={handleDelete}
+                  onAuditoriaFeedback={handleAuditoriaFeedback}
                 />
               )
             })}

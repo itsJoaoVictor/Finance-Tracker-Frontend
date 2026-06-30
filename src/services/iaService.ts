@@ -118,6 +118,10 @@ export const iaService = {
       assinaturaId,
       perfil,
     }),
+
+  // Efeito Dominó: Prevenção de Falha de Cobrança (dedicada)
+  getEfeitoDominio: () =>
+    api.post<DominioEfeitoDominoResponse>('/api/ia/efeito-dominio'),
 }
 
 export interface PendenteConfirmacao {
@@ -166,4 +170,34 @@ export interface FadigaAssinaturaResponse {
   duplicadasPorCategoria: Record<string, number>
   servicosSemelhantes: string[]
   mensagem: string
+}
+
+// ── Efeito Dominó: Prevenção de Falha de Cobrança ──────────────────
+
+export interface DominioEfeitoDominoResponse {
+  alertas: AlertaCartao[]
+  mensagem: string
+}
+
+export interface AlertaCartao {
+  cartaoId: string
+  cartaoNome: string
+  limiteDisponivel: number
+  totalCobranca: number
+  diasRestantes: number
+  essenciaisAfetadas: number
+  importantesAfetadas: number
+  opcionaisAfetadas: number
+  nivelAlerta: string
+  ranking: ItemRanking[]
+  recomendacoes: string[]
+}
+
+export interface ItemRanking {
+  assinaturaId: string
+  nome: string
+  valor: number
+  essencialidade: string
+  dataCobranca: string
+  falha: boolean
 }

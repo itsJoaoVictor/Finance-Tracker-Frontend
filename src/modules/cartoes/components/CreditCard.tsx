@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { TrendingUp, TrendingDown, Equal } from 'lucide-react'
 import { Cartao, Conta, ProjecaoCartao } from '../../../types'
 import { IaInsight, iaService } from '../../../services/iaService'
 import '../cartoes.css'
@@ -148,50 +149,95 @@ export function CreditCard({ cartao, contas, insights = [], projecoes = [], onEd
             <div
               className="card-projecao-banner"
               style={{
-                borderLeftColor:
+                '--accent':
                   projecao.classificacao === 'ACIMA' ? '#E63946' :
                   projecao.classificacao === 'ABAIXO' ? '#22c55e' :
                   projecao.classificacao === 'DENTRO' ? '#8A05BE' :
                   '#999'
-              }}
+              } as React.CSSProperties}
             >
               <div className="card-projecao-banner__header">
-                <span className="card-projecao-banner__icon">🤖</span>
                 <span className="card-projecao-banner__label">
-                  {projecao.statusFatura === 'ABERTA' ? 'Projeção de Fechamento' :
+                  {projecao.statusFatura === 'ABERTA' ? 'Projeção' :
                    projecao.statusFatura === 'FECHADA' ? 'Fatura Fechada' : 'Sem fatura'}
+                  {cartao.faturaMesReferencia && (
+                    <span className="card-projecao-banner__ref"> — {(() => {
+                      const d = parseLocalDate(cartao.faturaMesReferencia)
+                      return d.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
+                    })()}</span>
+                  )}
                 </span>
                 <span className={`fatura-badge ${projecao.statusFatura === 'FECHADA' ? 'fatura-badge--closed' : 'fatura-badge--open'}`}>
-                  {projecao.statusFatura === 'FECHADA' ? '🔒 Fechada' : '🔓 Em aberto'}
+                  {projecao.statusFatura === 'FECHADA' ? '🔒 Fechada' : '🔓 Aberta'}
                 </span>
               </div>
-              <div className="card-projecao-banner__valor">
-                {formatCurrency(
-                  projecao.statusFatura === 'FECHADA' && projecao.valorRealFechado != null
-                    ? projecao.valorRealFechado
-                    : projecao.projecaoFechamento
-                )}
-              </div>
-              {projecao.mediaHistorica != null && projecao.desvioPercentual != null && (
-                <div
-                  className="card-projecao-banner__comparacao"
-                  style={{
-                    color:
-                      projecao.desvioPercentual > 10 ? '#E63946' :
-                      projecao.desvioPercentual < -10 ? '#22c55e' :
-                      'var(--ink)'
-                  }}
-                >
-                  {projecao.desvioPercentual > 0 ? '↑' : projecao.desvioPercentual < 0 ? '↓' : '='}{' '}
-                  {Math.abs(projecao.desvioPercentual).toFixed(0)}% vs média ({formatCurrency(projecao.mediaHistorica)})
-                  {projecao.mesesHistorico != null && (
-                    <span className="card-projecao-banner__periodo">
-                      {' '}· {projecao.mesesHistorico} meses
+
+              {/* Valores principais: Atual vs Projeção */}
+              {projecao.statusFatura === 'ABERTA' && projecao.valorAtualNoMes > 0 ? (
+                <div className="card-projecao-banner__valores">
+                  <div className="card-projecao-banner__valor-item">
+                    <span className="card-projecao-banner__valor-label">Atual</span>
+                    <span className="card-projecao-banner__valor-atual">
+                      {formatCurrency(projecao.valorAtualNoMes)}
                     </span>
+                  </div>
+                  <div className="card-projecao-banner__valor-sep">→</div>
+                  <div className="card-projecao-banner__valor-item">
+                    <span className="card-projecao-banner__valor-label">Projeção</span>
+                    <span className="card-projecao-banner__valor-projetado">
+                      {formatCurrency(projecao.projecaoFechamento)}
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <div className="card-projecao-banner__valor-unico">
+                  {formatCurrency(
+                    projecao.statusFatura === 'FECHADA' && projecao.valorRealFechado != null
+                      ? projecao.valorRealFechado
+                      : projecao.projecaoFechamento
                   )}
                 </div>
               )}
-              <div className="card-projecao-banner__mensagem">{projecao.mensagemResumo}</div>
+
+              {/* Barra de progresso visual */}
+              {projecao.statusFatura === 'ABERTA' && projecao.valorAtualNoMes > 0 && (
+                <div className="card-projecao-banner__progresso">
+                  <div className="card-projecao-banner__progresso-bar">
+                    <div
+                      className="card-projecao-banner__progresso-fill"
+                      style={{
+                        width: `${Math.min((projecao.projecaoFechamento > 0 ? (projecao.valorAtualNoMes / projecao.projecaoFechamento) * 100 : 0), 100)}%`
+                      }}
+                    />
+                  </div>
+                  <div className="card-projecao-banner__progresso-dias">
+                    {projecao.diasNoMes - projecao.diasPassados} dias para fechar
+                  </div>
+                </div>
+              )}
+
+              {/* Classificação compacta com valor da média */}
+              {projecao.mediaHistorica != null && projecao.desvioPercentual != null && (
+                <div className="card-projecao-banner__classificacao">
+                  {projecao.classificacao === 'ACIMA' ? (
+                    <TrendingUp size={14} color="#E63946" />
+                  ) : projecao.classificacao === 'ABAIXO' ? (
+                    <TrendingDown size={14} color="#22c55e" />
+                  ) : (
+                    <Equal size={14} color="var(--muted)" />
+                  )}
+                  <span>
+                    <strong style={{ color: projecao.classificacao === 'ACIMA' ? '#E63946' : '#22c55e' }}>
+                      {Math.abs(projecao.desvioPercentual).toFixed(0)}% {projecao.classificacao === 'ACIMA' ? 'acima' : 'abaixo'}
+                    </strong>
+                    {' '}da média{' '}
+                    <span className="card-projecao-banner__media-val">
+                      {formatCurrency(projecao.mediaHistorica)}
+                    </span>
+                    {' '}({projecao.mesesHistorico} meses)
+                  </span>
+                </div>
+              )}
             </div>
           ) : (
             /* Fallback: Fatura Estimada original (quando não há projeção IA) */

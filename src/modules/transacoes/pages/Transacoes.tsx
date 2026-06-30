@@ -211,10 +211,6 @@ export function Transacoes() {
     <div className="transacoes-page">
       {/* Header */}
       <div className="transacoes-header">
-        <div>
-          <h1 className="transacoes-header__title">Transações</h1>
-          <p className="transacoes-header__subtitle">Registre e acompanhe todos os seus movimentos financeiros</p>
-        </div>
         <div className="transacoes-header__actions">
           <button
             className="btn-nova-transacao"
