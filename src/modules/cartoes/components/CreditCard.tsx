@@ -319,7 +319,8 @@ export function CreditCard({ cartao, contas, insights = [], projecoes = [], onEd
               ins.tipo !== 'CARTAO_PREVISAO' &&
               ins.tipo !== 'ESTOURO_FATURA' &&
               ins.tipo !== 'MELHOR_CARTAO' &&
-              ins.tipo !== 'AVISO_FECHAMENTO'
+              ins.tipo !== 'AVISO_FECHAMENTO' &&
+              ins.tipo !== 'OTIMIZACAO_PARCELAMENTO'
             ) return false
             // Remove CARTAO_PREVISAO quando já existe projeção dedicada (evita duplicidade)
             if (ins.tipo === 'CARTAO_PREVISAO' && projecao) return false
@@ -332,7 +333,7 @@ export function CreditCard({ cartao, contas, insights = [], projecoes = [], onEd
             }
           })
           .map((ins) => {
-            const isPositivo = ins.tipo === 'MELHOR_CARTAO' || ins.titulo?.startsWith('Fatura Abaixo')
+            const isPositivo = ins.tipo === 'MELHOR_CARTAO' || ins.tipo === 'OTIMIZACAO_PARCELAMENTO' || ins.titulo?.startsWith('Fatura Abaixo')
             // Insights informativos: sem botão dispensar (sempre visíveis)
             const podeDispensar = ins.tipo !== 'CARTAO_PREVISAO'
                 && ins.tipo !== 'AVISO_FECHAMENTO'

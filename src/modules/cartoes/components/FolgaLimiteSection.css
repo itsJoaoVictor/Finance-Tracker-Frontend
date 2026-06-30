@@ -1,0 +1,87 @@
+.folga-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--card);
+  border: 1px solid rgba(28, 26, 23, 0.08);
+  border-radius: 16px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 12px rgba(28, 26, 23, 0.04);
+  border-left: 4px solid #22c55e;
+}
+
+.folga-section__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.folga-section__icon {
+  font-size: 1.2rem;
+}
+
+.folga-section__title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ink, #111827);
+  margin: 0;
+}
+
+.folga-section__subtitle {
+  font-size: 0.82rem;
+  color: var(--muted, #6b7280);
+  margin: 0;
+}
+
+.folga-section__list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.folga-card {
+  background: rgba(16, 185, 129, 0.06);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+
+.folga-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 6px;
+}
+
+.folga-card__title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--green-positive, #059669);
+}
+
+.folga-card__dismiss {
+  background: none;
+  border: none;
+  color: var(--muted, #9ca3af);
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0 2px;
+}
+
+.folga-card__message {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--ink, #374151);
+  line-height: 1.45;
+}
+
+.folga-section__total {
+  background: var(--green-positive, #10b981);
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 12px;
+  margin-left: auto;
+}

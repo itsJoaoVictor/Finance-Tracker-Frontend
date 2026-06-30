@@ -1,18 +1,13 @@
 import { iaService, IaInsight } from '../../../services/iaService'
 import './AICardHighlights.css'
 
-const HIGHLIGHT_TIPOS = new Set(['CONCENTRACAO_GASTOS_FATURA', 'OTIMIZACAO_PARCELAMENTO'])
+const HIGHLIGHT_TIPOS = new Set(['CONCENTRACAO_GASTOS_FATURA'])
 
 const TIPO_CONFIG: Record<string, { icon: string; label: string; cssClass: string }> = {
   CONCENTRACAO_GASTOS_FATURA: {
     icon: '⚠️',
     label: 'Alerta',
     cssClass: 'ai-highlight-card--concentracao',
-  },
-  OTIMIZACAO_PARCELAMENTO: {
-    icon: '🎉',
-    label: 'Boa notícia',
-    cssClass: 'ai-highlight-card--otimizacao',
   },
 }
 

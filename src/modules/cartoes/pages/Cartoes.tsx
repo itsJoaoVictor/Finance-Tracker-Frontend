@@ -3,8 +3,9 @@ import { Cartao, CartaoCriacaoRequest, CartaoEdicaoRequest, Conta, ProjecaoCarta
 import { cartaoService } from '../../../services/cartaoService'
 import { contaService } from '../../../services/contaService'
 import { transacaoService } from '../../../services/transacaoService'
-import { iaService, IaInsight } from '../../../services/iaService'
+import { iaService, IaInsight, FolgaLimiteItem } from '../../../services/iaService'
 import { AICardHighlights } from '../components/AICardHighlights'
+import { FolgaLimiteSection } from '../components/FolgaLimiteSection'
 import { CardList } from '../components/CardList'
 import { CreateCardModal } from '../components/CreateCardModal'
 import { EditCardModal } from '../components/EditCardModal'
@@ -19,6 +20,7 @@ export function Cartoes() {
   const [cartoes, setCartoes] = useState<Cartao[]>([])
   const [contas, setContas] = useState<Conta[]>([])
   const [insights, setInsights] = useState<IaInsight[]>([])
+  const [folgaLimiteItems, setFolgaLimiteItems] = useState<FolgaLimiteItem[]>([])
   const [projecoes, setProjecoes] = useState<ProjecaoCartao[]>([])
   const [loading, setLoading] = useState(true)
   const [resumo, setResumo] = useState({
@@ -39,25 +41,31 @@ export function Cartoes() {
       // Processa TODOS os insights dedicados de cartão em uma única chamada
       await iaService.processarTodosInsightsCartao().catch(() => {})
 
-      const [cartoesRes, contasRes, resumoRes, insightsRes, projecoesRes] = await Promise.all([
+      const [cartoesRes, contasRes, resumoRes, insightsRes, projecoesRes, folgaRes] = await Promise.all([
         cartaoService.getAll(),
         contaService.getAll(),
         cartaoService.getResumo(),
         iaService.getInsights().catch(() => ({ data: [] as IaInsight[] })),
         iaService.getProjecaoCartoes().catch(() => ({ data: { projecoes: [] as ProjecaoCartao[] } })),
+        iaService.verificarOtimizacaoParcelamento().catch(() => ({ data: { items: [] } })),
       ])
       setCartoes(cartoesRes.data)
       setContas(contasRes.data)
-      // Deduplica insights por tipo único (MELHOR_CARTAO deve aparecer só uma vez)
+      // Deduplica insights: MELHOR_CARTAO uma vez
       const TIPOS_UNICOS = new Set(['MELHOR_CARTAO'])
       const seenTipos = new Set<string>()
       const insightsDedupados = insightsRes.data.filter((ins) => {
-        if (!TIPOS_UNICOS.has(ins.tipo)) return true
-        if (seenTipos.has(ins.tipo)) return false
-        seenTipos.add(ins.tipo)
+        if (TIPOS_UNICOS.has(ins.tipo)) {
+          if (seenTipos.has(ins.tipo)) return false
+          seenTipos.add(ins.tipo)
+          return true
+        }
+        // OTIMIZACAO_PARCELAMENTO não vem mais por aqui (endpoint dedicado)
+        if (ins.tipo === 'OTIMIZACAO_PARCELAMENTO') return false
         return true
       })
       setInsights(insightsDedupados)
+      setFolgaLimiteItems(folgaRes.data.items)
 
       setProjecoes(projecoesRes.data.projecoes)
       setResumo({
@@ -209,6 +217,10 @@ export function Cartoes() {
     setInsights((prev) => prev.filter((ins) => ins.id !== id))
   }
 
+  function handleDismissFolga(id: string) {
+    setFolgaLimiteItems((prev) => prev.filter((ins) => ins.id !== id))
+  }
+
   return (
     <div className="contas-page">
       {/* Header */}
@@ -260,6 +272,12 @@ export function Cartoes() {
       <AICardHighlights
         insights={insights}
         onDismiss={handleDismissHighlight}
+      />
+
+      {/* Folga de Limite: Parcelamentos que terminam nesta fatura */}
+      <FolgaLimiteSection
+        items={folgaLimiteItems}
+        onDismiss={handleDismissFolga}
       />
 
       {/* Lista de Cartões */}

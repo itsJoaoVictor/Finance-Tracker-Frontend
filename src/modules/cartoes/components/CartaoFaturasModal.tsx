@@ -470,6 +470,11 @@ export function CartaoFaturasModal({ cartao, projecao, onClose }: CartaoFaturasM
                       {item.totalParcelas && item.totalParcelas > 1 && (
                         <span className="invoice-item-installments">
                           Parcela {item.numeroParcela} de {item.totalParcelas}
+                          {item.numeroParcela === item.totalParcelas && (
+                            <span className="invoice-item-installments__badge" title="Última parcela — folga na próxima fatura">
+                              ✨ Última
+                            </span>
+                          )}
                         </span>
                       )}
                       <span className="invoice-item-date">{formatDate(item.data)}</span>

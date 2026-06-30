@@ -416,6 +416,19 @@
   padding: 1px 6px;
   border-radius: 4px;
   align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.invoice-item-installments__badge {
+  font-size: 0.68rem;
+  font-weight: 600;
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--green-positive, #059669);
+  padding: 1px 5px;
+  border-radius: 6px;
+  white-space: nowrap;
 }
 
 .invoice-item-date {

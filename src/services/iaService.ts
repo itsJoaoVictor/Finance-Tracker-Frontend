@@ -92,7 +92,7 @@ export const iaService = {
 
   // Otimização de Parcelamentos Futuros (Folga de Limite)
   verificarOtimizacaoParcelamento: () =>
-    api.post<{ message: string }>('/api/ia/otimizacao-parcelamento'),
+    api.post<FolgaLimiteResponse>('/api/ia/otimizacao-parcelamento'),
 
   // Análise de Fadiga de Assinatura (dedicada)
   getFadigaAssinatura: () =>
@@ -201,3 +201,22 @@ export interface ItemRanking {
   dataCobranca: string
   falha: boolean
 }
+
+// ── Otimização de Parcelamento (Folga de Limite) ──────────────────────
+
+export interface FolgaLimiteResponse {
+  items: FolgaLimiteItem[]
+}
+
+export interface FolgaLimiteItem {
+  id: string
+  cartaoId: string
+  cartaoNome: string
+  descricao: string
+  valorParcela: number
+  totalParcelas: number
+  impactoMensal: number
+  titulo: string
+  mensagem: string
+}
+
