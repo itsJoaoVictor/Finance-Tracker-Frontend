@@ -461,3 +461,32 @@
   color: var(--ink);
   opacity: 0.85;
 }
+
+/* ===== RESPONSIVO MOBILE ===== */
+@media (max-width: 640px) {
+  .physical-card {
+    max-width: 100%;
+    padding: 18px;
+    aspect-ratio: auto;
+    min-height: 190px;
+  }
+  .card-details-panel {
+    padding: 18px 14px 14px;
+  }
+  .card-details-panel__stats {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .card-details-panel__stat-item--highlight {
+    grid-column: span 1;
+  }
+  .card-projecao-banner {
+    grid-column: span 1;
+    padding: 12px;
+  }
+  .card-projecao-banner__valores {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+}
+

@@ -769,4 +769,6 @@
   .filtros-avancados { flex-direction: column; align-items: stretch; }
   .filtros-avancados__custom { margin-left: 0; flex-direction: column; }
   .exportar-dropdown { align-self: flex-start; }
+  .tabela-detalhes__table th,
+  .tabela-detalhes__table td { white-space: nowrap; }
 }

@@ -258,3 +258,25 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
+
+/* ===== RESPONSIVO MOBILE ===== */
+@media (max-width: 480px) {
+  .login {
+    padding: 12px;
+  }
+  .login__panel--form {
+    padding: 24px 16px;
+    gap: 20px;
+  }
+  .login__title {
+    font-size: 1.75rem;
+  }
+  .login__demo-box {
+    padding: 16px;
+  }
+  .login__demo-button {
+    padding: 12px;
+    font-size: 0.9rem;
+  }
+}
+

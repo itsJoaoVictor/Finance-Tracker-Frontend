@@ -377,3 +377,23 @@
 .btn-submit--resgate:hover {
   background: #2563eb;
 }
+
+/* ===== RESPONSIVO MOBILE ===== */
+@media (max-width: 768px) {
+  .metas-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .btn-nova-meta {
+    width: 100%;
+    justify-content: center;
+  }
+  .metas-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .meta-card {
+    padding: 18px;
+  }
+}

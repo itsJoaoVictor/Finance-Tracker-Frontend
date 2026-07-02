@@ -212,3 +212,24 @@
   width: 20px;
   height: 20px;
 }
+
+/* ===== RESPONSIVO MOBILE ===== */
+@media (max-width: 480px) {
+  .register {
+    padding: 12px;
+  }
+  .register__panel--form {
+    padding: 24px 16px;
+    gap: 20px;
+  }
+  .register__title {
+    font-size: 1.75rem;
+  }
+  .auth__theme-toggle {
+    top: 12px;
+    right: 12px;
+    width: 38px;
+    height: 38px;
+  }
+}
+

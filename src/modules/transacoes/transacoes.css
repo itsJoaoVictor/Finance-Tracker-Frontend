@@ -548,3 +548,84 @@
   color: var(--muted);
   font-weight: 500;
 }
+
+/* ===== RESPONSIVO MOBILE ===== */
+@media (max-width: 768px) {
+  .transacoes-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .transacoes-header__actions {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .transacoes-header__actions > * {
+    width: 100%;
+    justify-content: center;
+  }
+  .transacoes-filters {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 16px;
+    gap: 12px;
+  }
+  .transacoes-filters__group {
+    min-width: 100%;
+    width: 100%;
+  }
+  .transacoes-filters__group select,
+  .transacoes-filters__group input {
+    min-width: 100%;
+    width: 100%;
+  }
+  .transacoes-filters__clear {
+    width: 100%;
+    text-align: center;
+  }
+  .transacoes-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .transacoes-actions button {
+    width: 100%;
+    justify-content: center;
+  }
+  .transacao-card {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 14px;
+    gap: 12px;
+  }
+  .transacao-card__color-bar {
+    width: 100%;
+    min-height: 4px;
+    height: 4px;
+  }
+  .transacao-card__body {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .transacao-card__value-section {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px dashed rgba(28, 26, 23, 0.1);
+    padding-top: 10px;
+  }
+  .transacao-card__actions {
+    width: 100%;
+    justify-content: flex-end;
+    border-top: 1px dashed rgba(28, 26, 23, 0.1);
+    padding-top: 8px;
+  }
+  .projecao-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}

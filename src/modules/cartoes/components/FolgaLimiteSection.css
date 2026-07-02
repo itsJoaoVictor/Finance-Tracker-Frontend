@@ -85,3 +85,19 @@
   border-radius: 12px;
   margin-left: auto;
 }
+
+/* ===== RESPONSIVO MOBILE ===== */
+@media (max-width: 640px) {
+  .folga-section {
+    padding: 16px;
+  }
+  .folga-section__header {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .folga-section__total {
+    margin-left: 0;
+    margin-top: 4px;
+  }
+}
+

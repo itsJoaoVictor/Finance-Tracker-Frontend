@@ -256,7 +256,9 @@
 /* RESPONSIVE DESIGN */
 @media (max-width: 768px) {
   .navbar {
-    padding-left: 80px; /* Space for the hamburger trigger on mobile */
+    padding-left: 60px; /* Space for the hamburger trigger on mobile */
+    padding-right: 14px;
+    height: 68px;
   }
 
   .navbar__mobile-logo {
@@ -277,7 +279,15 @@
   }
 
   .navbar__title {
-    font-size: 1.15rem;
+    font-size: 1.1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 180px;
+  }
+
+  .navbar__right {
+    gap: 10px;
   }
 }
 
@@ -324,4 +334,26 @@
     padding: 6px 8px;
     font-size: 0.75rem;
   }
+  .navbar__title {
+    max-width: 130px;
+    font-size: 1rem;
+  }
+  .navbar__right {
+    gap: 6px;
+  }
+  .navbar__left {
+    gap: 8px;
+  }
 }
+
+@media (max-width: 480px) {
+  .navbar__reset-text {
+    display: none;
+  }
+  .navbar__reset-btn {
+    padding: 6px;
+    border-radius: 50%;
+  }
+}
+
+

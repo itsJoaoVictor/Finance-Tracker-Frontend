@@ -105,7 +105,7 @@ export function Navbar({
               }
             }}
           >
-            🔄 Resetar Dados
+            🔄 <span className="navbar__reset-text">Resetar Dados</span>
           </button>
         </div>
 

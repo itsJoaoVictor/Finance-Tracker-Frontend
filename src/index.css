@@ -39,3 +39,24 @@ a {
 #root {
   min-height: 100vh;
 }
+
+/* ===== GLOBAL MODAL RESPONSIVE ===== */
+@media (max-width: 640px) {
+  .modal-overlay {
+    padding: 12px !important;
+  }
+  .modal {
+    padding: 20px 16px !important;
+    max-width: 100% !important;
+    border-radius: 16px !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+  }
+  .modal__header {
+    margin-bottom: 16px !important;
+  }
+  .modal__title {
+    font-size: 1.25rem !important;
+  }
+}
+

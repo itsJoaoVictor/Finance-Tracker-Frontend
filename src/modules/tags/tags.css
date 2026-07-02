@@ -101,3 +101,20 @@
   color: var(--muted);
   font-size: 1rem;
 }
+
+/* ===== RESPONSIVO MOBILE ===== */
+@media (max-width: 768px) {
+  .tags-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .btn-nova-tag {
+    width: 100%;
+    justify-content: center;
+  }
+  .tags-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}

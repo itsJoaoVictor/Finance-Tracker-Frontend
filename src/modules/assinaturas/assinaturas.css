@@ -666,3 +666,27 @@
   color: var(--ink);
   font-weight: 600;
 }
+
+/* ===== RESPONSIVO MOBILE ===== */
+@media (max-width: 768px) {
+  .assinaturas-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .btn-nova-assinatura {
+    width: 100%;
+    justify-content: center;
+  }
+  .assinaturas-proximas {
+    padding: 20px 16px;
+  }
+  .assinaturas-proximas__list {
+    grid-template-columns: 1fr;
+  }
+  .assinaturas-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+

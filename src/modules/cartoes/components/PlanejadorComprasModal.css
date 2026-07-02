@@ -1135,3 +1135,24 @@
 [style*="--bg:#0b0c0e"] .simulacoes-list::-webkit-scrollbar-thumb {
   background: rgba(255,255,255,0.1);
 }
+
+/* ===== RESPONSIVO MOBILE ===== */
+@media (max-width: 640px) {
+  .planejador-form .form-row {
+    grid-template-columns: 1fr !important;
+    gap: 12px;
+  }
+  .planejador-modal .modal-body {
+    padding: 16px;
+  }
+  .cartao-options-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .simulacoes-list {
+    grid-template-columns: 1fr !important;
+  }
+  .meses-timeline {
+    grid-template-columns: 1fr !important;
+  }
+}
+
