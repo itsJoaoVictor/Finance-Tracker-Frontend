@@ -162,16 +162,6 @@ No diretório do frontend, você pode rodar os seguintes comandos no terminal:
 
 ---
 
-## 🤝 Contribuição
-
-1. Faça um Fork do projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/nova-interface-grafica`)
-3. Commit suas mudanças (`git commit -m 'feat: Cria componente visual de metas'`)
-4. Push para a branch (`git push origin feature/nova-interface-grafica`)
-5. Abra um Pull Request
-
----
-
 ## 📄 Licença
 
 Este projeto está sob a licença MIT. Consulte o arquivo de licença para mais detalhes.
