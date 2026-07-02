@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { InsightNotificationCenter } from './InsightNotificationCenter'
+import { localStorageService } from '../services/mockBackend/localStorageService'
 import './Navbar.css'
 
 interface NavbarProps {
@@ -89,6 +90,25 @@ export function Navbar({
 
       {/* Right side: Profile Menu */}
       <div className="navbar__right">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span className="navbar__demo-badge" title="Versão Portfólio sem servidor - Todos os dados no LocalStorage">
+            ✨ Modo Demo
+          </span>
+          <button
+            type="button"
+            className="navbar__reset-btn"
+            title="Restaurar dados iniciais da demonstração"
+            onClick={() => {
+              if (window.confirm('Deseja restaurar todos os dados simulados (contas, transações, cartões, cofrinhos) para o estado padrão?')) {
+                localStorageService.resetToDefaultData();
+                window.location.reload();
+              }
+            }}
+          >
+            🔄 Resetar Dados
+          </button>
+        </div>
+
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <InsightNotificationCenter />
         </div>

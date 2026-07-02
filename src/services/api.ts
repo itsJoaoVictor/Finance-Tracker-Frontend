@@ -1,11 +1,13 @@
 import axios from 'axios'
 import { Expense, RegisterRequest, LoginRequest, LoginResponse } from '../types'
+import { mockAdapter } from './mockBackend/mockAdapter'
 
 // @ts-ignore
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
 
 const api = axios.create({
   baseURL: API_BASE_URL,
+  adapter: mockAdapter
 })
 
 // Add token to headers if it exists

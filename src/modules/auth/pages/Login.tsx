@@ -103,6 +103,19 @@ export function Login({ onLoginSuccess, onNavigateRegister }: LoginProps) {
     }
   }
 
+  const handleDemoLogin = async () => {
+    try {
+      setAuthError('')
+      const response = await authService.login({ email: 'demo@portifolio.com', password: 'demo-password' })
+      const token = response.data.token || response.data.access_token || 'demo-jwt-token-portfolio-mode-1234567890'
+      sessionStorage.setItem('token', token)
+      onLoginSuccess()
+    } catch (error) {
+      sessionStorage.setItem('token', 'demo-jwt-token-portfolio-mode-1234567890')
+      onLoginSuccess()
+    }
+  }
+
   const handleMfaSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     if (!mfaCode.trim()) return
@@ -361,6 +374,25 @@ export function Login({ onLoginSuccess, onNavigateRegister }: LoginProps) {
             <p className="login__subtitle">
               Uma experiencia simples para organizar despesas e manter o controle do seu dinheiro.
             </p>
+          </div>
+
+          <div className="login__demo-box">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <span className="login__demo-badge">✨ Portfólio & Demo</span>
+              <p className="login__demo-text">
+                Explore todas as funcionalidades com Inteligência Artificial e gráficos dinâmicos sem criar conta ou consumir créditos!
+              </p>
+            </div>
+            <button
+              type="button"
+              className="login__demo-button"
+              onClick={handleDemoLogin}
+            >
+              🚀 Acessar Demo Instantânea (1 Clique)
+            </button>
+            <div className="login__divider">
+              <span>ou entre com sua conta</span>
+            </div>
           </div>
 
           <form className="login__form" onSubmit={handleSubmit} noValidate>
