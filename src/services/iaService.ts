@@ -122,6 +122,42 @@ export const iaService = {
   // Efeito Dominó: Prevenção de Falha de Cobrança (dedicada)
   getEfeitoDominio: () =>
     api.post<DominioEfeitoDominoResponse>('/api/ia/efeito-dominio'),
+
+  // Planejador Inteligente de Compras (Simulador de Desejos)
+  planejarCompra: (nomeItem: string, valorTotal: number, parcelas?: number, cartaoId?: string) =>
+    api.post<SimulacaoCompraResponse>('/api/ia/planejador-compras', { nomeItem, valorTotal, parcelas: parcelas || null, cartaoId: cartaoId || null }),
+}
+
+export interface AnaliseCartaoSimulacaoDTO {
+  cartaoId: string
+  cartaoNome: string
+  limiteAprovado: boolean
+  limiteDisponivelAtual: number
+  limiteAposCompra: number
+  melhorDiaCompra: string
+  diasGanhoFolego: number
+  recomendacaoIa: string
+}
+
+export interface SimulacaoCompraResponse {
+  viavel: boolean
+  mesRecomendadoParaCompra: string
+  parcelasRecomendadas?: number
+  mensagemRecomendacao: string
+  simulacoesMesAMes: MesSimulacaoDTO[]
+  analiseCartao?: AnaliseCartaoSimulacaoDTO
+}
+
+export interface MesSimulacaoDTO {
+  mesAno: string
+  receitaProjetada: number
+  despesaFixaProjetada: number
+  faturasProjetadas: number
+  faturasProjetadasCartao?: number
+  novaParcela: number
+  saldoLivre: number
+  status: 'VERDE' | 'AMARELO' | 'VERMELHO'
+  limiteRestanteCartao?: number
 }
 
 export interface PendenteConfirmacao {

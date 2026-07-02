@@ -10,6 +10,7 @@ import { CardList } from '../components/CardList'
 import { CreateCardModal } from '../components/CreateCardModal'
 import { EditCardModal } from '../components/EditCardModal'
 import { CartaoFaturasModal } from '../components/CartaoFaturasModal'
+import { PlanejadorComprasModal } from '../components/PlanejadorComprasModal'
 import { CreateTransacaoModal } from '../../transacoes/components/CreateTransacaoModal'
 import { PagamentoFaturaModal } from '../../transacoes/components/PagamentoFaturaModal'
 import { Toast, useToast } from '../../contas/components/Toast'
@@ -33,6 +34,7 @@ export function Cartoes() {
   const [viewFaturasCartao, setViewFaturasCartao] = useState<Cartao | null>(null)
   const [novaTransacaoCartao, setNovaTransacaoCartao] = useState<Cartao | null>(null)
   const [pagarFaturaCartao, setPagarFaturaCartao] = useState<Cartao | null>(null)
+  const [showPlanejador, setShowPlanejador] = useState(false)
   const { toasts, addToast, dismiss } = useToast()
 
   const loadDados = useCallback(async () => {
@@ -227,6 +229,13 @@ export function Cartoes() {
       <div className="contas-header">
         <div style={{ display: 'flex', gap: '12px' }}>
           <button
+            className="btn-cancel"
+            onClick={() => setShowPlanejador(true)}
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#10b981', borderColor: '#10b981' }}
+          >
+            <span>✨</span> Planejador de Compras
+          </button>
+          <button
             className="btn-nova-conta"
             onClick={() => {
               if (contas.length === 0) {
@@ -331,6 +340,11 @@ export function Cartoes() {
           onClose={() => setPagarFaturaCartao(null)}
           onSubmit={handlePagarFaturaSubmit}
           initialCartaoId={pagarFaturaCartao.id}
+        />
+      )}
+      {showPlanejador && (
+        <PlanejadorComprasModal
+          onClose={() => setShowPlanejador(false)}
         />
       )}
 
