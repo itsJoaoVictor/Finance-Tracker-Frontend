@@ -171,7 +171,7 @@ export function Navbar({
                 className="navbar__dropdown-item"
                 role="menuitem"
                 onClick={() => {
-                  alert('Acessar Configurações');
+                  navigate('/construction', { state: { activeItem: 'configuracoes' } });
                   setIsDropdownOpen(false);
                 }}
               >

@@ -395,7 +395,10 @@ export function Login({ onLoginSuccess, onNavigateRegister }: LoginProps) {
             />
 
             <div className="login__row">
-              <a className="login__link" href="#" onClick={(event) => event.preventDefault()}>
+              <a className="login__link" href="#" onClick={(event) => {
+                event.preventDefault();
+                alert('Funcionalidade de recuperação de senha em breve.');
+              }}>
                 Esqueci minha senha
               </a>
             </div>
