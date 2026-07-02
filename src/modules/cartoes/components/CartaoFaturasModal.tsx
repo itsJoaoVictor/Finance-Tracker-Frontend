@@ -1,7 +1,9 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useCallback } from 'react'
 import { Cartao, Fatura, ProjecaoCartao, Transacao } from '../../../types'
 import { cartaoService } from '../../../services/cartaoService'
 import { transacaoService } from '../../../services/transacaoService'
+import { AnteciparParcelasModal } from '../../transacoes/components/AnteciparParcelasModal'
+import { FastForward } from 'lucide-react'
 import '../cartoes.css'
 import './CartaoFaturasModal.css'
 
@@ -32,35 +34,37 @@ export function CartaoFaturasModal({ cartao, projecao, onClose }: CartaoFaturasM
   const [faturaItems, setFaturaItems] = useState<Record<string, Transacao[]>>({})
   const [itemsLoading, setItemsLoading] = useState<Record<string, boolean>>({})
   const [expandedFaturaId, setExpandedFaturaId] = useState<string | null>(null)
+  const [anteciparTransacao, setAnteciparTransacao] = useState<Transacao | null>(null)
 
   // Carregar faturas do cartão
-  useEffect(() => {
-    async function fetchFaturas() {
-      setLoading(true)
-      try {
-        const res = await cartaoService.getFaturas(cartao.id)
-        // Ordena por mesReferencia crescente para o gráfico de barras
-        const sorted = [...res.data].sort(
-          (a, b) => parseLocalDate(a.mesReferencia).getTime() - parseLocalDate(b.mesReferencia).getTime()
-        )
-        setFaturas(sorted)
+  const fetchFaturas = useCallback(async () => {
+    setLoading(true)
+    try {
+      const res = await cartaoService.getFaturas(cartao.id)
+      // Ordena por mesReferencia crescente para o gráfico de barras
+      const sorted = [...res.data].sort(
+        (a, b) => parseLocalDate(a.mesReferencia).getTime() - parseLocalDate(b.mesReferencia).getTime()
+      )
+      setFaturas(sorted)
 
-        // Define fatura selecionada como a fatura ativa (primeira que ainda não está paga)
-        const atual = sorted.find((f) => f.status !== 'PAGA')
+      // Define fatura selecionada como a fatura ativa (primeira que ainda não está paga)
+      const atual = sorted.find((f) => f.status !== 'PAGA')
 
-        if (atual) {
-          setSelectedFatura(atual)
-        } else if (sorted.length > 0) {
-          setSelectedFatura(sorted[sorted.length - 1])
-        }
-      } catch (err) {
-        console.error('Erro ao buscar faturas', err)
-      } finally {
-        setLoading(false)
+      if (atual) {
+        setSelectedFatura(atual)
+      } else if (sorted.length > 0) {
+        setSelectedFatura(sorted[sorted.length - 1])
       }
+    } catch (err) {
+      console.error('Erro ao buscar faturas', err)
+    } finally {
+      setLoading(false)
     }
-    fetchFaturas()
   }, [cartao.id])
+
+  useEffect(() => {
+    fetchFaturas()
+  }, [fetchFaturas])
 
   // Separar faturas históricas vs atual vs próximas
   const { historicoFaturas, atualFaturas, proximasFaturas } = useMemo(() => {
@@ -70,8 +74,9 @@ export function CartaoFaturasModal({ cartao, projecao, onClose }: CartaoFaturasM
     )
 
     // Encontra o índice da primeira fatura que ainda não foi totalmente paga
+    // Ignora faturas ATRASADAS que já foram roladas para o próximo mês
     const atualIndex = sortedFaturas.findIndex((f) => {
-      return f.status !== 'PAGA'
+      return f.status !== 'PAGA' && !(f.status === 'ATRASADA' && f.rolladoOver)
     })
 
     const hist: Fatura[] = []
@@ -398,6 +403,20 @@ export function CartaoFaturasModal({ cartao, projecao, onClose }: CartaoFaturasM
           </div>
         )}
       </div>
+
+      {anteciparTransacao && (
+        <AnteciparParcelasModal
+          transacao={anteciparTransacao}
+          onClose={() => setAnteciparTransacao(null)}
+          onSuccess={() => {
+            setAnteciparTransacao(null)
+            fetchFaturas()
+            // Limpar cache dos itens para forçar refetch quando expandir
+            setFaturaItems({})
+            setExpandedFaturaId(null)
+          }}
+        />
+      )}
     </div>
   )
 
@@ -479,7 +498,18 @@ export function CartaoFaturasModal({ cartao, projecao, onClose }: CartaoFaturasM
                       )}
                       <span className="invoice-item-date">{formatDate(item.data)}</span>
                     </div>
-                    <div className="invoice-item-entry__right">
+                    <div className="invoice-item-entry__right" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      {item.tipo === 'COMPRA_CREDITO' && item.totalParcelas && item.totalParcelas > 1 && !item.estornada && (
+                        <button
+                          type="button"
+                          className="invoice-item-action-btn"
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary)' }}
+                          onClick={(e) => { e.stopPropagation(); setAnteciparTransacao(item) }}
+                          title="Antecipar parcelas"
+                        >
+                          <FastForward size={14} />
+                        </button>
+                      )}
                       <span className="invoice-item-price">{formatCurrency(item.valor)}</span>
                     </div>
                   </div>

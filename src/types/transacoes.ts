@@ -72,6 +72,10 @@ export interface EstornoRequest {
   valor?: number
 }
 
+export interface AnteciparParcelasRequest {
+  quantidade: number
+}
+
 // Tags
 export interface Tag {
   id: string

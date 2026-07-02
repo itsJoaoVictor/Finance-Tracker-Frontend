@@ -7,6 +7,7 @@ import { CreateTransacaoModal } from '../components/CreateTransacaoModal'
 import { TransferenciaModal } from '../components/TransferenciaModal'
 import { PagamentoFaturaModal } from '../components/PagamentoFaturaModal'
 import { ProjecaoModal } from '../components/ProjecaoModal'
+import { AnteciparParcelasModal } from '../components/AnteciparParcelasModal'
 import { ArrowLeftRight, CreditCard, TrendingUp, Plus } from 'lucide-react'
 import '../transacoes.css'
 
@@ -97,6 +98,7 @@ export function Transacoes() {
   const [showTransferencia, setShowTransferencia] = useState(false)
   const [showPagamentoFatura, setShowPagamentoFatura] = useState(false)
   const [showProjecao, setShowProjecao] = useState(false)
+  const [anteciparTransacao, setAnteciparTransacao] = useState<Transacao | null>(null)
 
   const { toasts, addToast, dismiss } = useToast()
 
@@ -396,6 +398,7 @@ export function Transacoes() {
                 transacao={t}
                 onEstornar={handleEstornar}
                 onExcluir={handleExcluir}
+                onAntecipar={setAnteciparTransacao}
               />
             ))}
           </div>
@@ -452,6 +455,18 @@ export function Transacoes() {
       {showProjecao && (
         <ProjecaoModal
           onClose={() => setShowProjecao(false)}
+        />
+      )}
+
+      {anteciparTransacao && (
+        <AnteciparParcelasModal
+          transacao={anteciparTransacao}
+          onClose={() => setAnteciparTransacao(null)}
+          onSuccess={() => {
+            setAnteciparTransacao(null)
+            addToast('Parcelas antecipadas com sucesso!', 'success')
+            loadTransacoes()
+          }}
         />
       )}
 

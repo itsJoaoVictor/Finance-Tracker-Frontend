@@ -1,10 +1,11 @@
 import { Transacao } from '../../../types'
-import { RotateCcw, Trash2 } from 'lucide-react'
+import { RotateCcw, Trash2, FastForward } from 'lucide-react'
 
 interface TransacaoCardProps {
   transacao: Transacao
   onEstornar: (t: Transacao) => void
   onExcluir: (t: Transacao) => void
+  onAntecipar?: (t: Transacao) => void
 }
 
 const TIPO_LABEL: Record<string, string> = {
@@ -41,7 +42,7 @@ function formatDateTime(dateStr: string, criadoEmStr?: string): string {
   return displayDate
 }
 
-export function TransacaoCard({ transacao, onEstornar, onExcluir }: TransacaoCardProps) {
+export function TransacaoCard({ transacao, onEstornar, onExcluir, onAntecipar }: TransacaoCardProps) {
   const isEntrada = transacao.tipo === 'DEPOSITO' || transacao.tipo === 'TRANSFERENCIA'
   const isTransferencia = transacao.tipo === 'TRANSFERENCIA'
   
@@ -157,6 +158,18 @@ export function TransacaoCard({ transacao, onEstornar, onExcluir }: TransacaoCar
               title="Estornar transação"
             >
               <RotateCcw size={16} />
+            </button>
+          )}
+
+          {onAntecipar && transacao.tipo === 'COMPRA_CREDITO' && transacao.totalParcelas && transacao.totalParcelas > 1 && !transacao.estornada && (
+            <button
+              type="button"
+              className="transacao-card__action-btn transacao-card__action-btn--primary"
+              onClick={() => onAntecipar(transacao)}
+              title="Antecipar parcelas"
+              style={{ color: 'var(--primary)' }}
+            >
+              <FastForward size={16} />
             </button>
           )}
 
