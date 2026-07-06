@@ -269,7 +269,7 @@ export function CartaoFaturasModal({ cartao, projecao, onClose }: CartaoFaturasM
                 <div className="card-projecao-banner__header">
                   <span className="card-projecao-banner__icon">🤖</span>
                   <span className="card-projecao-banner__label">
-                    {projecao.statusFatura === 'ABERTA' ? 'Projeção de Fechamento' : 'Análise Histórica'}
+                    {projecao.statusFatura === 'ABERTA' ? 'Projeção de Fechamento' : 'Resultado do Fechamento'}
                   </span>
                   {projecao.mesesHistorico != null && (
                     <span className="card-projecao-banner__periodo">

@@ -42,6 +42,17 @@ export function CreditCard({ cartao, contas, insights = [], projecoes = [], onEd
   // Projeção IA para este cartão
   const projecao = projecoes.find((p) => p.cartaoId === cartao.id)
 
+  // faturaStatus vem do CartaoService: reflete a fatura exibida no card (ex: julho/FECHADA).
+  // projecao.statusFatura reflete o próximo ciclo aberto (ex: agosto/ABERTA).
+  // Usamos cartao.faturaStatus como fonte de verdade para o badge exibido no card.
+  const statusExibido: string = cartao.faturaStatus ?? projecao?.statusFatura ?? 'ABERTA'
+  const isFaturaExibidaFechada = statusExibido === 'FECHADA'
+  const accentColor =
+    projecao?.classificacao === 'ACIMA' ? '#E63946' :
+    projecao?.classificacao === 'ABAIXO' ? '#22c55e' :
+    projecao?.classificacao === 'DENTRO' ? '#8A05BE' :
+    '#999'
+
   const limiteConsumido = cartao.limite - cartao.limiteDisponivel
   const porcentagemConsumida = cartao.limite > 0 ? Math.min((limiteConsumido / cartao.limite) * 100, 100) : 0
 
@@ -148,18 +159,11 @@ export function CreditCard({ cartao, contas, insights = [], projecoes = [], onEd
           {projecao ? (
             <div
               className="card-projecao-banner"
-              style={{
-                '--accent':
-                  projecao.classificacao === 'ACIMA' ? '#E63946' :
-                  projecao.classificacao === 'ABAIXO' ? '#22c55e' :
-                  projecao.classificacao === 'DENTRO' ? '#8A05BE' :
-                  '#999'
-              } as React.CSSProperties}
+              style={{ '--accent': accentColor } as React.CSSProperties}
             >
               <div className="card-projecao-banner__header">
                 <span className="card-projecao-banner__label">
-                  {projecao.statusFatura === 'ABERTA' ? 'Projeção' :
-                   projecao.statusFatura === 'FECHADA' ? 'Fatura Fechada' : 'Sem fatura'}
+                  {isFaturaExibidaFechada ? 'Fatura Fechada' : 'Projeção'}
                   {cartao.faturaMesReferencia && (
                     <span className="card-projecao-banner__ref"> — {(() => {
                       const d = parseLocalDate(cartao.faturaMesReferencia)
@@ -167,13 +171,13 @@ export function CreditCard({ cartao, contas, insights = [], projecoes = [], onEd
                     })()}</span>
                   )}
                 </span>
-                <span className={`fatura-badge ${projecao.statusFatura === 'FECHADA' ? 'fatura-badge--closed' : 'fatura-badge--open'}`}>
-                  {projecao.statusFatura === 'FECHADA' ? '🔒 Fechada' : '🔓 Aberta'}
+                <span className={`fatura-badge ${isFaturaExibidaFechada ? 'fatura-badge--closed' : 'fatura-badge--open'}`}>
+                  {isFaturaExibidaFechada ? '🔒 Fechada' : '🔓 Aberta'}
                 </span>
               </div>
 
-              {/* Valores principais: Atual vs Projeção */}
-              {projecao.statusFatura === 'ABERTA' && projecao.valorAtualNoMes > 0 ? (
+              {/* Valores principais: Atual vs Projeção (só para fatura aberta) */}
+              {!isFaturaExibidaFechada && projecao.valorAtualNoMes > 0 ? (
                 <div className="card-projecao-banner__valores">
                   <div className="card-projecao-banner__valor-item">
                     <span className="card-projecao-banner__valor-label">Atual</span>
@@ -192,15 +196,15 @@ export function CreditCard({ cartao, contas, insights = [], projecoes = [], onEd
               ) : (
                 <div className="card-projecao-banner__valor-unico">
                   {formatCurrency(
-                    projecao.statusFatura === 'FECHADA' && projecao.valorRealFechado != null
+                    isFaturaExibidaFechada && projecao.valorRealFechado != null
                       ? projecao.valorRealFechado
                       : projecao.projecaoFechamento
                   )}
                 </div>
               )}
 
-              {/* Barra de progresso visual */}
-              {projecao.statusFatura === 'ABERTA' && projecao.valorAtualNoMes > 0 && (
+              {/* Barra de progresso visual (só para fatura aberta) */}
+              {!isFaturaExibidaFechada && projecao.valorAtualNoMes > 0 && (
                 <div className="card-projecao-banner__progresso">
                   <div className="card-projecao-banner__progresso-bar">
                     <div
