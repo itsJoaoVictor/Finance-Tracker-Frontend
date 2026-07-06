@@ -165,8 +165,3 @@ No diretório do frontend, você pode rodar os seguintes comandos no terminal:
 ## 📄 Licença
 
 Este projeto está sob a licença MIT. Consulte o arquivo de licença para mais detalhes.
-
----
-<div align="center">
-  Desenvolvido com ❤️ para proporcionar a melhor experiência visual em controle financeiro com IA.
-</div>
