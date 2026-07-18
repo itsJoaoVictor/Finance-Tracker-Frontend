@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import type React from 'react'
 import axios from 'axios'
 import { PasswordField } from '../components/PasswordField'
@@ -22,6 +22,13 @@ export function Login({ onLoginSuccess, onNavigateRegister }: LoginProps) {
   const [touched, setTouched] = useState({ email: false, password: false })
   const [hasSubmitted, setHasSubmitted] = useState(false)
   const [authError, setAuthError] = useState('')
+
+  // Acorda o servidor do Render o mais cedo possível
+  useEffect(() => {
+    // Faz uma requisição invisível apenas para tirar o servidor da inatividade
+    const backendUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
+    fetch(backendUrl).catch(() => {})
+  }, [])
 
   // MFA state
   const [showMfa, setShowMfa] = useState(false)
