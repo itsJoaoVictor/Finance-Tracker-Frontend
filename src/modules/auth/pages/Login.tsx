@@ -26,6 +26,7 @@ export function Login({ onLoginSuccess, onNavigateRegister }: LoginProps) {
   // Acorda o servidor do Render o mais cedo possível
   useEffect(() => {
     // Faz uma requisição invisível apenas para tirar o servidor da inatividade
+    // @ts-ignore
     const backendUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
     fetch(backendUrl).catch(() => {})
   }, [])
