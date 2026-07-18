@@ -22,13 +22,16 @@ export function Login({ onLoginSuccess, onNavigateRegister }: LoginProps) {
   const [touched, setTouched] = useState({ email: false, password: false })
   const [hasSubmitted, setHasSubmitted] = useState(false)
   const [authError, setAuthError] = useState('')
+  const [serverStatus, setServerStatus] = useState<'connecting' | 'online'>('connecting')
 
   // Acorda o servidor do Render o mais cedo possível
   useEffect(() => {
     // Faz uma requisição invisível apenas para tirar o servidor da inatividade
     // @ts-ignore
     const backendUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
-    fetch(backendUrl).catch(() => {})
+    fetch(backendUrl)
+      .then(() => setServerStatus('online'))
+      .catch(() => setServerStatus('online')) // Se respondeu com erro (ex: CORS ou 404), significa que já acordou!
   }, [])
 
   // MFA state
@@ -46,12 +49,12 @@ export function Login({ onLoginSuccess, onNavigateRegister }: LoginProps) {
 
   const emailError = useMemo(() => {
     if (!email) return 'Informe seu e-mail.'
-    if (!isEmailValid(email)) return 'Use um e-mail valido.'
+    if (!isEmailValid(email)) return 'Use um e-mail válido.'
     return ''
   }, [email])
 
   const passwordError = useMemo(() => {
-    if (!password.trim()) return 'A senha nao pode estar vazia.'
+    if (!password.trim()) return 'A senha não pode estar vazia.'
     return ''
   }, [password])
 
@@ -78,7 +81,7 @@ export function Login({ onLoginSuccess, onNavigateRegister }: LoginProps) {
         sessionStorage.setItem('token', token)
         onLoginSuccess()
       } else {
-        setAuthError('Resposta invalida do servidor.')
+        setAuthError('Resposta inválida do servidor.')
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -92,18 +95,18 @@ export function Login({ onLoginSuccess, onNavigateRegister }: LoginProps) {
         } else if (status === 403) {
           const lowerMsg = message.toLowerCase();
           if (lowerMsg.includes('inativa') || lowerMsg.includes('inactive')) {
-            setAuthError('Esta conta esta inativa. Entre em contato com o suporte.')
+            setAuthError('Esta conta está inativa. Entre em contato com o suporte.')
           } else if (lowerMsg.includes('verificada') || lowerMsg.includes('not verified')) {
-            setAuthError('Esta conta ainda nao foi verificada. Verifique seu e-mail.')
+            setAuthError('Esta conta ainda não foi verificada. Verifique seu e-mail.')
           } else if (lowerMsg.includes('bloqueada') || lowerMsg.includes('blocked')) {
             setAuthError('Esta conta foi bloqueada por um administrador.')
           } else if (lowerMsg.includes('expirada') || lowerMsg.includes('expired')) {
             setShowExpiredReset(true)
           } else {
-            setAuthError('Acesso negado. Por favor, verifique as condicoes da sua conta.')
+            setAuthError('Acesso negado. Por favor, verifique as condições da sua conta.')
           }
         } else {
-          setAuthError('Nao foi possivel conectar ao servidor. Tente novamente.')
+          setAuthError('Não foi possível conectar ao servidor. Tente novamente.')
         }
       } else {
         setAuthError('E-mail ou senha incorretos. Tente novamente.')
@@ -120,10 +123,10 @@ export function Login({ onLoginSuccess, onNavigateRegister }: LoginProps) {
         sessionStorage.setItem('token', 'mocked_jwt_token_from_mfa')
         onLoginSuccess()
       } else {
-        setMfaError('Codigo invalido. Digite um codigo de 6 digitos.')
+        setMfaError('Código inválido. Digite um código de 6 dígitos.')
       }
     } catch (err) {
-      setMfaError('Erro na verificacao do 2FA. Tente novamente.')
+      setMfaError('Erro na verificação do 2FA. Tente novamente.')
     }
   }
 
@@ -138,7 +141,7 @@ export function Login({ onLoginSuccess, onNavigateRegister }: LoginProps) {
       return
     }
     if (newPassword !== confirmNewPassword) {
-      setConfirmNewPasswordError('As senhas nao coincidem.')
+      setConfirmNewPasswordError('As senhas não coincidem.')
       return
     }
 
@@ -146,7 +149,7 @@ export function Login({ onLoginSuccess, onNavigateRegister }: LoginProps) {
       sessionStorage.setItem('token', 'mocked_jwt_token_after_password_reset')
       onLoginSuccess()
     } catch (err) {
-      setResetError('Nao foi possivel alterar a senha. Tente novamente.')
+      setResetError('Não foi possível alterar a senha. Tente novamente.')
     }
   }
 
@@ -185,17 +188,17 @@ export function Login({ onLoginSuccess, onNavigateRegister }: LoginProps) {
               className="login__logo"
             />
             <div className="login__headline">
-              <p className="login__eyebrow">Autenticacao</p>
-              <h1 className="login__title">Verificacao de Duas Etapas (2FA)</h1>
+              <p className="login__eyebrow">Autenticação</p>
+              <h1 className="login__title">Verificação de Duas Etapas (2FA)</h1>
               <p className="login__subtitle">
-                Insira o codigo temporario gerado no seu aplicativo de autenticacao.
+                Insira o código temporário gerado no seu aplicativo de autenticação.
               </p>
             </div>
 
             <form className="login__form" onSubmit={handleMfaSubmit} noValidate>
               <TextField
                 id="mfaCode"
-                label="Codigo de Autenticacao"
+                label="Código de Autenticação"
                 type="text"
                 value={mfaCode}
                 placeholder="000 000"
@@ -209,7 +212,7 @@ export function Login({ onLoginSuccess, onNavigateRegister }: LoginProps) {
               />
 
               <button className="login__submit" type="submit" disabled={!mfaCode.trim()}>
-                Confirmar Codigo
+                Confirmar Código
               </button>
             </form>
 
@@ -267,7 +270,7 @@ export function Login({ onLoginSuccess, onNavigateRegister }: LoginProps) {
               className="login__logo"
             />
             <div className="login__headline">
-              <p className="login__eyebrow">Seguranca</p>
+              <p className="login__eyebrow">Segurança</p>
               <h1 className="login__title">Sua senha expirou</h1>
               <p className="login__subtitle">
                 Por favor, cadastre uma nova senha para continuar acessando sua conta.
@@ -365,9 +368,9 @@ export function Login({ onLoginSuccess, onNavigateRegister }: LoginProps) {
           />
           <div className="login__headline">
             <p className="login__eyebrow">Bem-vindo</p>
-            <h1 className="login__title">Entre para acompanhar suas financas.</h1>
+            <h1 className="login__title">Entre para acompanhar suas finanças.</h1>
             <p className="login__subtitle">
-              Uma experiencia simples para organizar despesas e manter o controle do seu dinheiro.
+              Uma experiência simples para organizar despesas e manter o controle do seu dinheiro.
             </p>
           </div>
 
@@ -417,23 +420,49 @@ export function Login({ onLoginSuccess, onNavigateRegister }: LoginProps) {
               </div>
             ) : null}
 
-            <button className="login__submit" type="submit" disabled={!isFormValid}>
-              Entrar
+            <button 
+              className="login__submit" 
+              type="submit" 
+              disabled={!isFormValid || serverStatus === 'connecting'}
+            >
+              {serverStatus === 'connecting' ? 'Iniciando servidor...' : 'Entrar'}
             </button>
           </form>
 
-          <p className="login__footnote">
-            Ainda nao tem conta?{' '}
-            <button
-              className="login__link-button"
-              type="button"
-              onClick={onNavigateRegister}
-            >
-              Crie a sua agora
-            </button>
-          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', marginTop: '1.5rem' }}>
+            <p className="login__footnote" style={{ margin: 0 }}>
+              Ainda não tem conta?{' '}
+              <button
+                className="login__link-button"
+                type="button"
+                onClick={onNavigateRegister}
+              >
+                Crie a sua agora
+              </button>
+            </p>
+            
+            <p className="login__footnote" style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-tertiary)', opacity: 0.8, display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ 
+                display: 'inline-block', 
+                width: '8px', 
+                height: '8px', 
+                borderRadius: '50%', 
+                backgroundColor: serverStatus === 'connecting' ? '#f5a623' : '#10b981',
+                animation: serverStatus === 'connecting' ? 'pulse 1.5s infinite' : 'none'
+              }} />
+              Status: {serverStatus === 'connecting' ? 'Conectando à Nuvem...' : 'Online'}
+            </p>
+          </div>
         </div>
       </div>
+      {/* Add a quick keyframe for the pulse animation if not exists */}
+      <style>{`
+        @keyframes pulse {
+          0% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.5; transform: scale(0.8); }
+          100% { opacity: 1; transform: scale(1); }
+        }
+      `}</style>
     </div>
   )
 }
