@@ -23,6 +23,7 @@ interface SubscriptionCardProps {
   onEdit: (assinatura: Assinatura) => void
   onPauseResume: (assinatura: Assinatura) => void
   onDelete: (assinatura: Assinatura) => void
+  onCancel?: (assinatura: Assinatura) => void
   onAuditoriaFeedback?: (assinaturaId: string, opcao: 'manter' | 'nao_utilizo') => void
 }
 
@@ -30,7 +31,7 @@ function formatCurrency(value: number): string {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
 }
 
-function formatDate(dateStr: string): string {
+function formatDate(dateStr: string | null): string {
   if (!dateStr) return ''
   const parts = dateStr.split('T')[0].split('-')
   if (parts.length === 3) {
@@ -52,6 +53,7 @@ export function SubscriptionCard({
   onEdit,
   onPauseResume,
   onDelete,
+  onCancel,
   onAuditoriaFeedback,
   auditoriaInfo,
 }: SubscriptionCardProps) {
@@ -73,7 +75,7 @@ export function SubscriptionCard({
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  const badgeText = assinatura.ativo ? 'Ativa' : 'Pausada'
+  const badgeText = assinatura.ativo ? 'Ativa' : (!assinatura.dataProximaCobranca ? 'Cancelada' : 'Pausada')
 
   const cleanName = assinatura.nome
     .trim()
@@ -164,9 +166,11 @@ export function SubscriptionCard({
           valorExtra={reajusteBadge}
           onClickOptions={() => setMenuOpen((o) => !o)}
         >
-          <p className="assinatura-card__proxima">
-            Pr&oacute;xima cobran&ccedil;a: {formatDate(assinatura.dataProximaCobranca)}
-          </p>
+          {assinatura.dataProximaCobranca && (
+            <p className="assinatura-card__proxima">
+              Pr&oacute;xima cobran&ccedil;a: {formatDate(assinatura.dataProximaCobranca)}
+            </p>
+          )}
           <p className="assinatura-card__cartao">
             Cart&atilde;o: {cartaoNome}
           </p>
@@ -308,12 +312,32 @@ export function SubscriptionCard({
           >
             ✏️ Editar
           </button>
-          <button
-            className="account-card__dropdown-item"
-            onClick={() => { setMenuOpen(false); onPauseResume(assinatura) }}
-          >
-            {assinatura.ativo ? '\u23F8 Pausar' : '\u25B6 Reativar'}
-          </button>
+          
+          {assinatura.ativo || assinatura.dataProximaCobranca ? (
+            <button
+              className="account-card__dropdown-item"
+              onClick={() => { setMenuOpen(false); onPauseResume(assinatura) }}
+            >
+              {assinatura.ativo ? '\u23F8 Pausar' : '\u25B6 Reativar'}
+            </button>
+          ) : (
+            <button
+              className="account-card__dropdown-item"
+              onClick={() => { setMenuOpen(false); onPauseResume(assinatura) }}
+            >
+              ▶️ Reativar
+            </button>
+          )}
+
+          {(assinatura.ativo || assinatura.dataProximaCobranca) && onCancel && (
+            <button
+              className="account-card__dropdown-item"
+              onClick={() => { setMenuOpen(false); onCancel(assinatura) }}
+            >
+              🚫 Cancelar
+            </button>
+          )}
+
           <button
             className="account-card__dropdown-item account-card__dropdown-item--danger"
             onClick={() => { setMenuOpen(false); onDelete(assinatura) }}

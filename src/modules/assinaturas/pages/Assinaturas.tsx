@@ -183,6 +183,24 @@ export function Assinaturas() {
     }
   }
 
+  // ─── Cancelar ─────────────────────────────────────────────────
+  async function handleCancel(assinatura: Assinatura) {
+    if (!window.confirm(`Tem certeza que deseja cancelar definitivamente a assinatura "${assinatura.nome}"?`)) return
+    const previous = assinaturas
+    setAssinaturas((prev) =>
+      prev.map((a) => (a.id === assinatura.id ? { ...a, ativo: false, dataProximaCobranca: null } : a))
+    )
+    try {
+      await assinaturaService.cancelar(assinatura.id)
+      addToast('Assinatura cancelada com sucesso!', 'success')
+    } catch (err: unknown) {
+      setAssinaturas(previous)
+      const axiosErr = err as { response?: { data?: { error?: string } } }
+      const msg = axiosErr?.response?.data?.error || 'Erro ao cancelar assinatura.'
+      addToast(msg, 'error')
+    }
+  }
+
   // ─── Feedback de Auditoria Zumbi (Manter/Não utilizo) ────────────────────────
   async function handleAuditoriaFeedback(assinaturaId: string, opcao: 'manter' | 'nao_utilizo') {
     setAuditoriaSet(prev => { const next = new Set(prev); next.delete(assinaturaId); return next })
@@ -223,7 +241,8 @@ export function Assinaturas() {
   }
 
   const ativas = assinaturas.filter((a) => a.ativo)
-  const inativas = assinaturas.filter((a) => !a.ativo)
+  const pausadas = assinaturas.filter((a) => !a.ativo && a.dataProximaCobranca)
+  const canceladas = assinaturas.filter((a) => !a.ativo && !a.dataProximaCobranca)
 
   return (
     <div className="assinaturas-page">
@@ -326,6 +345,7 @@ export function Assinaturas() {
                   onEdit={setEditAssinatura}
                   onPauseResume={handlePauseResume}
                   onDelete={handleDelete}
+                  onCancel={handleCancel}
                   onAuditoriaFeedback={handleAuditoriaFeedback}
                 />
               )
@@ -334,12 +354,42 @@ export function Assinaturas() {
         )}
       </div>
 
-      {/* Assinaturas Inativas / Pausadas */}
-      {inativas.length > 0 && (
+      {/* Assinaturas Pausadas */}
+      {pausadas.length > 0 && (
         <div>
-          <h3 className="assinaturas-section__title">Inativas / Pausadas</h3>
+          <h3 className="assinaturas-section__title">Pausadas</h3>
           <div className="assinaturas-grid">
-            {inativas.map((a) => {
+            {pausadas.map((a) => {
+              const catObj = categoryObjMap.get(a.categoriaId)
+              return (
+                <SubscriptionCard
+                  key={a.id}
+                  assinatura={a}
+                  categoriaNome={catObj?.nome || 'Sem categoria'}
+                  categoriaCor={catObj?.corHexadecimal}
+                  categoriaIcone={catObj?.icone}
+                  cartaoNome={cartaoMap.get(a.cartaoId) || 'Sem cart\u00e3o'}
+                  periodicidadeLabel={getPeriodicidadeLabel(a)}
+                  auditoriaAtiva={auditoriaSet.has(a.id)}
+                  auditoriaInfo={auditoriaMap.get(a.id)}
+                  onEdit={setEditAssinatura}
+                  onPauseResume={handlePauseResume}
+                  onDelete={handleDelete}
+                  onCancel={handleCancel}
+                  onAuditoriaFeedback={handleAuditoriaFeedback}
+                />
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Assinaturas Canceladas */}
+      {canceladas.length > 0 && (
+        <div>
+          <h3 className="assinaturas-section__title">Canceladas (Hist&oacute;rico)</h3>
+          <div className="assinaturas-grid">
+            {canceladas.map((a) => {
               const catObj = categoryObjMap.get(a.categoriaId)
               return (
                 <SubscriptionCard

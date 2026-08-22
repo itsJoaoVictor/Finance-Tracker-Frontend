@@ -10,4 +10,5 @@ export const assinaturaService = {
   excluir: (id: string) => api.delete(`/api/assinaturas/${id}`),
   pausar: (id: string) => api.post(`/api/assinaturas/${id}/pausar`),
   reativar: (id: string) => api.post(`/api/assinaturas/${id}/reativar`),
+  cancelar: (id: string) => api.post(`/api/assinaturas/${id}/cancelar`),
 }

@@ -166,7 +166,7 @@ export interface Assinatura {
   unidadeFrequencia?: UnidadeFrequencia
   diaCobranca: number
   dataInicio: string
-  dataProximaCobranca: string
+  dataProximaCobranca: string | null
   ativo: boolean
   criadoEm?: string
 }
