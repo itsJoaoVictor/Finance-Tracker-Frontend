@@ -430,6 +430,7 @@ export function Login({ onLoginSuccess, onNavigateRegister }: LoginProps) {
           </form>
 
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', marginTop: '1.5rem' }}>
+            {/* 
             <p className="login__footnote" style={{ margin: 0 }}>
               Ainda não tem conta?{' '}
               <button
@@ -440,6 +441,7 @@ export function Login({ onLoginSuccess, onNavigateRegister }: LoginProps) {
                 Crie a sua agora
               </button>
             </p>
+            */}
             
             <p className="login__footnote" style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-tertiary)', opacity: 0.8, display: 'flex', alignItems: 'center', gap: '6px' }}>
               <span style={{ 
