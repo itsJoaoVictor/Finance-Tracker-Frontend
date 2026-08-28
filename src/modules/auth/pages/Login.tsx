@@ -15,7 +15,8 @@ type LoginProps = {
 
 const isEmailValid = (email: string) => /\S+@\S+\.\S+/.test(email)
 
-export function Login({ onLoginSuccess, onNavigateRegister }: LoginProps) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function Login({ onLoginSuccess, onNavigateRegister: _onNavigateRegister }: LoginProps) {
   const { theme, toggleTheme } = useTheme()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
