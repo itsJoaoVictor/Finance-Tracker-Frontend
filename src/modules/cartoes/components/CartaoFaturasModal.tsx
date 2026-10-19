@@ -208,7 +208,10 @@ export function CartaoFaturasModal({ cartao, projecao, onClose }: CartaoFaturasM
 
   const maxFaturaValue = useMemo(() => {
     if (faturas.length === 0) return 1
-    return Math.max(...faturas.map((f) => f.valorTotal), 1)
+    return Math.max(
+      ...faturas.map((f) => (f.status === 'PAGA' ? f.valorTotal : Math.max(0, f.valorTotal - (f.valorPago || 0)))),
+      1
+    )
   }, [faturas])
 
   // Formatar data em extenso
@@ -238,21 +241,45 @@ export function CartaoFaturasModal({ cartao, projecao, onClose }: CartaoFaturasM
         ) : (
           <div className="invoice-modal-content">
             {/* Bloco de Destaque da Fatura Selecionada */}
-            {selectedFatura && (
-              <div className="invoice-detail-card">
-                <span className="invoice-detail-card__status">
-                  {selectedFatura.status === 'ABERTA' ? 'Fatura atual / aberta' : 'Fatura fechada'}
-                </span>
-                <h3 className="invoice-detail-card__value">
-                  {formatCurrency(selectedFatura.valorTotal)}
-                </h3>
-                <div className="invoice-detail-card__dates">
-                  <span>📅 Vencimento: {formatLongDate(selectedFatura.dataVencimento)}</span>
-                  <span className="divider">•</span>
-                  <span>🔒 Fechamento: {formatLongDate(selectedFatura.dataFechamento)}</span>
+            {selectedFatura && (() => {
+              const valorPago = selectedFatura.valorPago || 0
+              const restante = Math.max(0, selectedFatura.valorTotal - valorPago)
+              const valorExibido = selectedFatura.status === 'PAGA' ? selectedFatura.valorTotal : restante
+
+              let statusLabel = 'Fatura fechada'
+              if (selectedFatura.status === 'ABERTA') statusLabel = 'Fatura atual / aberta'
+              else if (selectedFatura.status === 'PAGA') statusLabel = 'Fatura paga'
+              else if (selectedFatura.status === 'PAGA_PARCIAL') statusLabel = 'Fatura paga parcialmente'
+              else if (selectedFatura.status === 'ATRASADA') statusLabel = 'Fatura atrasada'
+
+              return (
+                <div className="invoice-detail-card">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', flexWrap: 'wrap', gap: '8px' }}>
+                    <span className="invoice-detail-card__status">
+                      {statusLabel}
+                    </span>
+                    {valorPago > 0 && selectedFatura.status !== 'PAGA' && (
+                      <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--green-positive, #059669)', background: 'rgba(16, 185, 129, 0.12)', padding: '2px 8px', borderRadius: '12px' }}>
+                        {formatCurrency(valorPago)} pago antecipadamente
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="invoice-detail-card__value">
+                    {formatCurrency(valorExibido)}
+                  </h3>
+                  {valorPago > 0 && selectedFatura.status !== 'PAGA' && (
+                    <div style={{ fontSize: '0.82rem', color: 'var(--muted, #6b7280)', marginTop: '-2px' }}>
+                      Total de compras: <strong>{formatCurrency(selectedFatura.valorTotal)}</strong> • Restante a pagar: <strong>{formatCurrency(restante)}</strong>
+                    </div>
+                  )}
+                  <div className="invoice-detail-card__dates">
+                    <span>📅 Vencimento: {formatLongDate(selectedFatura.dataVencimento)}</span>
+                    <span className="divider">•</span>
+                    <span>🔒 Fechamento: {formatLongDate(selectedFatura.dataFechamento)}</span>
+                  </div>
                 </div>
-              </div>
-            )}
+              )
+            })()}
 
             {/* Banner de Projeção IA (se disponível) */}
             {projecao && projecao.statusFatura !== 'SEM_FATURA' && (
@@ -316,7 +343,9 @@ export function CartaoFaturasModal({ cartao, projecao, onClose }: CartaoFaturasM
                   style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
                 >
                   {faturas.map((f) => {
-                    const heightPercent = (f.valorTotal / maxFaturaValue) * 80 + 10 // Altura min 10% para exibir barra fina mesmo zerada
+                    const valorPago = f.valorPago || 0
+                    const valorEfetivo = f.status === 'PAGA' ? f.valorTotal : Math.max(0, f.valorTotal - valorPago)
+                    const heightPercent = (valorEfetivo / maxFaturaValue) * 80 + 10 // Altura min 10% para exibir barra fina mesmo zerada
                     const isSelected = selectedFatura?.id === f.id
                     
                     return (
@@ -326,7 +355,10 @@ export function CartaoFaturasModal({ cartao, projecao, onClose }: CartaoFaturasM
                         className={`invoice-chart-column ${isSelected ? 'selected' : ''}`}
                         onClick={() => setSelectedFatura(f)}
                       >
-                        <div className="chart-bar-tooltip">{formatCurrency(f.valorTotal)}</div>
+                        <div className="chart-bar-tooltip">
+                          {formatCurrency(valorEfetivo)}
+                          {valorPago > 0 && f.status !== 'PAGA' && ` (Total: ${formatCurrency(f.valorTotal)})`}
+                        </div>
                         <div 
                           className="chart-bar-fill" 
                           style={{ 
@@ -460,6 +492,10 @@ export function CartaoFaturasModal({ cartao, projecao, onClose }: CartaoFaturasM
       statusClass = 'overdue'
     }
 
+    const valorPago = f.valorPago || 0
+    const restante = Math.max(0, f.valorTotal - valorPago)
+    const valorExibido = f.status === 'PAGA' ? f.valorTotal : restante
+
     return (
       <div key={f.id} className={`invoice-row-card ${isExpanded ? 'expanded' : ''}`}>
         <div className="invoice-row-header" onClick={() => handleToggleExpand(f.id)}>
@@ -468,7 +504,14 @@ export function CartaoFaturasModal({ cartao, projecao, onClose }: CartaoFaturasM
             <span className={`invoice-row-status invoice-row-status--${statusClass}`}>{statusText}</span>
           </div>
           <div className="invoice-row-header__right">
-            <span className="invoice-row-value">{formatCurrency(f.valorTotal)}</span>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
+              <span className="invoice-row-value">{formatCurrency(valorExibido)}</span>
+              {valorPago > 0 && f.status !== 'PAGA' && (
+                <span style={{ fontSize: '0.72rem', color: 'var(--muted, #6b7280)' }}>
+                  Total: {formatCurrency(f.valorTotal)}
+                </span>
+              )}
+            </div>
             <span className="invoice-row-arrow">{isExpanded ? '▼' : '▶'}</span>
           </div>
         </div>
