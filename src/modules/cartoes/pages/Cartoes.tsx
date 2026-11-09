@@ -223,6 +223,10 @@ export function Cartoes() {
     setFolgaLimiteItems((prev) => prev.filter((ins) => ins.id !== id))
   }
 
+  function handleDismissAllFolga() {
+    setFolgaLimiteItems([])
+  }
+
   return (
     <div className="contas-page">
       {/* Header */}
@@ -286,7 +290,9 @@ export function Cartoes() {
       {/* Folga de Limite: Parcelamentos que terminam nesta fatura */}
       <FolgaLimiteSection
         items={folgaLimiteItems}
+        cartoes={cartoes}
         onDismiss={handleDismissFolga}
+        onDismissAll={handleDismissAllFolga}
       />
 
       {/* Lista de Cartões */}

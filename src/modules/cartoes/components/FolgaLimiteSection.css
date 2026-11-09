@@ -1,87 +1,502 @@
-.folga-section {
+/* ==========================================================================
+   FolgaLimiteSection - Visual Moderno de Alívio Financeiro
+   ========================================================================== */
+
+.folga-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 28px;
+  width: 100%;
+}
+
+/* --------------------------------------------------------------------------
+   Hero Banner
+   -------------------------------------------------------------------------- */
+.folga-hero {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #064e3b 0%, #065f46 45%, #047857 100%);
+  color: #ffffff;
+  border-radius: 20px;
+  padding: 24px 28px;
+  box-shadow: 0 12px 32px -4px rgba(5, 150, 105, 0.22), 0 4px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* Efeito Glow sutil no fundo do banner */
+.folga-hero__glow {
+  position: absolute;
+  top: -60px;
+  right: -60px;
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(circle, rgba(52, 211, 153, 0.35) 0%, rgba(52, 211, 153, 0) 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.folga-hero__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+.folga-hero__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(8px);
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #a7f3d0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.folga-hero__badge-icon {
+  color: #34d399;
+  animation: pulse-sparkle 2.5s infinite ease-in-out;
+}
+
+@keyframes pulse-sparkle {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+}
+
+.folga-hero__dismiss-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #d1fae5;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.folga-hero__dismiss-all:hover {
+  background: rgba(0, 0, 0, 0.35);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.folga-hero__content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 24px;
+  position: relative;
+  z-index: 1;
+  flex-wrap: wrap;
+}
+
+.folga-hero__titles {
+  flex: 1;
+  min-width: 260px;
+}
+
+.folga-hero__title {
+  margin: 0 0 6px 0;
+  font-size: 1.45rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+}
+
+.folga-hero__subtitle {
+  margin: 0;
+  font-size: 0.88rem;
+  color: #d1fae5;
+  line-height: 1.45;
+  max-width: 540px;
+}
+
+.folga-hero__metric-box {
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(12px);
+  padding: 14px 20px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 220px;
+}
+
+.folga-hero__metric-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #a7f3d0;
+  margin-bottom: 2px;
+}
+
+.folga-hero__metric-value {
+  font-size: 1.7rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.folga-hero__metric-cycle {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #a7f3d0;
+}
+
+.folga-hero__metric-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 6px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #d1fae5;
+}
+
+/* Quebra por Cartão */
+.folga-hero__breakdown {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  position: relative;
+  z-index: 1;
+}
+
+.folga-hero__breakdown-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #a7f3d0;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.folga-hero__breakdown-chips {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.folga-breakdown-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(6px);
+  padding: 5px 11px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.folga-breakdown-chip__dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.3);
+}
+
+.folga-breakdown-chip__name {
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.folga-breakdown-chip__value {
+  font-weight: 700;
+  color: #6ee7b7;
+}
+
+.folga-breakdown-chip__badge {
+  background: rgba(0, 0, 0, 0.25);
+  font-size: 0.68rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: #d1fae5;
+  font-weight: 600;
+}
+
+/* --------------------------------------------------------------------------
+   Grid de Itens Modernos
+   -------------------------------------------------------------------------- */
+.folga-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+  width: 100%;
+}
+
+.folga-item-card {
+  position: relative;
+  background: var(--card, #ffffff);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.folga-item-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  border-color: rgba(0, 0, 0, 0.14);
+}
+
+.folga-item-card__color-accent {
+  height: 4px;
+  width: 100%;
+}
+
+.folga-item-card__inner {
+  padding: 16px 18px;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  background: var(--card);
-  border: 1px solid rgba(28, 26, 23, 0.08);
-  border-radius: 16px;
-  padding: 20px 24px;
-  margin-bottom: 24px;
-  box-shadow: 0 4px 12px rgba(28, 26, 23, 0.04);
-  border-left: 4px solid #22c55e;
+  flex: 1;
 }
 
-.folga-section__header {
+.folga-item-card__header {
   display: flex;
+  justify-content: space-between;
   align-items: center;
   gap: 8px;
 }
 
-.folga-section__icon {
-  font-size: 1.2rem;
-}
-
-.folga-section__title {
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--ink, #111827);
-  margin: 0;
-}
-
-.folga-section__subtitle {
-  font-size: 0.82rem;
-  color: var(--muted, #6b7280);
-  margin: 0;
-}
-
-.folga-section__list {
+.folga-item-card__tags {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
-.folga-card {
-  background: rgba(16, 185, 129, 0.06);
-  border: 1px solid rgba(16, 185, 129, 0.25);
-  border-radius: 12px;
-  padding: 14px 16px;
-}
-
-.folga-card__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 6px;
-}
-
-.folga-card__title {
-  font-size: 0.88rem;
+.folga-item-card__cartao-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.74rem;
   font-weight: 700;
-  color: var(--green-positive, #059669);
+  padding: 3px 9px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  color: var(--ink, #1b1a17);
 }
 
-.folga-card__dismiss {
-  background: none;
+.folga-item-card__cartao-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.folga-item-card__cartao-icon {
+  opacity: 0.7;
+}
+
+.folga-item-card__cartao-nome {
+  white-space: nowrap;
+}
+
+.folga-item-card__status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid rgba(5, 150, 105, 0.2);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.folga-item-card__dismiss-btn {
+  background: transparent;
   border: none;
   color: var(--muted, #9ca3af);
   cursor: pointer;
-  font-size: 0.9rem;
-  padding: 0 2px;
+  padding: 4px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
 }
 
-.folga-card__message {
+.folga-item-card__dismiss-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: #ef4444;
+}
+
+.folga-item-card__body {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.folga-item-card__descricao {
   margin: 0;
-  font-size: 0.82rem;
-  color: var(--ink, #374151);
-  line-height: 1.45;
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: var(--ink, #1b1a17);
+  line-height: 1.35;
+  word-break: break-word;
+  flex: 1;
 }
 
-.folga-section__total {
-  background: var(--green-positive, #10b981);
-  color: white;
-  font-size: 0.85rem;
-  font-weight: 700;
-  padding: 4px 10px;
-  border-radius: 12px;
-  margin-left: auto;
+.folga-item-card__financial {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.folga-item-card__financial-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--muted, #6b7280);
+  letter-spacing: 0.03em;
+}
+
+.folga-item-card__financial-value {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #059669;
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+
+.folga-item-card__financial-frequency {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #059669;
+  opacity: 0.85;
+}
+
+/* --------------------------------------------------------------------------
+   Dica de IA (Colapsável)
+   -------------------------------------------------------------------------- */
+.folga-item-card__ai-wrapper {
+  margin-top: auto;
+  border-top: 1px dashed rgba(0, 0, 0, 0.08);
+  padding-top: 10px;
+}
+
+.folga-item-card__ai-toggle {
+  width: 100%;
+  background: transparent;
+  border: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--muted, #4b5563);
+  cursor: pointer;
+  padding: 4px 2px;
+  border-radius: 4px;
+  transition: color 0.15s ease;
+}
+
+.folga-item-card__ai-toggle:hover {
+  color: var(--ink, #1b1a17);
+}
+
+.folga-item-card__ai-toggle-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.folga-item-card__ai-icon {
+  color: #eab308;
+}
+
+.folga-item-card__ai-content {
+  margin-top: 8px;
+  background: rgba(16, 185, 129, 0.06);
+  border-left: 3px solid #10b981;
+  padding: 8px 10px;
+  border-radius: 0 6px 6px 0;
+  animation: fadeInDown 0.2s ease-out;
+}
+
+.folga-item-card__ai-content p {
+  margin: 0;
+  font-size: 0.76rem;
+  line-height: 1.45;
+  color: var(--ink, #374151);
+}
+
+.folga-item-card__ai-content strong {
+  color: #059669;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Responsividade
+   -------------------------------------------------------------------------- */
+@media (max-width: 768px) {
+  .folga-hero {
+    padding: 18px 20px;
+    gap: 14px;
+  }
+
+  .folga-hero__content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .folga-hero__metric-box {
+    width: 100%;
+  }
+
+  .folga-grid {
+    grid-template-columns: 1fr;
+  }
 }
