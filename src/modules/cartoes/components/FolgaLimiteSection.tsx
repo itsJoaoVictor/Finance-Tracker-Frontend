@@ -41,29 +41,30 @@ export function FolgaLimiteSection({
 }: FolgaLimiteSectionProps) {
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({})
 
-  if (items.length === 0) return null
+  const safeItems = useMemo(() => (Array.isArray(items) ? items : []), [items])
+  const safeCartoes = useMemo(() => (Array.isArray(cartoes) ? cartoes : []), [cartoes])
 
   const formatCurrency = (val: number) =>
-    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val)
+    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val || 0)
 
   // Mapa de cores dos cartões
   const cartaoColorMap = useMemo(() => {
     const map = new Map<string, string>()
-    cartoes.forEach((c) => {
-      if (c.id && c.corHexadecimal) {
+    safeCartoes.forEach((c) => {
+      if (c && c.id && c.corHexadecimal) {
         map.set(c.id, c.corHexadecimal)
       }
     })
     return map
-  }, [cartoes])
+  }, [safeCartoes])
 
   const getColor = (cartaoId: string, cartaoNome: string) => {
     return cartaoColorMap.get(cartaoId) || getFallbackColor(cartaoNome)
   }
 
   const totalFolgado = useMemo(
-    () => items.reduce((acc, item) => acc + item.impactoMensal, 0),
-    [items]
+    () => safeItems.reduce((acc, item) => acc + (Number(item?.impactoMensal) || 0), 0),
+    [safeItems]
   )
 
   // Agrupamento por cartão para exibir badges de alívio por cartão no Hero Banner
@@ -72,27 +73,32 @@ export function FolgaLimiteSection({
       string,
       { cartaoId: string; cartaoNome: string; total: number; cor: string; count: number }
     >()
-    items.forEach((item) => {
+    safeItems.forEach((item) => {
       const cor = getColor(item.cartaoId, item.cartaoNome)
       const existing = map.get(item.cartaoId) || {
         cartaoId: item.cartaoId,
-        cartaoNome: item.cartaoNome,
+        cartaoNome: item.cartaoNome || 'Cartão',
         total: 0,
         cor,
         count: 0
       }
-      existing.total += item.impactoMensal
+      existing.total += Number(item.impactoMensal) || 0
       existing.count += 1
       map.set(item.cartaoId, existing)
     })
     return Array.from(map.values())
-  }, [items, cartaoColorMap])
+  }, [safeItems, cartaoColorMap])
 
   const toggleExpand = (id: string) => {
     setExpandedItems((prev) => ({
       ...prev,
       [id]: !prev[id]
     }))
+  }
+
+  // O early return só pode ocorrer DEPOIS de todos os hooks do React
+  if (safeItems.length === 0) {
+    return null
   }
 
   return (
@@ -138,7 +144,8 @@ export function FolgaLimiteSection({
             <div className="folga-hero__metric-count">
               <CheckCircle2 size={13} />
               <span>
-                {items.length} {items.length === 1 ? 'parcelamento quitado' : 'parcelamentos quitados'}
+                {safeItems.length}{' '}
+                {safeItems.length === 1 ? 'parcelamento quitado' : 'parcelamentos quitados'}
               </span>
             </div>
           </div>
@@ -149,23 +156,21 @@ export function FolgaLimiteSection({
           <div className="folga-hero__breakdown">
             <span className="folga-hero__breakdown-title">Alívio por fatura:</span>
             <div className="folga-hero__breakdown-chips">
-              {breakdownPorCartao.map((bc) => {
-                return (
-                  <div key={bc.cartaoId} className="folga-breakdown-chip">
-                    <span
-                      className="folga-breakdown-chip__dot"
-                      style={{ backgroundColor: bc.cor }}
-                    />
-                    <span className="folga-breakdown-chip__name">{bc.cartaoNome}:</span>
-                    <span className="folga-breakdown-chip__value">
-                      +{formatCurrency(bc.total)}/mês
-                    </span>
-                    <span className="folga-breakdown-chip__badge">
-                      {bc.count} {bc.count === 1 ? 'item' : 'itens'}
-                    </span>
-                  </div>
-                )
-              })}
+              {breakdownPorCartao.map((bc) => (
+                <div key={bc.cartaoId} className="folga-breakdown-chip">
+                  <span
+                    className="folga-breakdown-chip__dot"
+                    style={{ backgroundColor: bc.cor }}
+                  />
+                  <span className="folga-breakdown-chip__name">{bc.cartaoNome}:</span>
+                  <span className="folga-breakdown-chip__value">
+                    +{formatCurrency(bc.total)}/mês
+                  </span>
+                  <span className="folga-breakdown-chip__badge">
+                    {bc.count} {bc.count === 1 ? 'item' : 'itens'}
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
         )}
@@ -173,9 +178,10 @@ export function FolgaLimiteSection({
 
       {/* Grid de Cards Modernos */}
       <div className="folga-grid">
-        {items.map((item) => {
+        {safeItems.map((item) => {
           const cardColor = getColor(item.cartaoId, item.cartaoNome)
           const isExpanded = !!expandedItems[item.id]
+          const impacto = Number(item.impactoMensal) || 0
 
           return (
             <article
@@ -238,7 +244,7 @@ export function FolgaLimiteSection({
                   <div className="folga-item-card__financial">
                     <span className="folga-item-card__financial-label">Valor liberado</span>
                     <div className="folga-item-card__financial-value">
-                      +{formatCurrency(item.impactoMensal)}
+                      +{formatCurrency(impacto)}
                       <span className="folga-item-card__financial-frequency">/mês</span>
                     </div>
                   </div>
@@ -263,8 +269,8 @@ export function FolgaLimiteSection({
                     <div className="folga-item-card__ai-content">
                       <p>
                         A partir da próxima fatura, você terá este valor mensal de{' '}
-                        <strong>{formatCurrency(item.impactoMensal)}</strong> disponível no seu
-                        orçamento. Considere direcionar essa quantia para reserva de emergência ou
+                        <strong>{formatCurrency(impacto)}</strong> disponível no seu orçamento.
+                        Considere direcionar essa quantia para reserva de emergência ou
                         investimentos!
                       </p>
                     </div>
