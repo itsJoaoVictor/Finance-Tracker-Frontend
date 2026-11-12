@@ -244,6 +244,11 @@ export interface FolgaLimiteResponse {
   items: FolgaLimiteItem[]
 }
 
+export interface FolgaLimiteDetalhe {
+  descricao: string
+  valor: number
+}
+
 export interface FolgaLimiteItem {
   id: string
   cartaoId: string
@@ -254,5 +259,8 @@ export interface FolgaLimiteItem {
   impactoMensal: number
   titulo: string
   mensagem: string
+  tipo?: 'PARCELAMENTO' | 'A_VISTA_AGRUPADO'
+  quantidadeCompras?: number
+  detalhes?: FolgaLimiteDetalhe[]
 }
 
