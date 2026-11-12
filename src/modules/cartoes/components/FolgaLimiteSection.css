@@ -265,26 +265,34 @@
 .folga-hero__avista-bar {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   flex-wrap: wrap;
-  padding-top: 10px;
+  padding-top: 12px;
   border-top: 1px dashed rgba(255, 255, 255, 0.16);
   position: relative;
   z-index: 1;
-  font-size: 0.8rem;
-  color: #d1fae5;
 }
 
 .folga-hero__avista-title {
   display: inline-flex;
   align-items: center;
   gap: 5px;
+  font-size: 0.78rem;
   font-weight: 700;
   color: #bae6fd;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
-.folga-hero__avista-summary {
-  color: rgba(255, 255, 255, 0.9);
+.folga-breakdown-chip__value--avista {
+  color: #7dd3fc;
+}
+
+.folga-hero__avista-total {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.85);
+  padding-left: 4px;
 }
 
 /* --------------------------------------------------------------------------

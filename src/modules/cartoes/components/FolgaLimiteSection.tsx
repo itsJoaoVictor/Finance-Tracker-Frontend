@@ -122,6 +122,29 @@ export function FolgaLimiteSection({
     return Array.from(map.values())
   }, [parcelamentoItems, cartaoColorMap])
 
+  // Agrupamento por cartão para compras à vista (1x)
+  const breakdownAVistaPorCartao = useMemo(() => {
+    const map = new Map<
+      string,
+      { cartaoId: string; cartaoNome: string; total: number; cor: string; count: number }
+    >()
+    aVistaItems.forEach((item) => {
+      const cor = getColor(item.cartaoId, item.cartaoNome)
+      const qtd = Number(item.quantidadeCompras) || item.detalhes?.length || 1
+      const existing = map.get(item.cartaoId) || {
+        cartaoId: item.cartaoId,
+        cartaoNome: item.cartaoNome || 'Cartão',
+        total: 0,
+        cor,
+        count: 0
+      }
+      existing.total += Number(item.impactoMensal) || 0
+      existing.count += qtd
+      map.set(item.cartaoId, existing)
+    })
+    return Array.from(map.values())
+  }, [aVistaItems, cartaoColorMap])
+
   const hasParcelamentos = parcelamentoItems.length > 0
   const hasAVista = aVistaItems.length > 0
 
@@ -237,18 +260,35 @@ export function FolgaLimiteSection({
           </div>
         )}
 
-        {/* Resumo secundário das compras à vista (quando também há parcelamentos) */}
-        {hasParcelamentos && hasAVista && (
+        {/* Quebra por Cartão (Compras à Vista 1x) */}
+        {breakdownAVistaPorCartao.length > 0 && (
           <div className="folga-hero__avista-bar">
             <span className="folga-hero__avista-title">
               <Receipt size={13} />
               <span>Sem parcela futura (1x):</span>
             </span>
-            <span className="folga-hero__avista-summary">
-              {formatCurrency(totalAVista)} em {totalComprasAVista}{' '}
-              {totalComprasAVista === 1 ? 'compra à vista' : 'compras à vista'} nesta fatura (não
-              entra na economia mensal recorrente)
-            </span>
+            <div className="folga-hero__breakdown-chips">
+              {breakdownAVistaPorCartao.map((bc) => (
+                <div key={`avista-${bc.cartaoId}`} className="folga-breakdown-chip">
+                  <span
+                    className="folga-breakdown-chip__dot"
+                    style={{ backgroundColor: bc.cor }}
+                  />
+                  <span className="folga-breakdown-chip__name">{bc.cartaoNome}:</span>
+                  <span className="folga-breakdown-chip__value folga-breakdown-chip__value--avista">
+                    {formatCurrency(bc.total)}
+                  </span>
+                  <span className="folga-breakdown-chip__badge">
+                    {bc.count} {bc.count === 1 ? 'compra' : 'compras'}
+                  </span>
+                </div>
+              ))}
+              {hasParcelamentos && breakdownAVistaPorCartao.length > 1 && (
+                <span className="folga-hero__avista-total">
+                  Total: {formatCurrency(totalAVista)}
+                </span>
+              )}
+            </div>
           </div>
         )}
       </div>
