@@ -10,8 +10,11 @@ import {
   Calendar,
   Lock,
   Sparkles,
-  ChevronDown,
-  ChevronUp,
+  ChevronLeft,
+  ChevronRight,
+  Layers,
+  ShoppingBag,
+  Receipt,
   X
 } from 'lucide-react'
 import '../cartoes.css'
@@ -48,7 +51,6 @@ export function CartaoFaturasModal({
   // Cache de itens por faturaId
   const [faturaItems, setFaturaItems] = useState<Record<string, Transacao[]>>({})
   const [itemsLoading, setItemsLoading] = useState<Record<string, boolean>>({})
-  const [expandedFaturaId, setExpandedFaturaId] = useState<string | null>(null)
   const [anteciparTransacao, setAnteciparTransacao] = useState<Transacao | null>(null)
 
   // Filtros rápidos dentro da lista de itens da fatura
@@ -81,12 +83,13 @@ export function CartaoFaturasModal({
       )
       setFaturas(sorted)
 
-      const atual = sorted.find((f) => f.status !== 'PAGA' && !(f.status === 'ATRASADA' && f.rolladoOver))
+      const atual = sorted.find(
+        (f) => f.status !== 'PAGA' && !(f.status === 'ATRASADA' && f.rolladoOver)
+      )
       const initial = atual || (sorted.length > 0 ? sorted[sorted.length - 1] : null)
 
       if (initial) {
         setSelectedFatura(initial)
-        setExpandedFaturaId(initial.id)
       }
     } catch (err) {
       console.error('Erro ao buscar faturas', err)
@@ -108,17 +111,18 @@ export function CartaoFaturasModal({
     }
   }, [])
 
-  // Carrega transações sempre que expandedFaturaId mudar
+  // Carrega transações automaticamente sempre que a fatura selecionada mudar
   useEffect(() => {
-    if (expandedFaturaId) {
-      loadFaturaTransactions(expandedFaturaId)
+    if (selectedFatura) {
+      loadFaturaTransactions(selectedFatura.id)
     }
-  }, [expandedFaturaId, loadFaturaTransactions])
+  }, [selectedFatura, loadFaturaTransactions])
 
   // Separar faturas históricas vs atual vs próximas
   const { historicoFaturas, atualFaturas, proximasFaturas } = useMemo(() => {
     const sortedFaturas = [...faturas].sort(
-      (a, b) => new Date(a.mesReferencia).getTime() - new Date(b.mesReferencia).getTime()
+      (a, b) =>
+        parseLocalDate(a.mesReferencia).getTime() - parseLocalDate(b.mesReferencia).getTime()
     )
 
     const atualIndex = sortedFaturas.findIndex((f) => {
@@ -147,27 +151,31 @@ export function CartaoFaturasModal({
     }
 
     const histSorted = [...hist].sort(
-      (a, b) => new Date(b.mesReferencia).getTime() - new Date(a.mesReferencia).getTime()
+      (a, b) =>
+        parseLocalDate(b.mesReferencia).getTime() - parseLocalDate(a.mesReferencia).getTime()
     )
     const proxSorted = [...prox].sort(
-      (a, b) => new Date(a.mesReferencia).getTime() - new Date(b.mesReferencia).getTime()
+      (a, b) =>
+        parseLocalDate(a.mesReferencia).getTime() - parseLocalDate(b.mesReferencia).getTime()
     )
 
     return { historicoFaturas: histSorted, atualFaturas: atual, proximasFaturas: proxSorted }
   }, [faturas])
 
-  // Sincroniza clique na barra do gráfico com a aba correspondente e já abre as compras daquela fatura
-  function handleSelectFromChart(f: Fatura) {
-    setSelectedFatura(f)
-    setExpandedFaturaId(f.id)
-    if (historicoFaturas.some((hf) => hf.id === f.id)) {
-      setActiveTab('historico')
-    } else if (atualFaturas.some((af) => af.id === f.id)) {
-      setActiveTab('atual')
-    } else if (proximasFaturas.some((pf) => pf.id === f.id)) {
-      setActiveTab('proximas')
-    }
-  }
+  // Sincroniza seleção de qualquer fatura com a aba de período correspondente
+  const selectFaturaAndSyncTab = useCallback(
+    (f: Fatura) => {
+      setSelectedFatura(f)
+      if (historicoFaturas.some((hf) => hf.id === f.id)) {
+        setActiveTab('historico')
+      } else if (atualFaturas.some((af) => af.id === f.id)) {
+        setActiveTab('atual')
+      } else if (proximasFaturas.some((pf) => pf.id === f.id)) {
+        setActiveTab('proximas')
+      }
+    },
+    [historicoFaturas, atualFaturas, proximasFaturas]
+  )
 
   function handleTabChange(tab: 'historico' | 'atual' | 'proximas') {
     setActiveTab(tab)
@@ -175,17 +183,28 @@ export function CartaoFaturasModal({
       tab === 'historico' ? historicoFaturas : tab === 'atual' ? atualFaturas : proximasFaturas
     if (list.length > 0) {
       setSelectedFatura(list[0])
-      setExpandedFaturaId(list[0].id)
     }
   }
 
-  async function handleToggleExpand(f: Fatura) {
-    setSelectedFatura(f)
-    if (expandedFaturaId === f.id) {
-      setExpandedFaturaId(null)
-      return
+  // Navegação rápida mês anterior / próximo mês na linha do tempo completa
+  const currentChronologicalIndex = useMemo(() => {
+    if (!selectedFatura) return -1
+    return faturas.findIndex((f) => f.id === selectedFatura.id)
+  }, [faturas, selectedFatura])
+
+  const canGoPrev = currentChronologicalIndex > 0
+  const canGoNext = currentChronologicalIndex >= 0 && currentChronologicalIndex < faturas.length - 1
+
+  function handlePrevMonth() {
+    if (canGoPrev) {
+      selectFaturaAndSyncTab(faturas[currentChronologicalIndex - 1])
     }
-    setExpandedFaturaId(f.id)
+  }
+
+  function handleNextMonth() {
+    if (canGoNext) {
+      selectFaturaAndSyncTab(faturas[currentChronologicalIndex + 1])
+    }
   }
 
   function formatCurrency(value: number) {
@@ -194,7 +213,7 @@ export function CartaoFaturasModal({
 
   function formatMonthYear(dateString: string) {
     const date = parseLocalDate(dateString)
-    const options: Intl.DateTimeFormatOptions = { month: 'long', year: '2-digit' }
+    const options: Intl.DateTimeFormatOptions = { month: 'long', year: 'numeric' }
     const formatted = date.toLocaleDateString('pt-BR', options)
     return formatted.charAt(0).toUpperCase() + formatted.slice(1)
   }
@@ -212,8 +231,8 @@ export function CartaoFaturasModal({
 
   function formatLongDate(dateString: string) {
     const date = parseLocalDate(dateString)
-    const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long' }
-    return date.toLocaleDateString('pt-BR', options)
+    const options: Intl.DateTimeFormatOptions = { day: '2-digit', month: 'short' }
+    return date.toLocaleDateString('pt-BR', options).replace('.', '')
   }
 
   // Drag to scroll para o gráfico
@@ -270,6 +289,58 @@ export function CartaoFaturasModal({
 
   const cardBrand = cartao.corHexadecimal || '#8A05BE'
 
+  const isSelectedCurrentCycle = useMemo(() => {
+    if (!selectedFatura) return false
+    return atualFaturas.some((af) => af.id === selectedFatura.id)
+  }, [selectedFatura, atualFaturas])
+
+  // Lista de faturas do grupo ativo (para mostrar seletor rápido quando houver múltiplos meses no grupo)
+  const activeGroupList = useMemo(() => {
+    if (activeTab === 'historico') return historicoFaturas
+    if (activeTab === 'atual') return atualFaturas
+    return proximasFaturas
+  }, [activeTab, historicoFaturas, atualFaturas, proximasFaturas])
+
+  // Itens da fatura atualmente selecionada (painel direito)
+  const rawItems = selectedFatura ? faturaItems[selectedFatura.id] || [] : []
+  const isLoadingSelectedItems = selectedFatura ? !!itemsLoading[selectedFatura.id] : false
+
+  const { parceladasCount, avistaCount, parceladasTotal, avistaTotal } = useMemo(() => {
+    let pCount = 0
+    let aCount = 0
+    let pTotal = 0
+    let aTotal = 0
+    rawItems.forEach((item) => {
+      if (item.totalParcelas && item.totalParcelas > 1) {
+        pCount++
+        pTotal += item.valor
+      } else {
+        aCount++
+        aTotal += item.valor
+      }
+    })
+    return {
+      parceladasCount: pCount,
+      avistaCount: aCount,
+      parceladasTotal: pTotal,
+      avistaTotal: aTotal
+    }
+  }, [rawItems])
+
+  const filteredItems = useMemo(() => {
+    return rawItems.filter((item) => {
+      const matchesSearch =
+        !searchTerm.trim() ||
+        item.descricao.toLowerCase().includes(searchTerm.trim().toLowerCase())
+      const isParcelada = !!(item.totalParcelas && item.totalParcelas > 1)
+      const matchesFilter =
+        itemFilter === 'todas' ||
+        (itemFilter === 'parceladas' && isParcelada) ||
+        (itemFilter === 'avista' && !isParcelada)
+      return matchesSearch && matchesFilter
+    })
+  }, [rawItems, searchTerm, itemFilter])
+
   return (
     <div className="invoice-modal-overlay" onClick={onClose}>
       <div
@@ -277,18 +348,61 @@ export function CartaoFaturasModal({
         onClick={(e) => e.stopPropagation()}
         style={{ '--invoice-brand': cardBrand } as React.CSSProperties}
       >
-        {/* Header do Modal */}
+        {/* Header Superior com Segmented Control de Períodos */}
         <div className="invoice-modal-header" style={{ borderLeftColor: cardBrand }}>
-          <div>
+          <div className="invoice-modal-header__left">
             <div className="invoice-modal-header__eyebrow">
               <span className="invoice-modal-header__dot" style={{ backgroundColor: cardBrand }} />
               <span>Gestão de Ciclos & Lançamentos</span>
             </div>
             <h2 className="invoice-modal-title">Faturas • {cartao.nome}</h2>
           </div>
-          <button type="button" className="invoice-modal-close" onClick={onClose} aria-label="Fechar">
-            <X size={18} />
-          </button>
+
+          <div className="invoice-modal-header__right">
+            {!loading && faturas.length > 0 && (
+              <div className="invoice-period-segmented" role="tablist" aria-label="Período das faturas">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={activeTab === 'historico'}
+                  className={`invoice-period-seg-btn ${activeTab === 'historico' ? 'active' : ''}`}
+                  onClick={() => handleTabChange('historico')}
+                >
+                  <span>Histórico</span>
+                  <span className="invoice-period-seg-count">{historicoFaturas.length}</span>
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={activeTab === 'atual'}
+                  className={`invoice-period-seg-btn ${activeTab === 'atual' ? 'active' : ''}`}
+                  onClick={() => handleTabChange('atual')}
+                >
+                  <span>Fatura atual</span>
+                  <span className="invoice-period-seg-count">{atualFaturas.length}</span>
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={activeTab === 'proximas'}
+                  className={`invoice-period-seg-btn ${activeTab === 'proximas' ? 'active' : ''}`}
+                  onClick={() => handleTabChange('proximas')}
+                >
+                  <span>Próximas</span>
+                  <span className="invoice-period-seg-count">{proximasFaturas.length}</span>
+                </button>
+              </div>
+            )}
+
+            <button
+              type="button"
+              className="invoice-modal-close"
+              onClick={onClose}
+              aria-label="Fechar"
+            >
+              <X size={18} />
+            </button>
+          </div>
         </div>
 
         {loading ? (
@@ -296,245 +410,461 @@ export function CartaoFaturasModal({
             <div className="spinner"></div>
             <p>Carregando faturas...</p>
           </div>
+        ) : faturas.length === 0 ? (
+          <div className="invoice-modal-loading">
+            <Receipt size={36} />
+            <p>Nenhuma fatura encontrada para este cartão.</p>
+          </div>
         ) : (
-          <div className="invoice-modal-content">
-            {/* Bloco de Destaque da Fatura Selecionada */}
-            {selectedFatura &&
-              (() => {
-                const valorPago = selectedFatura.valorPago || 0
-                const restante = Math.max(0, selectedFatura.valorTotal - valorPago)
-                const valorExibido =
-                  selectedFatura.status === 'PAGA' ? selectedFatura.valorTotal : restante
-
-                let statusLabel = 'Fatura fechada'
-                if (selectedFatura.status === 'ABERTA') statusLabel = 'Fatura atual / aberta'
-                else if (selectedFatura.status === 'PAGA') statusLabel = 'Fatura paga'
-                else if (selectedFatura.status === 'PAGA_PARCIAL')
-                  statusLabel = 'Fatura paga parcialmente'
-                else if (selectedFatura.status === 'ATRASADA') statusLabel = 'Fatura atrasada'
-
-                return (
-                  <div className="invoice-detail-card">
-                    <div className="invoice-detail-card__top">
-                      <div className="invoice-detail-card__badges">
-                        <span className="invoice-detail-card__status">{statusLabel}</span>
-                        <span className="invoice-detail-card__month-pill">
-                          {formatMonthYear(selectedFatura.mesReferencia)}
-                        </span>
-                        {valorPago > 0 && selectedFatura.status !== 'PAGA' && (
-                          <span className="invoice-detail-card__prepaid">
-                            {formatCurrency(valorPago)} antecipado
-                          </span>
-                        )}
-                      </div>
-
-                      {onPagarFatura && selectedFatura.status !== 'PAGA' && restante > 0 && (
-                        <button
-                          type="button"
-                          className="invoice-detail-card__pay-btn"
-                          onClick={() => {
-                            onClose()
-                            onPagarFatura(cartao)
-                          }}
-                        >
-                          <DollarSign size={14} />
-                          <span>Pagar Fatura</span>
-                        </button>
-                      )}
-                    </div>
-
-                    <h3 className="invoice-detail-card__value">{formatCurrency(valorExibido)}</h3>
-
-                    {valorPago > 0 && selectedFatura.status !== 'PAGA' && (
-                      <div className="invoice-detail-card__subbreakdown">
-                        Total de compras: <strong>{formatCurrency(selectedFatura.valorTotal)}</strong>{' '}
-                        • Restante: <strong>{formatCurrency(restante)}</strong>
-                      </div>
-                    )}
-
-                    <div className="invoice-detail-card__dates">
-                      <span>
-                        <Calendar size={13} /> Vencimento:{' '}
-                        <strong>{formatLongDate(selectedFatura.dataVencimento)}</strong>
-                      </span>
-                      <span className="divider">•</span>
-                      <span>
-                        <Lock size={13} /> Fechamento:{' '}
-                        <strong>{formatLongDate(selectedFatura.dataFechamento)}</strong>
-                      </span>
-                    </div>
-                  </div>
-                )
-              })()}
-
-            {/* Banner de Projeção IA (se disponível) */}
-            {projecao && projecao.statusFatura !== 'SEM_FATURA' && (
-              <div
-                className="invoice-ai-projection"
-                style={{
-                  borderLeftColor:
-                    projecao.classificacao === 'ACIMA'
-                      ? '#E11D48'
-                      : projecao.classificacao === 'ABAIXO'
-                      ? '#10B981'
-                      : cardBrand
-                }}
-              >
-                <div className="invoice-ai-projection__top">
-                  <span className="invoice-ai-projection__title">
-                    <Sparkles size={14} />
-                    {projecao.statusFatura === 'ABERTA'
-                      ? 'Projeção de Fechamento IA'
-                      : 'Resultado do Fechamento'}
-                  </span>
-                  {projecao.mediaHistorica != null && projecao.desvioPercentual != null && (
-                    <span
-                      className="invoice-ai-projection__badge"
-                      style={{
-                        color:
-                          projecao.desvioPercentual > 10
-                            ? '#E11D48'
-                            : projecao.desvioPercentual < -10
-                            ? '#10B981'
-                            : 'var(--ink)'
-                      }}
-                    >
-                      {projecao.desvioPercentual > 0
-                        ? '↑'
-                        : projecao.desvioPercentual < 0
-                        ? '↓'
-                        : '='}{' '}
-                      {Math.abs(projecao.desvioPercentual).toFixed(0)}% vs média (
-                      {formatCurrency(projecao.mediaHistorica)})
-                    </span>
-                  )}
-                </div>
-                <div className="invoice-ai-projection__row">
-                  <strong className="invoice-ai-projection__val">
-                    {formatCurrency(
-                      projecao.statusFatura === 'FECHADA' && projecao.valorRealFechado != null
-                        ? projecao.valorRealFechado
-                        : projecao.projecaoFechamento
-                    )}
-                  </strong>
-                  {projecao.mensagemResumo && (
-                    <span className="invoice-ai-projection__msg">{projecao.mensagemResumo}</span>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* GRÁFICO DE BARRAS INTERATIVO SINCRONIZADO */}
-            {faturas.length > 0 && (
-              <div className="invoice-chart-container">
-                <div className="invoice-chart-header">
-                  <h4 className="invoice-section-title">Evolução Mensal</h4>
-                  <span className="invoice-chart-hint">
-                    Clique em qualquer barra para abrir os itens do mês
-                  </span>
-                </div>
-                <div
-                  className="invoice-bar-chart"
-                  id="invoice-bar-chart"
-                  onMouseDown={handleMouseDown}
-                  onMouseLeave={handleMouseLeave}
-                  onMouseUp={handleMouseUp}
-                  onMouseMove={handleMouseMove}
-                  style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
-                >
-                  {faturas.map((f) => {
-                    const valorPago = f.valorPago || 0
-                    const valorEfetivo =
-                      f.status === 'PAGA' ? f.valorTotal : Math.max(0, f.valorTotal - valorPago)
-                    const heightPercent = (valorEfetivo / maxFaturaValue) * 78 + 12
-                    const isSelected = selectedFatura?.id === f.id
-
+          <div className="invoice-modal-split">
+            {/* COLUNA ESQUERDA: Resumo da Fatura Selecionada + Gráfico Mensal + Projeção IA Contextual */}
+            <aside className="invoice-modal-left">
+              {/* Seletor rápido de meses quando a aba ativa possui mais de 1 fatura */}
+              {activeGroupList.length > 1 && (
+                <div className="invoice-month-pills-strip">
+                  {activeGroupList.map((f) => {
+                    const isActive = selectedFatura?.id === f.id
                     return (
-                      <div
+                      <button
                         key={f.id}
-                        id={`chart-col-${f.id}`}
-                        className={`invoice-chart-column ${isSelected ? 'selected' : ''}`}
-                        onClick={() => handleSelectFromChart(f)}
+                        type="button"
+                        className={`invoice-month-quick-pill ${isActive ? 'active' : ''}`}
+                        onClick={() => setSelectedFatura(f)}
                       >
-                        <div className="chart-bar-tooltip">
-                          {formatCurrency(valorEfetivo)}
-                          {valorPago > 0 &&
-                            f.status !== 'PAGA' &&
-                            ` (Total: ${formatCurrency(f.valorTotal)})`}
-                        </div>
-                        <div
-                          className="chart-bar-fill"
-                          style={{
-                            height: `${heightPercent}%`,
-                            background: cardBrand
-                          }}
-                        />
-                        <span className="chart-bar-label">
-                          {formatShortMonthYear(f.mesReferencia)}
-                        </span>
-                      </div>
+                        <span>{formatShortMonthYear(f.mesReferencia)}</span>
+                      </button>
                     )
                   })}
                 </div>
-              </div>
-            )}
-
-            {/* ABAS HISTÓRICO VS ATUAL VS PRÓXIMAS */}
-            <div className="invoice-tabs-wrapper">
-              <div className="invoice-tabs">
-                <button
-                  type="button"
-                  className={`invoice-tab-btn ${activeTab === 'historico' ? 'active' : ''}`}
-                  onClick={() => handleTabChange('historico')}
-                  style={{
-                    borderBottomColor: activeTab === 'historico' ? cardBrand : 'transparent'
-                  }}
-                >
-                  Histórico ({historicoFaturas.length})
-                </button>
-                <button
-                  type="button"
-                  className={`invoice-tab-btn ${activeTab === 'atual' ? 'active' : ''}`}
-                  onClick={() => handleTabChange('atual')}
-                  style={{
-                    borderBottomColor: activeTab === 'atual' ? cardBrand : 'transparent'
-                  }}
-                >
-                  Fatura atual ({atualFaturas.length})
-                </button>
-                <button
-                  type="button"
-                  className={`invoice-tab-btn ${activeTab === 'proximas' ? 'active' : ''}`}
-                  onClick={() => handleTabChange('proximas')}
-                  style={{
-                    borderBottomColor: activeTab === 'proximas' ? cardBrand : 'transparent'
-                  }}
-                >
-                  Próximas faturas ({proximasFaturas.length})
-                </button>
-              </div>
-            </div>
-
-            {/* LISTAGEM DE FATURAS EXPANSÍVEIS */}
-            <div className="invoice-list">
-              {activeTab === 'historico' ? (
-                historicoFaturas.length === 0 ? (
-                  <p className="invoice-list-empty">Nenhuma fatura anterior no histórico.</p>
-                ) : (
-                  historicoFaturas.map((f) => renderFaturaRow(f))
-                )
-              ) : activeTab === 'atual' ? (
-                atualFaturas.length === 0 ? (
-                  <p className="invoice-list-empty">Nenhuma fatura pendente no período atual.</p>
-                ) : (
-                  atualFaturas.map((f) => renderFaturaRow(f))
-                )
-              ) : proximasFaturas.length === 0 ? (
-                <p className="invoice-list-empty">Nenhuma fatura futura projetada.</p>
-              ) : (
-                proximasFaturas.map((f) => renderFaturaRow(f))
               )}
-            </div>
+
+              {/* Card Hero de Resumo da Fatura Selecionada */}
+              {selectedFatura &&
+                (() => {
+                  const valorPago = selectedFatura.valorPago || 0
+                  const restante = Math.max(0, selectedFatura.valorTotal - valorPago)
+                  const valorExibido =
+                    selectedFatura.status === 'PAGA' ? selectedFatura.valorTotal : restante
+
+                  const isAtual = atualFaturas.some((af) => af.id === selectedFatura.id)
+                  const isFutura = proximasFaturas.some((pf) => pf.id === selectedFatura.id)
+
+                  let statusLabel = 'Fatura fechada'
+                  let statusTone: 'open' | 'future' | 'closed' | 'paid' | 'overdue' = 'closed'
+
+                  if (selectedFatura.status === 'ABERTA') {
+                    if (isFutura) {
+                      statusLabel = 'Fatura futura'
+                      statusTone = 'future'
+                    } else if (isAtual) {
+                      statusLabel = 'Fatura atual • aberta'
+                      statusTone = 'open'
+                    } else {
+                      statusLabel = 'Fatura aberta'
+                      statusTone = 'open'
+                    }
+                  } else if (selectedFatura.status === 'PAGA') {
+                    statusLabel = 'Fatura paga'
+                    statusTone = 'paid'
+                  } else if (selectedFatura.status === 'PAGA_PARCIAL') {
+                    statusLabel = 'Paga parcialmente'
+                    statusTone = 'open'
+                  } else if (selectedFatura.status === 'ATRASADA') {
+                    statusLabel = 'Fatura atrasada'
+                    statusTone = 'overdue'
+                  }
+
+                  return (
+                    <div className="invoice-detail-card">
+                      {/* Linha de Navegação de Mês (< Novembro de 2026 >) */}
+                      <div className="invoice-detail-card__nav-row">
+                        <div className="invoice-detail-card__month-heading">
+                          <span className="invoice-detail-card__month-title">
+                            {formatMonthYear(selectedFatura.mesReferencia)}
+                          </span>
+                          <span
+                            className={`invoice-detail-card__status invoice-detail-card__status--${statusTone}`}
+                          >
+                            {statusLabel}
+                          </span>
+                        </div>
+
+                        <div className="invoice-detail-card__arrows">
+                          <button
+                            type="button"
+                            className="invoice-nav-arrow-btn"
+                            onClick={handlePrevMonth}
+                            disabled={!canGoPrev}
+                            title="Mês anterior"
+                            aria-label="Mês anterior"
+                          >
+                            <ChevronLeft size={16} />
+                          </button>
+                          <button
+                            type="button"
+                            className="invoice-nav-arrow-btn"
+                            onClick={handleNextMonth}
+                            disabled={!canGoNext}
+                            title="Próximo mês"
+                            aria-label="Próximo mês"
+                          >
+                            <ChevronRight size={16} />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Valor Principal e Botão Pagar */}
+                      <div className="invoice-detail-card__main-row">
+                        <div>
+                          <span className="invoice-detail-card__label">
+                            {selectedFatura.status === 'PAGA'
+                              ? 'Valor pago'
+                              : isFutura
+                              ? 'Total previsto até o momento'
+                              : 'Valor a pagar'}
+                          </span>
+                          <h3 className="invoice-detail-card__value">
+                            {formatCurrency(valorExibido)}
+                          </h3>
+                        </div>
+
+                        {onPagarFatura && selectedFatura.status !== 'PAGA' && restante > 0 && (
+                          <button
+                            type="button"
+                            className="invoice-detail-card__pay-btn"
+                            onClick={() => {
+                              onClose()
+                              onPagarFatura(cartao)
+                            }}
+                          >
+                            <DollarSign size={14} />
+                            <span>Pagar Fatura</span>
+                          </button>
+                        )}
+                      </div>
+
+                      {valorPago > 0 && selectedFatura.status !== 'PAGA' && (
+                        <div className="invoice-detail-card__subbreakdown">
+                          <span>
+                            Compras: <strong>{formatCurrency(selectedFatura.valorTotal)}</strong>
+                          </span>
+                          <span className="invoice-detail-card__prepaid">
+                            − {formatCurrency(valorPago)} antecipado
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Datas em Grid de 2 Colunas */}
+                      <div className="invoice-detail-card__dates-grid">
+                        <div className="invoice-date-pill">
+                          <Lock size={13} className="invoice-date-pill__icon" />
+                          <div>
+                            <span className="invoice-date-pill__label">Fechamento</span>
+                            <strong className="invoice-date-pill__val">
+                              {formatLongDate(selectedFatura.dataFechamento)}
+                            </strong>
+                          </div>
+                        </div>
+
+                        <div className="invoice-date-pill">
+                          <Calendar size={13} className="invoice-date-pill__icon" />
+                          <div>
+                            <span className="invoice-date-pill__label">Vencimento</span>
+                            <strong className="invoice-date-pill__val">
+                              {formatLongDate(selectedFatura.dataVencimento)}
+                            </strong>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })()}
+
+              {/* GRÁFICO DE BARRAS INTERATIVO SINCRONIZADO */}
+              {faturas.length > 0 && (
+                <div className="invoice-chart-container">
+                  <div className="invoice-chart-header">
+                    <h4 className="invoice-section-title">Evolução Mensal</h4>
+                    <span className="invoice-chart-hint">Clique na barra para alternar o mês</span>
+                  </div>
+                  <div
+                    className="invoice-bar-chart"
+                    id="invoice-bar-chart"
+                    onMouseDown={handleMouseDown}
+                    onMouseLeave={handleMouseLeave}
+                    onMouseUp={handleMouseUp}
+                    onMouseMove={handleMouseMove}
+                    style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
+                  >
+                    {faturas.map((f) => {
+                      const valorPago = f.valorPago || 0
+                      const valorEfetivo =
+                        f.status === 'PAGA' ? f.valorTotal : Math.max(0, f.valorTotal - valorPago)
+                      const heightPercent = (valorEfetivo / maxFaturaValue) * 74 + 14
+                      const isSelected = selectedFatura?.id === f.id
+                      const isCurrent = atualFaturas.some((af) => af.id === f.id)
+
+                      return (
+                        <div
+                          key={f.id}
+                          id={`chart-col-${f.id}`}
+                          className={`invoice-chart-column ${isSelected ? 'selected' : ''} ${
+                            isCurrent ? 'current' : ''
+                          }`}
+                          onClick={() => selectFaturaAndSyncTab(f)}
+                        >
+                          <div className="chart-bar-tooltip">{formatCurrency(valorEfetivo)}</div>
+                          <div
+                            className="chart-bar-fill"
+                            style={{
+                              height: `${heightPercent}%`,
+                              background: cardBrand
+                            }}
+                          />
+                          <span className="chart-bar-label">
+                            {formatShortMonthYear(f.mesReferencia)}
+                          </span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Banner de Projeção IA — exibido SOMENTE quando a fatura atual está selecionada */}
+              {isSelectedCurrentCycle && projecao && projecao.statusFatura !== 'SEM_FATURA' && (
+                <div
+                  className="invoice-ai-projection"
+                  style={{
+                    borderLeftColor:
+                      projecao.classificacao === 'ACIMA'
+                        ? '#E11D48'
+                        : projecao.classificacao === 'ABAIXO'
+                        ? '#10B981'
+                        : cardBrand
+                  }}
+                >
+                  <div className="invoice-ai-projection__top">
+                    <span className="invoice-ai-projection__title">
+                      <Sparkles size={13} />
+                      {projecao.statusFatura === 'ABERTA'
+                        ? 'Projeção de Fechamento IA'
+                        : 'Resultado do Fechamento'}
+                    </span>
+                    {projecao.mediaHistorica != null && projecao.desvioPercentual != null && (
+                      <span
+                        className="invoice-ai-projection__badge"
+                        style={{
+                          color:
+                            projecao.desvioPercentual > 10
+                              ? '#E11D48'
+                              : projecao.desvioPercentual < -10
+                              ? '#10B981'
+                              : 'var(--ink)'
+                        }}
+                      >
+                        {projecao.desvioPercentual > 0
+                          ? '↑'
+                          : projecao.desvioPercentual < 0
+                          ? '↓'
+                          : '='}{' '}
+                        {Math.abs(projecao.desvioPercentual).toFixed(0)}% vs média (
+                        {formatCurrency(projecao.mediaHistorica)})
+                      </span>
+                    )}
+                  </div>
+                  <div className="invoice-ai-projection__row">
+                    <strong className="invoice-ai-projection__val">
+                      {formatCurrency(
+                        projecao.statusFatura === 'FECHADA' && projecao.valorRealFechado != null
+                          ? projecao.valorRealFechado
+                          : projecao.projecaoFechamento
+                      )}
+                    </strong>
+                    {projecao.mensagemResumo && (
+                      <p className="invoice-ai-projection__msg">{projecao.mensagemResumo}</p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </aside>
+
+            {/* COLUNA DIREITA: 100% dedicada aos Lançamentos da Fatura Selecionada */}
+            <section className="invoice-modal-right">
+              {selectedFatura && (
+                <>
+                  {/* Cabeçalho Fixo da Lista de Compras */}
+                  <div className="invoice-right-header">
+                    <div className="invoice-right-header__top">
+                      <div className="invoice-right-header__title-group">
+                        <h3 className="invoice-right-header__title">
+                          Lançamentos de {formatMonthYear(selectedFatura.mesReferencia)}
+                        </h3>
+                        <span className="invoice-right-header__count-badge">
+                          {rawItems.length} {rawItems.length === 1 ? 'compra' : 'compras'}
+                        </span>
+                      </div>
+
+                      {rawItems.length > 0 && (
+                        <div className="invoice-right-header__breakdown">
+                          <span className="invoice-mini-stat">
+                            Parceladas: <strong>{formatCurrency(parceladasTotal)}</strong>
+                          </span>
+                          <span className="invoice-mini-stat-dot">•</span>
+                          <span className="invoice-mini-stat">
+                            À vista: <strong>{formatCurrency(avistaTotal)}</strong>
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Barra de Busca e Filtros Rápidos */}
+                    <div className="invoice-items-toolbar">
+                      <div className="invoice-search-box">
+                        <Search size={14} className="invoice-search-box__icon" />
+                        <input
+                          type="text"
+                          placeholder="Buscar compra nesta fatura..."
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          className="invoice-search-box__input"
+                        />
+                        {searchTerm && (
+                          <button
+                            type="button"
+                            className="invoice-search-box__clear"
+                            onClick={() => setSearchTerm('')}
+                            aria-label="Limpar busca"
+                          >
+                            ✕
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="invoice-filter-pills">
+                        <button
+                          type="button"
+                          className={`invoice-filter-pill ${
+                            itemFilter === 'todas' ? 'active' : ''
+                          }`}
+                          onClick={() => setItemFilter('todas')}
+                        >
+                          Todas ({rawItems.length})
+                        </button>
+                        <button
+                          type="button"
+                          className={`invoice-filter-pill ${
+                            itemFilter === 'parceladas' ? 'active' : ''
+                          }`}
+                          onClick={() => setItemFilter('parceladas')}
+                        >
+                          Parceladas ({parceladasCount})
+                        </button>
+                        <button
+                          type="button"
+                          className={`invoice-filter-pill ${
+                            itemFilter === 'avista' ? 'active' : ''
+                          }`}
+                          onClick={() => setItemFilter('avista')}
+                        >
+                          À vista ({avistaCount})
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Área Rolável Dedicada de Transações */}
+                  <div className="invoice-items-scroll">
+                    {isLoadingSelectedItems ? (
+                      <div className="invoice-items-state">
+                        <div className="spinner"></div>
+                        <span>Carregando lançamentos de {formatMonthYear(selectedFatura.mesReferencia)}...</span>
+                      </div>
+                    ) : filteredItems.length === 0 ? (
+                      <div className="invoice-items-state">
+                        <ShoppingBag size={28} />
+                        <span>
+                          {rawItems.length === 0
+                            ? 'Nenhuma compra registrada nesta fatura.'
+                            : 'Nenhuma compra corresponde ao filtro aplicado.'}
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="invoice-items-list">
+                        {filteredItems.map((item) => {
+                          const isParcelada = !!(item.totalParcelas && item.totalParcelas > 1)
+                          const isLastInstallment =
+                            isParcelada && item.numeroParcela === item.totalParcelas
+
+                          return (
+                            <div key={item.id} className="invoice-item-entry">
+                              <div className="invoice-item-entry__left">
+                                <div
+                                  className={`invoice-item-icon ${
+                                    isParcelada
+                                      ? 'invoice-item-icon--installment'
+                                      : 'invoice-item-icon--single'
+                                  }`}
+                                >
+                                  {isParcelada ? <Layers size={15} /> : <ShoppingBag size={15} />}
+                                </div>
+
+                                <div className="invoice-item-info">
+                                  <span className="invoice-item-desc" title={item.descricao}>
+                                    {item.descricao}
+                                  </span>
+                                  <div className="invoice-item-meta">
+                                    <span className="invoice-item-date">
+                                      {formatDate(item.data)}
+                                    </span>
+                                    {isParcelada ? (
+                                      <span className="invoice-item-installments">
+                                        Parcela {item.numeroParcela}/{item.totalParcelas}
+                                        {isLastInstallment && (
+                                          <span
+                                            className="invoice-item-installments__badge"
+                                            title="Última parcela — libera limite na próxima fatura"
+                                          >
+                                            ✨ Última
+                                          </span>
+                                        )}
+                                      </span>
+                                    ) : (
+                                      <span className="invoice-item-installments invoice-item-installments--1x">
+                                        1x à vista
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="invoice-item-entry__right">
+                                {item.tipo === 'COMPRA_CREDITO' &&
+                                  isParcelada &&
+                                  !item.estornada && (
+                                    <button
+                                      type="button"
+                                      className="invoice-item-action-btn"
+                                      onClick={() => setAnteciparTransacao(item)}
+                                      title="Antecipar parcelas"
+                                    >
+                                      <FastForward size={13} />
+                                      <span>Antecipar</span>
+                                    </button>
+                                  )}
+                                <span className="invoice-item-price">
+                                  {formatCurrency(item.valor)}
+                                </span>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
+            </section>
           </div>
         )}
       </div>
@@ -552,198 +882,4 @@ export function CartaoFaturasModal({
       )}
     </div>
   )
-
-  function renderFaturaRow(f: Fatura) {
-    const isExpanded = expandedFaturaId === f.id
-    const rawItems = faturaItems[f.id] || []
-    const isLoadingItems = itemsLoading[f.id]
-
-    const filteredItems = rawItems.filter((item) => {
-      const matchesSearch =
-        !searchTerm.trim() ||
-        item.descricao.toLowerCase().includes(searchTerm.trim().toLowerCase())
-      const isParcelada = !!(item.totalParcelas && item.totalParcelas > 1)
-      const matchesFilter =
-        itemFilter === 'todas' ||
-        (itemFilter === 'parceladas' && isParcelada) ||
-        (itemFilter === 'avista' && !isParcelada)
-      return matchesSearch && matchesFilter
-    })
-
-    let statusText = 'Fatura fechada'
-    let statusClass = 'closed'
-
-    const isAtual = atualFaturas.some((af) => af.id === f.id)
-    const isFutura = proximasFaturas.some((pf) => pf.id === f.id)
-
-    if (f.status === 'ABERTA') {
-      if (isFutura) {
-        statusText = 'Fatura aberta'
-        statusClass = 'open'
-      } else if (isAtual) {
-        statusText = 'Fatura atual'
-        statusClass = 'open'
-      } else {
-        statusText = 'Fatura em aberto'
-        statusClass = 'open'
-      }
-    } else if (f.status === 'FECHADA') {
-      if (isAtual) {
-        statusText = 'Fatura atual / fechada'
-        statusClass = 'closed'
-      } else {
-        statusText = 'Fatura fechada'
-        statusClass = 'closed'
-      }
-    } else if (f.status === 'PAGA') {
-      statusText = 'Fatura paga'
-      statusClass = 'paid'
-    } else if (f.status === 'ATRASADA') {
-      statusText = 'Fatura atrasada'
-      statusClass = 'overdue'
-    }
-
-    const valorPago = f.valorPago || 0
-    const restante = Math.max(0, f.valorTotal - valorPago)
-    const valorExibido = f.status === 'PAGA' ? f.valorTotal : restante
-
-    return (
-      <div key={f.id} className={`invoice-row-card ${isExpanded ? 'expanded' : ''}`}>
-        <div className="invoice-row-header" onClick={() => handleToggleExpand(f)}>
-          <div className="invoice-row-header__left">
-            <span className="invoice-row-month">{formatMonthYear(f.mesReferencia)}</span>
-            <span className={`invoice-row-status invoice-row-status--${statusClass}`}>
-              {statusText}
-            </span>
-          </div>
-          <div className="invoice-row-header__right">
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
-              <span className="invoice-row-value">{formatCurrency(valorExibido)}</span>
-              {valorPago > 0 && f.status !== 'PAGA' && (
-                <span style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>
-                  Total: {formatCurrency(f.valorTotal)}
-                </span>
-              )}
-            </div>
-            <span className="invoice-row-arrow">
-              {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-            </span>
-          </div>
-        </div>
-
-        {isExpanded && (
-          <div className="invoice-row-body">
-            {/* Barra de Busca e Filtro Rápido */}
-            {rawItems.length > 0 && (
-              <div className="invoice-items-toolbar" onClick={(e) => e.stopPropagation()}>
-                <div className="invoice-search-box">
-                  <Search size={14} className="invoice-search-box__icon" />
-                  <input
-                    type="text"
-                    placeholder="Buscar compra nesta fatura..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="invoice-search-box__input"
-                  />
-                  {searchTerm && (
-                    <button
-                      type="button"
-                      className="invoice-search-box__clear"
-                      onClick={() => setSearchTerm('')}
-                    >
-                      ✕
-                    </button>
-                  )}
-                </div>
-
-                <div className="invoice-filter-pills">
-                  <button
-                    type="button"
-                    className={`invoice-filter-pill ${itemFilter === 'todas' ? 'active' : ''}`}
-                    onClick={() => setItemFilter('todas')}
-                  >
-                    Todas ({rawItems.length})
-                  </button>
-                  <button
-                    type="button"
-                    className={`invoice-filter-pill ${itemFilter === 'parceladas' ? 'active' : ''}`}
-                    onClick={() => setItemFilter('parceladas')}
-                  >
-                    Parceladas
-                  </button>
-                  <button
-                    type="button"
-                    className={`invoice-filter-pill ${itemFilter === 'avista' ? 'active' : ''}`}
-                    onClick={() => setItemFilter('avista')}
-                  >
-                    À vista (1x)
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {isLoadingItems ? (
-              <div className="invoice-items-loading">Carregando itens da fatura...</div>
-            ) : filteredItems.length === 0 ? (
-              <div className="invoice-items-empty">
-                {rawItems.length === 0
-                  ? 'Nenhuma compra registrada nesta fatura.'
-                  : 'Nenhuma compra corresponde ao filtro aplicado.'}
-              </div>
-            ) : (
-              <div className="invoice-items-list">
-                {filteredItems.map((item) => (
-                  <div key={item.id} className="invoice-item-entry">
-                    <div className="invoice-item-entry__left">
-                      <span className="invoice-item-desc">{item.descricao}</span>
-                      <div className="invoice-item-meta">
-                        <span className="invoice-item-date">{formatDate(item.data)}</span>
-                        {item.totalParcelas && item.totalParcelas > 1 ? (
-                          <span className="invoice-item-installments">
-                            Parcela {item.numeroParcela}/{item.totalParcelas}
-                            {item.numeroParcela === item.totalParcelas && (
-                              <span
-                                className="invoice-item-installments__badge"
-                                title="Última parcela — folga na próxima fatura"
-                              >
-                                ✨ Última
-                              </span>
-                            )}
-                          </span>
-                        ) : (
-                          <span className="invoice-item-installments invoice-item-installments--1x">
-                            1x à vista
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="invoice-item-entry__right">
-                      {item.tipo === 'COMPRA_CREDITO' &&
-                        item.totalParcelas &&
-                        item.totalParcelas > 1 &&
-                        !item.estornada && (
-                          <button
-                            type="button"
-                            className="invoice-item-action-btn"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              setAnteciparTransacao(item)
-                            }}
-                            title="Antecipar parcelas"
-                          >
-                            <FastForward size={13} />
-                            <span>Antecipar</span>
-                          </button>
-                        )}
-                      <span className="invoice-item-price">{formatCurrency(item.valor)}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    )
-  }
 }
