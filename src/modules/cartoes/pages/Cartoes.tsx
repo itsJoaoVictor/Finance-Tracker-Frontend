@@ -430,7 +430,9 @@ export function Cartoes() {
                     backgroundColor: melhorCartaoInfo.cartao.corHexadecimal || '#10b981'
                   }}
                 />
-                Melhor hoje: <strong>{melhorCartaoInfo.cartao.nome}</strong>
+                <span className="cartoes-kpi-card__best-text">
+                  Melhor hoje: <strong>{melhorCartaoInfo.cartao.nome}</strong>
+                </span>
               </span>
             ) : (
               <span className="cartoes-kpi-card__meta">Nenhum cartão ativo</span>

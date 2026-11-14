@@ -99,6 +99,15 @@ export function CartaoFaturasModal({
     fetchFaturas()
   }, [fetchFaturas])
 
+  // Bloqueia o scroll da página de fundo enquanto o modal de faturas estiver aberto
+  useEffect(() => {
+    const prevOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = prevOverflow
+    }
+  }, [])
+
   // Carrega transações sempre que expandedFaturaId mudar
   useEffect(() => {
     if (expandedFaturaId) {

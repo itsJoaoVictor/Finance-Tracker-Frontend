@@ -229,13 +229,20 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  width: fit-content;
+  max-width: 100%;
   font-size: 0.74rem;
   color: var(--ink);
   background: var(--surface-subtle, var(--bg-accent));
   border: 1px solid var(--border-subtle);
-  padding: 4px 10px;
+  padding: 5px 10px;
   border-radius: 999px;
+  overflow: hidden;
+}
+
+.cartoes-kpi-card__best-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .cartoes-kpi-card__best-dot {
@@ -361,11 +368,11 @@
   min-height: 184px;
   /* Gradiente metálico escuro mesclado com a cor do banco para garantir 100% de contraste WCAG até em cartões amarelos (BB) */
   background:
-    radial-gradient(circle at 92% 14%, color-mix(in srgb, var(--card-brand) 85%, #ffffff) 0%, transparent 55%),
+    radial-gradient(circle at 92% 14%, color-mix(in srgb, var(--card-brand) 68%, #1e293b) 0%, transparent 58%),
     linear-gradient(
       135deg,
-      color-mix(in srgb, var(--card-brand) 78%, #0f172a) 0%,
-      color-mix(in srgb, var(--card-brand) 42%, #090d16) 100%
+      color-mix(in srgb, var(--card-brand) 72%, #0f172a) 0%,
+      color-mix(in srgb, var(--card-brand) 38%, #090d16) 100%
     );
   box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.25);
   z-index: 2;
@@ -445,20 +452,22 @@
 }
 
 .physical-card__smart-pill--best {
-  background: rgba(16, 185, 129, 0.28);
+  background: rgba(6, 78, 59, 0.86);
   color: #a7f3d0;
-  border-color: rgba(52, 211, 153, 0.5);
+  border-color: rgba(52, 211, 153, 0.65);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
 }
 
 .physical-card__smart-pill--alert {
-  background: rgba(225, 29, 72, 0.32);
+  background: rgba(136, 19, 55, 0.88);
   color: #fecdd3;
-  border-color: rgba(251, 113, 133, 0.5);
+  border-color: rgba(251, 113, 133, 0.65);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
 }
 
 .physical-card__options-btn {
-  background: rgba(255, 255, 255, 0.16);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(15, 23, 42, 0.42);
+  border: 1px solid rgba(255, 255, 255, 0.28);
   color: #fff;
   cursor: pointer;
   width: 30px;
@@ -471,7 +480,7 @@
 }
 
 .physical-card__options-btn:hover {
-  background: rgba(255, 255, 255, 0.28);
+  background: rgba(15, 23, 42, 0.64);
   transform: scale(1.05);
 }
 
@@ -554,8 +563,8 @@
 }
 
 .physical-card__toggle-btn {
-  background: rgba(255, 255, 255, 0.14);
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(15, 23, 42, 0.36);
+  border: 1px solid rgba(255, 255, 255, 0.24);
   cursor: pointer;
   color: #fff;
   width: 26px;
@@ -568,7 +577,7 @@
 }
 
 .physical-card__toggle-btn:hover {
-  background: rgba(255, 255, 255, 0.26);
+  background: rgba(15, 23, 42, 0.56);
 }
 
 .physical-card__chip-row {
@@ -637,8 +646,9 @@
 
 .physical-card__date-chip {
   font-size: 0.68rem;
-  color: rgba(255, 255, 255, 0.8);
-  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.92);
+  background: rgba(15, 23, 42, 0.34);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   padding: 3px 8px;
   border-radius: 6px;
 }
@@ -844,7 +854,7 @@
   padding: 9px 10px;
   border-radius: 10px;
   background: var(--surface-subtle, var(--bg-accent));
-  border: 1px solid var(--border-subtle, transparent);
+  border: 1px solid var(--border-strong, rgba(15, 23, 42, 0.14));
   color: var(--ink);
   font-family: 'Space Grotesk', sans-serif;
   font-size: 0.78rem;
@@ -855,18 +865,25 @@
 
 .card-quick-action-btn:hover {
   background: var(--surface-hover, var(--bg-accent));
-  border-color: var(--border-strong);
+  border-color: var(--accent);
   transform: translateY(-1px);
 }
 
 .card-quick-action-btn--primary {
   background: color-mix(in srgb, var(--card-brand) 12%, var(--card));
-  border-color: color-mix(in srgb, var(--card-brand) 30%, var(--border-subtle));
+  border-color: color-mix(in srgb, var(--card-brand) 38%, var(--border-strong));
 }
 
 .card-quick-action-btn--primary:hover {
   background: color-mix(in srgb, var(--card-brand) 20%, var(--card));
   border-color: var(--card-brand);
+}
+
+/* Padronização global de fonte em modais */
+.modal .modal__title {
+  font-family: 'Space Grotesk', sans-serif !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em;
 }
 
 /* --------------------------------------------------------------------------

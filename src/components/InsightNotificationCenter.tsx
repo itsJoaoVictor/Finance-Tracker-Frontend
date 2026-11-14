@@ -59,32 +59,26 @@ export function InsightNotificationCenter() {
     }
   }
 
+  const globalInsights = insights.filter(
+    (ins) =>
+      ins.tipo !== 'CARTAO_PREVISAO' &&
+      ins.tipo !== 'ESTOURO_FATURA' &&
+      ins.tipo !== 'MELHOR_CARTAO' &&
+      ins.tipo !== 'AVISO_FECHAMENTO' &&
+      ins.tipo !== 'CONCENTRACAO_GASTOS_FATURA' &&
+      ins.tipo !== 'OTIMIZACAO_PARCELAMENTO'
+  )
+
   return (
     <div className="insight-center-container">
-      <button 
+      <button
         className="insight-trigger-btn"
         onClick={() => setIsOpen(!isOpen)}
         aria-label="Insights da IA"
       >
         🤖
-        {insights.filter((ins) =>
-          ins.tipo !== 'CARTAO_PREVISAO' &&
-          ins.tipo !== 'ESTOURO_FATURA' &&
-          ins.tipo !== 'MELHOR_CARTAO' &&
-          ins.tipo !== 'AVISO_FECHAMENTO' &&
-          ins.tipo !== 'CONCENTRACAO_GASTOS_FATURA' &&
-          ins.tipo !== 'OTIMIZACAO_PARCELAMENTO'
-        ).length > 0 && (
-          <span className="insight-badge">
-            {insights.filter((ins) =>
-              ins.tipo !== 'CARTAO_PREVISAO' &&
-              ins.tipo !== 'ESTOURO_FATURA' &&
-              ins.tipo !== 'MELHOR_CARTAO' &&
-              ins.tipo !== 'AVISO_FECHAMENTO' &&
-              ins.tipo !== 'CONCENTRACAO_GASTOS_FATURA' &&
-              ins.tipo !== 'OTIMIZACAO_PARCELAMENTO'
-            ).length}
-          </span>
+        {globalInsights.length > 0 && (
+          <span className="insight-badge">{globalInsights.length}</span>
         )}
       </button>
 
@@ -98,33 +92,40 @@ export function InsightNotificationCenter() {
                 onClick={handleProcessar}
                 disabled={processando || loading}
                 style={{
-                  display: 'flex', alignItems: 'center', gap: 5,
-                  background: 'rgba(138, 5, 190, 0.1)', border: '1px solid rgba(138, 5, 190, 0.25)',
-                  borderRadius: 6, padding: '4px 10px', cursor: processando ? 'wait' : 'pointer',
-                  color: '#fff', fontSize: '0.75rem', fontWeight: 500,
-                  opacity: processando ? 0.6 : 1, transition: 'all 0.15s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 5,
+                  background: 'color-mix(in srgb, var(--accent) 14%, var(--card))',
+                  border: '1px solid color-mix(in srgb, var(--accent) 32%, transparent)',
+                  borderRadius: 8,
+                  padding: '5px 10px',
+                  cursor: processando ? 'wait' : 'pointer',
+                  color: 'var(--ink)',
+                  fontSize: '0.75rem',
+                  fontWeight: 700,
+                  opacity: processando ? 0.6 : 1,
+                  transition: 'all 0.15s ease'
                 }}
               >
                 {processando ? '⏳' : '✨'} {processando ? 'Analisando...' : 'Analisar'}
               </button>
-              <button className="insight-dropdown__close" onClick={() => setIsOpen(false)}>✕</button>
+              <button className="insight-dropdown__close" onClick={() => setIsOpen(false)}>
+                ✕
+              </button>
             </div>
           </div>
 
           <div className="insight-dropdown__body">
-            {(loading || processando) && insights.length === 0 && <p className="insight-info">Analisando sua saúde financeira...</p>}
-            {!loading && !processando && insights.length === 0 && <p className="insight-info">Nenhum alerta ou anomalia no momento. Bom trabalho! 🎉</p>}
+            {(loading || processando) && globalInsights.length === 0 && (
+              <p className="insight-info">Analisando sua saúde financeira...</p>
+            )}
+            {!loading && !processando && globalInsights.length === 0 && (
+              <p className="insight-info">
+                Nenhum alerta global pendente no momento. Clique em <strong>✨ Analisar</strong> para atualizar as recomendações! 🎉
+              </p>
+            )}
 
-            {insights
-              .filter((insight) =>
-                insight.tipo !== 'CARTAO_PREVISAO' &&
-                insight.tipo !== 'ESTOURO_FATURA' &&
-                insight.tipo !== 'MELHOR_CARTAO' &&
-                insight.tipo !== 'AVISO_FECHAMENTO' &&
-                insight.tipo !== 'CONCENTRACAO_GASTOS_FATURA' &&
-                insight.tipo !== 'OTIMIZACAO_PARCELAMENTO'
-              )
-              .map((insight) => (
+            {globalInsights.map((insight) => (
                 <div key={insight.id} className={`insight-card insight-card--${insight.tipo.toLowerCase()}`}>
                   <div className="insight-card__header">
                     <h4>{insight.titulo}</h4>
