@@ -1,6 +1,7 @@
 import { useState, FormEvent } from 'react'
 import { CartaoCriacaoRequest, Conta } from '../../../types'
 import { FormModal } from '../../../components/FormModal'
+import '../cartoes.css'
 
 interface CreateCardModalProps {
   contas: Conta[]
@@ -8,9 +9,21 @@ interface CreateCardModalProps {
   onSubmit: (data: CartaoCriacaoRequest) => Promise<void>
 }
 
+const BANK_COLOR_PRESETS = [
+  { label: 'Nubank', hex: '#8A05BE' },
+  { label: 'Banco do Brasil', hex: '#EAB308' },
+  { label: 'Inter', hex: '#FF7A00' },
+  { label: 'Itaú', hex: '#EC7000' },
+  { label: 'Bradesco', hex: '#CC092F' },
+  { label: 'Santander', hex: '#CC0000' },
+  { label: 'C6 / Black', hex: '#1E293B' },
+  { label: 'Azul', hex: '#2563EB' },
+  { label: 'Esmeralda', hex: '#10B981' }
+]
+
 export function CreateCardModal({ contas, onClose, onSubmit }: CreateCardModalProps) {
-  const defaultConta = contas.find(c => c.id === (contas[0]?.id || ''))
-  const [nome, setNome] = useState('')
+  const defaultConta = contas.find((c) => c.id === (contas[0]?.id || ''))
+  const [nome, setNome] = useState(defaultConta?.nome || '')
   const [limite, setLimite] = useState('')
   const [diaFechamento, setDiaFechamento] = useState('5')
   const [diaVencimento, setDiaVencimento] = useState('12')
@@ -21,7 +34,7 @@ export function CreateCardModal({ contas, onClose, onSubmit }: CreateCardModalPr
 
   const handleContaChange = (id: string) => {
     setContaId(id)
-    const selecionada = contas.find(c => c.id === id)
+    const selecionada = contas.find((c) => c.id === id)
     if (selecionada) {
       if (selecionada.corHexadecimal) {
         setCor(selecionada.corHexadecimal)
@@ -37,10 +50,12 @@ export function CreateCardModal({ contas, onClose, onSubmit }: CreateCardModalPr
     else if (lim < 0) e.limite = 'Limite não pode ser negativo'
 
     const df = parseInt(diaFechamento)
-    if (isNaN(df) || df < 1 || df > 31) e.diaFechamento = 'Dia de fechamento inválido (deve ser entre 1 e 31)'
+    if (isNaN(df) || df < 1 || df > 31)
+      e.diaFechamento = 'Dia de fechamento inválido (deve ser entre 1 e 31)'
 
     const dv = parseInt(diaVencimento)
-    if (isNaN(dv) || dv < 1 || dv > 31) e.diaVencimento = 'Dia de vencimento inválido (deve ser entre 1 e 31)'
+    if (isNaN(dv) || dv < 1 || dv > 31)
+      e.diaVencimento = 'Dia de vencimento inválido (deve ser entre 1 e 31)'
 
     if (!contaId) e.contaId = 'Deve selecionar uma conta vinculada'
 
@@ -51,7 +66,7 @@ export function CreateCardModal({ contas, onClose, onSubmit }: CreateCardModalPr
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     if (!validate()) return
-    const selecionada = contas.find(c => c.id === contaId)
+    const selecionada = contas.find((c) => c.id === contaId)
     const cardName = selecionada ? selecionada.nome : nome
     setLoading(true)
     try {
@@ -61,12 +76,21 @@ export function CreateCardModal({ contas, onClose, onSubmit }: CreateCardModalPr
         diaFechamento: parseInt(diaFechamento),
         diaVencimento: parseInt(diaVencimento),
         contaId,
-        corHexadecimal: cor,
+        corHexadecimal: cor
       })
     } finally {
       setLoading(false)
     }
   }
+
+  const selecionadaConta = contas.find((c) => c.id === contaId)
+  const previewNome = selecionadaConta?.nome || nome || 'Novo Cartão'
+  const previewLimite =
+    limite && !isNaN(parseFloat(limite))
+      ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
+          parseFloat(limite)
+        )
+      : 'R$ 0,00'
 
   return (
     <FormModal
@@ -76,6 +100,28 @@ export function CreateCardModal({ contas, onClose, onSubmit }: CreateCardModalPr
       onSubmit={handleSubmit}
       isLoading={loading}
     >
+      {/* Mini-Preview ao vivo do Cartão */}
+      <div
+        className="card-modal-live-preview"
+        style={{ '--card-brand': cor } as React.CSSProperties}
+      >
+        <div className="card-modal-live-preview__top">
+          <span className="card-modal-live-preview__brand">{previewNome}</span>
+          <div className="card-modal-live-preview__chip" />
+        </div>
+        <div className="card-modal-live-preview__bottom">
+          <div>
+            <span className="card-modal-live-preview__label">Limite Total</span>
+            <strong className="card-modal-live-preview__value">{previewLimite}</strong>
+          </div>
+          <div className="card-modal-live-preview__dates">
+            <span>Fecha dia {diaFechamento || '--'}</span>
+            <span>•</span>
+            <span>Vence dia {diaVencimento || '--'}</span>
+          </div>
+        </div>
+      </div>
+
       <div className="form-group">
         <label htmlFor="criar-cartao-limite">Limite de Crédito (R$)</label>
         <input
@@ -129,27 +175,44 @@ export function CreateCardModal({ contas, onClose, onSubmit }: CreateCardModalPr
           onChange={(e) => handleContaChange(e.target.value)}
           className={errors.contaId ? 'error' : ''}
         >
-          <option value="" disabled>Selecione uma conta...</option>
+          <option value="" disabled>
+            Selecione uma conta...
+          </option>
           {contas.map((c) => (
-            <option key={c.id} value={c.id}>{c.nome}</option>
+            <option key={c.id} value={c.id}>
+              {c.nome}
+            </option>
           ))}
         </select>
         {errors.contaId && <p className="form-error">{errors.contaId}</p>}
       </div>
 
       <div className="form-group">
-        <label>Cor do Cartão</label>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div className="color-preview" style={{ background: cor, width: 32, height: 32, borderRadius: 8, border: '1px solid rgba(0,0,0,0.1)' }} />
-          <input
-            id="criar-cartao-cor"
-            type="color"
-            value={cor}
-            onChange={(e) => setCor(e.target.value)}
-          />
-          <span style={{ fontSize: '0.85rem', color: 'var(--muted)', fontFamily: 'monospace' }}>
-            {cor.toUpperCase()}
-          </span>
+        <label>Cor e Identidade do Cartão</label>
+        <div className="bank-color-swatches">
+          {BANK_COLOR_PRESETS.map((preset) => (
+            <button
+              key={preset.hex}
+              type="button"
+              className={`bank-color-swatch ${
+                cor.toLowerCase() === preset.hex.toLowerCase() ? 'active' : ''
+              }`}
+              style={{ backgroundColor: preset.hex }}
+              onClick={() => setCor(preset.hex)}
+              title={preset.label}
+              aria-label={preset.label}
+            />
+          ))}
+          <div className="bank-color-custom">
+            <input
+              id="criar-cartao-cor"
+              type="color"
+              value={cor}
+              onChange={(e) => setCor(e.target.value)}
+              title="Cor personalizada"
+            />
+            <span className="bank-color-hex">{cor.toUpperCase()}</span>
+          </div>
         </div>
       </div>
 
@@ -158,7 +221,7 @@ export function CreateCardModal({ contas, onClose, onSubmit }: CreateCardModalPr
           Cancelar
         </button>
         <button type="submit" className="btn-submit" disabled={loading}>
-          {loading ? 'Salvando...' : 'Criar Cartão'}
+          {loading ? 'Criando...' : 'Criar Cartão'}
         </button>
       </div>
     </FormModal>

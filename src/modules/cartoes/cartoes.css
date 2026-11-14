@@ -1,109 +1,590 @@
-/* ===== REALISTIC PHYSICAL CREDIT CARD STYLES ===== */
+/* ==========================================================================
+   CARTÕES MODULE — MODERN FINTECH REDESIGN (LIGHT & DARK THEMES)
+   ========================================================================== */
 
-.physical-card {
-  aspect-ratio: 1.5858 / 1;
-  width: 100%;
-  max-width: 360px;
-  border-radius: 16px;
-  position: relative;
-  overflow: hidden;
-  color: #ffffff;
-  padding: 24px;
+.cartoes-page {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  padding-bottom: 36px;
+}
+
+/* --------------------------------------------------------------------------
+   1. Top Action Bar
+   -------------------------------------------------------------------------- */
+.cartoes-top-bar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.cartoes-top-bar__intro {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cartoes-top-bar__title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.65rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: var(--ink);
+  margin: 0;
+}
+
+.cartoes-top-bar__subtitle {
+  font-size: 0.88rem;
+  color: var(--muted);
+  margin: 0;
+}
+
+.cartoes-top-bar__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.btn-planejador {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: color-mix(in srgb, #10b981 10%, var(--card));
+  color: #059669;
+  border: 1.5px solid rgba(16, 185, 129, 0.35);
+  border-radius: 12px;
+  padding: 11px 18px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-theme="dark"] .btn-planejador,
+[style*="--bg: #0b0c0e"] .btn-planejador {
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(52, 211, 153, 0.32);
+}
+
+.btn-planejador:hover {
+  transform: translateY(-2px);
+  background: color-mix(in srgb, #10b981 16%, var(--card));
+  border-color: #10b981;
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.18);
+}
+
+/* --------------------------------------------------------------------------
+   2. Bento Grid de 4 KPIs
+   -------------------------------------------------------------------------- */
+.cartoes-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.cartoes-kpi-card {
+  background: var(--card);
+  border: 1px solid var(--border-subtle, rgba(15, 23, 42, 0.08));
+  border-radius: 18px;
+  padding: 18px 20px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  box-shadow: 0 10px 24px rgba(28, 26, 23, 0.15), 
-              inset 0 1px 2px rgba(255, 255, 255, 0.25);
-  transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), 
-              box-shadow 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+  gap: 10px;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.04);
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.cartoes-kpi-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-strong, rgba(15, 23, 42, 0.15));
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08);
+}
+
+.cartoes-kpi-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cartoes-kpi-card__label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--muted);
+}
+
+.cartoes-kpi-card__icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.cartoes-kpi-card__icon--emerald {
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+}
+
+.cartoes-kpi-card__icon--rose {
+  background: rgba(225, 29, 72, 0.12);
+  color: #e11d48;
+}
+
+[data-theme="dark"] .cartoes-kpi-card__icon--rose,
+[style*="--bg: #0b0c0e"] .cartoes-kpi-card__icon--rose {
+  color: #fb7185;
+}
+
+.cartoes-kpi-card__icon--blue {
+  background: rgba(59, 130, 246, 0.12);
+  color: #3b82f6;
+}
+
+.cartoes-kpi-card__icon--purple {
+  background: rgba(138, 5, 190, 0.12);
+  color: #a855f7;
+}
+
+.cartoes-kpi-card__value {
+  font-size: 1.65rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+}
+
+.cartoes-kpi-card__value--emerald {
+  color: #059669;
+}
+
+[data-theme="dark"] .cartoes-kpi-card__value--emerald,
+[style*="--bg: #0b0c0e"] .cartoes-kpi-card__value--emerald {
+  color: #34d399;
+}
+
+.cartoes-kpi-card__value--rose {
+  color: #e11d48;
+}
+
+[data-theme="dark"] .cartoes-kpi-card__value--rose,
+[style*="--bg: #0b0c0e"] .cartoes-kpi-card__value--rose {
+  color: #fb7185;
+}
+
+.cartoes-kpi-card__footer {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: auto;
+}
+
+.cartoes-kpi-card__mini-bar {
+  height: 5px;
+  width: 100%;
+  background: var(--surface-subtle, rgba(15, 23, 42, 0.08));
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.cartoes-kpi-card__mini-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.5s ease;
+}
+
+.cartoes-kpi-card__mini-bar-fill--emerald {
+  background: #10b981;
+}
+
+.cartoes-kpi-card__mini-bar-fill--rose {
+  background: #e11d48;
+}
+
+.cartoes-kpi-card__meta {
+  font-size: 0.75rem;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.cartoes-kpi-card__meta strong {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.cartoes-kpi-card__best-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  font-size: 0.74rem;
+  color: var(--ink);
+  background: var(--surface-subtle, var(--bg-accent));
+  border: 1px solid var(--border-subtle);
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.cartoes-kpi-card__best-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* --------------------------------------------------------------------------
+   3. Seção Principal de Cartões (Primeira Dobra)
+   -------------------------------------------------------------------------- */
+.cartoes-main-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cartoes-section-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cartoes-section-header__title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin: 0;
+}
+
+.cartoes-section-header__subtitle {
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin: 3px 0 0;
+}
+
+.cartoes-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 22px;
+  align-items: stretch;
+}
+
+.cartoes-empty-state {
+  background: var(--card);
+  border: 1.5px dashed var(--border-strong, rgba(15, 23, 42, 0.16));
+  border-radius: 20px;
+  padding: 48px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+}
+
+.cartoes-empty-state__icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: var(--surface-subtle, var(--bg-accent));
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cartoes-empty-state__title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0;
+}
+
+.cartoes-empty-state__desc {
+  font-size: 0.88rem;
+  color: var(--muted);
+  max-width: 420px;
+  margin: 0 0 8px;
+  line-height: 1.5;
+}
+
+/* --------------------------------------------------------------------------
+   4. Card Fintech Unificado & Simétrico
+   -------------------------------------------------------------------------- */
+.fintech-card-wrapper {
+  --card-brand: #8A05BE;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  border-radius: 22px;
+  background: var(--card);
+  border: 1px solid var(--border-subtle, rgba(15, 23, 42, 0.08));
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.06);
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.28s ease;
   cursor: pointer;
   user-select: none;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  perspective: 1000px;
+}
+
+.fintech-card-wrapper:hover {
+  transform: translateY(-4px);
+  border-color: color-mix(in srgb, var(--card-brand) 45%, var(--border-strong));
+  box-shadow: 0 16px 38px rgba(0, 0, 0, 0.12);
+}
+
+/* Cartão Físico Superior */
+.physical-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 21px 21px 16px 16px;
+  padding: 20px 22px 18px;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 184px;
+  /* Gradiente metálico escuro mesclado com a cor do banco para garantir 100% de contraste WCAG até em cartões amarelos (BB) */
+  background:
+    radial-gradient(circle at 92% 14%, color-mix(in srgb, var(--card-brand) 85%, #ffffff) 0%, transparent 55%),
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--card-brand) 78%, #0f172a) 0%,
+      color-mix(in srgb, var(--card-brand) 42%, #090d16) 100%
+    );
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.25);
   z-index: 2;
 }
 
-.physical-card:hover {
-  transform: translateY(-4px) rotateX(2deg) rotateY(-2deg);
-  box-shadow: 0 15px 32px rgba(28, 26, 23, 0.22);
-}
-
-/* Glassmorphism shine overlay */
-.physical-card::before {
-  content: '';
+.physical-card__glow {
   position: absolute;
   top: -50%;
   left: -50%;
   width: 200%;
   height: 200%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.18) 0%, transparent 65%);
-  transform: rotate(-25deg);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.12) 0%, transparent 62%);
+  transform: rotate(-22deg);
   pointer-events: none;
-  transition: transform 0.6s ease;
 }
 
-.physical-card:hover::before {
-  transform: rotate(-25deg) translate(8%, 8%);
-}
-
-/* Top bar with menu and brand */
 .physical-card__top {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 10px;
   z-index: 2;
+}
+
+.physical-card__brand-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.physical-card__brand-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.35);
+  flex-shrink: 0;
 }
 
 .physical-card__brand {
   font-family: 'Space Grotesk', sans-serif;
-  font-weight: 700;
-  font-size: 0.95rem;
-  letter-spacing: 1px;
-  text-transform: uppercase;
+  font-weight: 800;
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.physical-card__top-right {
   display: flex;
   align-items: center;
-  gap: 6px;
-  opacity: 0.95;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* Smart Pill Flutuante ("Melhor Hoje" / "Alerta IA") */
+.physical-card__smart-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  backdrop-filter: blur(8px);
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.physical-card__smart-pill:hover {
+  transform: scale(1.04);
+}
+
+.physical-card__smart-pill--best {
+  background: rgba(16, 185, 129, 0.28);
+  color: #a7f3d0;
+  border-color: rgba(52, 211, 153, 0.5);
+}
+
+.physical-card__smart-pill--alert {
+  background: rgba(225, 29, 72, 0.32);
+  color: #fecdd3;
+  border-color: rgba(251, 113, 133, 0.5);
 }
 
 .physical-card__options-btn {
-  background: rgba(255, 255, 255, 0.15);
-  border: none;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   color: #fff;
   cursor: pointer;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1rem;
   transition: background 0.2s, transform 0.2s;
 }
 
 .physical-card__options-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.28);
   transform: scale(1.05);
 }
 
-/* Metallic chip and contactless signature */
-.physical-card__chip-row {
+/* Popover de Insight quando clica na Smart Pill */
+.physical-card__insight-popover {
+  position: absolute;
+  top: 52px;
+  left: 16px;
+  right: 16px;
+  background: rgba(15, 23, 42, 0.96);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 12px;
+  padding: 12px 14px;
+  z-index: 25;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  animation: dropdown-in 0.16s ease;
+}
+
+.physical-card__insight-popover-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #34d399;
+  margin-bottom: 4px;
+}
+
+.physical-card__insight-popover-msg {
+  margin: 0;
+  font-size: 0.76rem;
+  line-height: 1.45;
+  color: #e2e8f0;
+}
+
+.physical-card__insight-dismiss,
+.physical-card__insight-close {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: #cbd5e1;
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.physical-card__middle {
   display: flex;
   align-items: center;
-  gap: 14px;
-  margin-top: 10px;
+  justify-content: space-between;
+  gap: 12px;
   z-index: 2;
 }
 
+.physical-card__limit-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.physical-card__label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: rgba(255, 255, 255, 0.72);
+  font-weight: 600;
+}
+
+.physical-card__limit-val {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+.physical-card__toggle-btn {
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  cursor: pointer;
+  color: #fff;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.physical-card__toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.26);
+}
+
+.physical-card__chip-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .physical-card__chip {
-  width: 38px;
-  height: 28px;
-  background: linear-gradient(135deg, #ffd700 0%, #f0a500 100%);
+  width: 36px;
+  height: 26px;
+  background: linear-gradient(135deg, #fde047 0%, #eab308 55%, #ca8a04 100%);
   border-radius: 5px;
   position: relative;
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4), 
-              0 1px 2px rgba(0, 0, 0, 0.15);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.5), 0 2px 4px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(0, 0, 0, 0.12);
 }
 
 .physical-card__chip::after {
@@ -111,197 +592,114 @@
   position: absolute;
   top: 4px;
   left: 6px;
-  width: 24px;
-  height: 18px;
-  border: 1px solid rgba(0, 0, 0, 0.15);
+  width: 22px;
+  height: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
   border-radius: 3px;
 }
 
 .physical-card__contactless {
   display: flex;
   align-items: center;
-  opacity: 0.8;
+  opacity: 0.78;
   color: #fff;
 }
 
-/* Cardholder and details info */
 .physical-card__bottom {
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
-  margin-top: auto;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
   z-index: 2;
 }
 
-.physical-card__holder {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.physical-card__label {
-  font-size: 0.62rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  opacity: 0.65;
-  font-weight: 500;
-}
-
-.physical-card__name {
-  font-size: 0.85rem;
+.physical-card__account-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(0, 0, 0, 0.26);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 0.72rem;
   font-weight: 600;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  max-width: 240px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  color: rgba(255, 255, 255, 0.92);
 }
 
-/* Toggle limit style inside the card */
-.physical-card__limit-info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  margin-top: 8px;
-  z-index: 2;
-}
-
-.physical-card__limit-val {
-  font-size: 1.4rem;
-  font-weight: 700;
-  letter-spacing: -0.5px;
+.physical-card__dates-pills {
   display: flex;
   align-items: center;
+  gap: 6px;
+}
+
+.physical-card__date-chip {
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.1);
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.physical-card__date-chip strong {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+/* --------------------------------------------------------------------------
+   5. Painel Inferior Simétrico do Card (Fatura, Limite e Ações Rápidas)
+   -------------------------------------------------------------------------- */
+.card-details-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 18px 20px 18px;
+  background: var(--card);
+  border-radius: 0 0 21px 21px;
+}
+
+.card-projecao-banner {
+  --accent: #3B82F6;
+  background: var(--surface-subtle, var(--bg-accent));
+  border: 1px solid var(--border-subtle, rgba(15, 23, 42, 0.08));
+  border-left: 4px solid var(--accent);
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
   gap: 8px;
 }
 
-.physical-card__toggle-btn {
-  background: rgba(255, 255, 255, 0.12);
-  border: none;
-  cursor: pointer;
-  color: #fff;
-  padding: 4px 6px;
-  border-radius: 6px;
-  display: inline-flex;
+.card-projecao-banner__header {
+  display: flex;
   align-items: center;
-  justify-content: center;
-  transition: background 0.2s;
-  font-size: 0.8rem;
+  justify-content: space-between;
+  gap: 8px;
 }
 
-.physical-card__toggle-btn:hover {
-  background: rgba(255, 255, 255, 0.25);
-}
-
-/* ===== REFINED UI/UX DETAILS PANEL ===== */
-
-.card-details-panel {
-  background: var(--card);
-  border: 1px solid rgba(28, 26, 23, 0.08);
-  border-top: none;
-  border-radius: 0 0 16px 16px;
-  padding: 24px 20px 18px;
-  margin-top: -12px;
-  box-shadow: 0 10px 25px rgba(28, 26, 23, 0.04);
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  z-index: 1;
-}
-
-.card-details-panel__stats {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px 16px;
-  border-bottom: 1px solid rgba(28, 26, 23, 0.06);
-  padding-bottom: 12px;
-}
-
-.card-details-panel__stat-item {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.card-details-panel__stat-item--highlight {
-  grid-column: span 2;
-  border-bottom: 1px dashed var(--field-border, rgba(28, 26, 23, 0.08));
-  padding-bottom: 8px;
-  margin-bottom: 2px;
-}
-
-.card-details-panel__stat-label {
-  font-size: 0.7rem;
+.card-projecao-banner__label {
+  font-size: 0.68rem;
   text-transform: uppercase;
   color: var(--muted);
+  font-weight: 700;
   letter-spacing: 0.06em;
+}
+
+.card-projecao-banner__ref {
   font-weight: 600;
+  text-transform: capitalize;
+  color: var(--ink-secondary, var(--muted));
 }
 
-.card-details-panel__stat-value {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--ink);
-}
-
-.card-details-panel__progress-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.card-details-panel__progress-info {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.75rem;
-  font-weight: 500;
-}
-
-.card-details-panel__progress-bar {
-  background: rgba(28, 26, 23, 0.06);
-  border-radius: 10px;
-  height: 6px;
-  width: 100%;
-  overflow: hidden;
-}
-
-.card-details-panel__progress-fill {
-  height: 100%;
-  transition: width 0.5s cubic-bezier(0.1, 0.8, 0.2, 1);
-}
-
-.card-details-panel__footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 4px;
-}
-
-.card-details-panel__account {
-  font-size: 0.75rem;
-  color: var(--muted);
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: var(--bg-accent);
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-weight: 600;
-}
-
-.card-details-panel__percentage {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--muted);
-}
-
-/* Fatura Status Badges */
 .fatura-badge {
   font-size: 0.65rem;
   font-weight: 700;
-  padding: 4px 10px;
-  border-radius: 20px;
+  padding: 3px 9px;
+  border-radius: 999px;
   text-transform: uppercase;
   letter-spacing: 0.03em;
   display: inline-flex;
@@ -310,52 +708,21 @@
 }
 
 .fatura-badge--closed {
-  background: rgba(230, 57, 70, 0.12);
-  color: #E63946;
-  border: 1px solid rgba(230, 57, 70, 0.2);
+  background: rgba(225, 29, 72, 0.12);
+  color: var(--danger, #e11d48);
+  border: 1px solid rgba(225, 29, 72, 0.25);
 }
 
 .fatura-badge--open {
-  background: rgba(16, 163, 74, 0.12);
-  color: var(--green-positive, #16a34a);
-  border: 1px solid rgba(16, 163, 74, 0.2);
+  background: rgba(16, 185, 129, 0.12);
+  color: var(--green-positive, #10b981);
+  border: 1px solid rgba(16, 185, 129, 0.25);
 }
-
-/* ===== PROJECTION BANNER (IA DEDICADA) ===== */
-
-.card-projecao-banner {
-  --accent: #8A05BE;
-  grid-column: span 2;
-  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 4%, transparent), transparent 60%);
-  border-left: 3px solid var(--accent);
-  border-radius: 8px;
-  padding: 14px 14px 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.card-projecao-banner__header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.card-projecao-banner__label {
-  font-size: 0.65rem;
-  text-transform: uppercase;
-  color: var(--muted);
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  flex: 1;
-}
-
-/* ── Valores principais: Atual → Projeção ── */
 
 .card-projecao-banner__valores {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .card-projecao-banner__valor-item {
@@ -365,99 +732,418 @@
 }
 
 .card-projecao-banner__valor-label {
-  font-size: 0.6rem;
+  font-size: 0.62rem;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
   color: var(--muted);
   font-weight: 600;
 }
 
 .card-projecao-banner__valor-atual {
-  font-size: 1.05rem;
+  font-size: 1.02rem;
   font-weight: 700;
   color: var(--ink);
-  letter-spacing: -0.3px;
-  opacity: 0.85;
+  font-variant-numeric: tabular-nums;
 }
 
 .card-projecao-banner__valor-sep {
-  font-size: 0.85rem;
-  color: var(--accent);
-  opacity: 0.6;
+  font-size: 0.9rem;
+  color: var(--muted);
   margin-top: 10px;
-  font-weight: 300;
 }
 
 .card-projecao-banner__valor-projetado {
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   font-weight: 800;
   color: var(--accent);
-  letter-spacing: -0.5px;
+  font-variant-numeric: tabular-nums;
 }
 
 .card-projecao-banner__valor-unico {
   font-size: 1.15rem;
   font-weight: 800;
   color: var(--ink);
-  letter-spacing: -0.5px;
+  font-variant-numeric: tabular-nums;
 }
 
-/* ── Barra de progresso ── */
+.card-projecao-banner__meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border-subtle);
+}
 
-.card-projecao-banner__progresso {
+.card-projecao-banner__classificacao {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.card-projecao-banner__progresso-dias {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.68rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+/* Barra de Uso do Limite */
+.card-limit-usage {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
-.card-projecao-banner__progresso-bar {
-  background: rgba(28, 26, 23, 0.06);
-  border-radius: 10px;
-  height: 4px;
+.card-limit-usage__labels {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.card-limit-usage__labels strong {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.card-details-panel__progress-bar {
+  background: var(--surface-subtle, rgba(15, 23, 42, 0.08));
+  border-radius: 999px;
+  height: 7px;
   width: 100%;
   overflow: hidden;
 }
 
-.card-projecao-banner__progresso-fill {
+.card-details-panel__progress-fill {
   height: 100%;
-  background: var(--accent);
-  border-radius: 10px;
-  transition: width 0.6s cubic-bezier(0.1, 0.8, 0.2, 1);
-  opacity: 0.7;
+  border-radius: 999px;
+  transition: width 0.5s cubic-bezier(0.1, 0.8, 0.2, 1);
 }
 
-.card-projecao-banner__progresso-dias {
-  font-size: 0.65rem;
+/* Barra de Ações Rápidas Visíveis */
+.card-quick-actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.card-quick-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 10px;
+  border-radius: 10px;
+  background: var(--surface-subtle, var(--bg-accent));
+  border: 1px solid var(--border-subtle, transparent);
+  color: var(--ink);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.card-quick-action-btn:hover {
+  background: var(--surface-hover, var(--bg-accent));
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
+}
+
+.card-quick-action-btn--primary {
+  background: color-mix(in srgb, var(--card-brand) 12%, var(--card));
+  border-color: color-mix(in srgb, var(--card-brand) 30%, var(--border-subtle));
+}
+
+.card-quick-action-btn--primary:hover {
+  background: color-mix(in srgb, var(--card-brand) 20%, var(--card));
+  border-color: var(--card-brand);
+}
+
+/* --------------------------------------------------------------------------
+   6. Hub Unificado: Inteligência & Alívio de Limite
+   -------------------------------------------------------------------------- */
+.cartoes-intelligence-hub {
+  background: var(--card);
+  border: 1px solid var(--border-subtle, rgba(15, 23, 42, 0.08));
+  border-radius: 22px;
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.04);
+}
+
+.cartoes-intelligence-hub__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.cartoes-intelligence-hub__title-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cartoes-intelligence-hub__badge-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.cartoes-intelligence-hub__title {
+  font-size: 1.12rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin: 0;
+}
+
+.cartoes-intelligence-hub__subtitle {
+  font-size: 0.8rem;
   color: var(--muted);
-  font-weight: 500;
+  margin: 2px 0 0;
+}
+
+.cartoes-intelligence-hub__tabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface-subtle, var(--bg-accent));
+  padding: 5px;
+  border-radius: 14px;
+  border: 1px solid var(--border-subtle);
+  flex-wrap: wrap;
+}
+
+.cartoes-hub-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: transparent;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cartoes-hub-tab:hover {
+  color: var(--ink);
+}
+
+.cartoes-hub-tab.active {
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+.cartoes-hub-tab__pill {
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--surface-hover);
+  color: var(--ink);
+}
+
+.cartoes-hub-tab__pill--emerald {
+  background: rgba(16, 185, 129, 0.16);
+  color: #10b981;
+}
+
+.cartoes-hub-tab__pill--rose {
+  background: rgba(225, 29, 72, 0.16);
+  color: #e11d48;
+}
+
+[data-theme="dark"] .cartoes-hub-tab__pill--rose,
+[style*="--bg: #0b0c0e"] .cartoes-hub-tab__pill--rose {
+  color: #fb7185;
+}
+
+.cartoes-intelligence-hub .folga-container {
+  margin-bottom: 0;
+}
+
+/* --------------------------------------------------------------------------
+   7. Modal de Criar / Editar Cartão: Live Preview & Paleta de Bancos
+   -------------------------------------------------------------------------- */
+.card-modal-live-preview {
+  --card-brand: #8A05BE;
+  border-radius: 16px;
+  padding: 16px 20px;
+  color: #ffffff;
+  background:
+    radial-gradient(circle at 90% 15%, color-mix(in srgb, var(--card-brand) 85%, #ffffff) 0%, transparent 55%),
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--card-brand) 78%, #0f172a) 0%,
+      color-mix(in srgb, var(--card-brand) 42%, #090d16) 100%
+    );
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 18px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18), inset 0 1px 1px rgba(255, 255, 255, 0.25);
+  margin-bottom: 4px;
+}
+
+.card-modal-live-preview__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-modal-live-preview__brand {
+  font-weight: 800;
+  font-size: 0.95rem;
   letter-spacing: 0.02em;
 }
 
-/* ── Classificação compacta ── */
+.card-modal-live-preview__chip {
+  width: 30px;
+  height: 22px;
+  border-radius: 4px;
+  background: linear-gradient(135deg, #fde047 0%, #ca8a04 100%);
+}
 
-.card-projecao-banner__classificacao {
+.card-modal-live-preview__bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.card-modal-live-preview__label {
+  display: block;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.75;
+}
+
+.card-modal-live-preview__value {
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.card-modal-live-preview__dates {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--muted);
-  padding-top: 6px;
-  border-top: 1px solid rgba(28, 26, 23, 0.05);
+  font-size: 0.72rem;
+  opacity: 0.88;
 }
 
-.card-projecao-banner__classificacao-ic {
+.bank-color-swatches {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.bank-color-swatch {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.bank-color-swatch:hover {
+  transform: scale(1.1);
+}
+
+.bank-color-swatch.active {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 2px var(--card), 0 0 0 4px var(--ink);
+  transform: scale(1.08);
+}
+
+.bank-color-custom {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  padding-left: 8px;
+  border-left: 1px solid var(--border-subtle);
+}
+
+.bank-color-hex {
   font-size: 0.8rem;
-}
-
-.card-projecao-banner__ref {
-  font-weight: 500;
-  text-transform: capitalize;
-  color: var(--muted);
-}
-
-.card-projecao-banner__media-val {
   font-weight: 700;
-  color: var(--ink);
-  opacity: 0.85;
+  color: var(--muted);
+  font-family: monospace;
+}
+
+/* --------------------------------------------------------------------------
+   8. Responsividade
+   -------------------------------------------------------------------------- */
+@media (max-width: 1100px) {
+  .cartoes-kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .cartoes-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cartoes-cards-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cartoes-top-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .cartoes-top-bar__actions {
+    width: 100%;
+  }
+
+  .cartoes-top-bar__actions button {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .cartoes-intelligence-hub {
+    padding: 16px;
+  }
+
+  .cartoes-intelligence-hub__tabs {
+    width: 100%;
+  }
+
+  .cartoes-hub-tab {
+    flex: 1;
+    justify-content: center;
+  }
 }

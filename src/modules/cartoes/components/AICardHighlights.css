@@ -1,19 +1,25 @@
-/* ===== DESTAQUES DA IA - SEÇÃO DEDICADA ===== */
+/* ===== DESTAQUES DA IA - SEÇÃO DEDICADA & EMBEDDED ===== */
 
 .ai-highlights-section {
   background: var(--card);
-  border: 1px solid rgba(28, 26, 23, 0.08);
-  border-radius: 16px;
+  border: 1px solid var(--border-subtle, rgba(15, 23, 42, 0.08));
+  border-radius: 18px;
   padding: 20px 24px;
-  margin-bottom: 24px;
-  box-shadow: 0 4px 12px rgba(28, 26, 23, 0.04);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.ai-highlights-section--embedded {
+  background: transparent;
+  border: none;
+  padding: 0;
+  box-shadow: none;
 }
 
 .ai-highlights-section__header {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 16px;
+  margin-bottom: 6px;
 }
 
 .ai-highlights-section__icon {
@@ -21,137 +27,177 @@
 }
 
 .ai-highlights-section__title {
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 700;
   color: var(--ink);
   margin: 0;
-  letter-spacing: -0.2px;
+  letter-spacing: -0.02em;
 }
 
 .ai-highlights-section__subtitle {
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   color: var(--muted);
   margin: 0 0 16px 0;
   line-height: 1.4;
 }
 
 .ai-highlights-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 14px;
+}
+
+.ai-highlights-empty {
   display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: 12px;
+  padding: 20px 24px;
+  border-radius: 14px;
+  background: var(--surface-subtle, rgba(15, 23, 42, 0.04));
+  border: 1px dashed var(--border-strong, rgba(15, 23, 42, 0.14));
+  color: var(--muted);
+  font-size: 0.88rem;
 }
 
 /* ===== CARD INDIVIDUAL ===== */
 
 .ai-highlight-card {
-  background: rgba(28, 26, 23, 0.02);
-  border-left: 4px solid var(--primary, #8a05be);
-  border-radius: 8px;
-  padding: 14px 16px;
+  background: var(--surface-subtle, rgba(15, 23, 42, 0.03));
+  border: 1px solid var(--border-subtle, rgba(15, 23, 42, 0.08));
+  border-left: 4px solid var(--accent);
+  border-radius: 14px;
+  padding: 16px 18px;
   position: relative;
-  transition: background 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .ai-highlight-card:hover {
-  background: rgba(28, 26, 23, 0.04);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
 }
 
-/* Tipo: Concentração de Gastos (alerta) */
+/* Tipo: Concentração de Gastos / Estouro (alerta) */
 .ai-highlight-card--concentracao {
-  border-left-color: #E63946;
-  background: rgba(230, 57, 70, 0.04);
+  border-left-color: #e11d48;
+  background: color-mix(in srgb, #e11d48 6%, var(--card));
 }
 
-.ai-highlight-card--concentracao:hover {
-  background: rgba(230, 57, 70, 0.06);
-}
-
-/* Tipo: Otimização de Parcelamento (positivo) */
+/* Tipo: Otimização / Fechamento */
 .ai-highlight-card--otimizacao {
-  border-left-color: #22c55e;
-  background: rgba(34, 197, 94, 0.04);
+  border-left-color: #10b981;
+  background: color-mix(in srgb, #10b981 6%, var(--card));
 }
 
-.ai-highlight-card--otimizacao:hover {
-  background: rgba(34, 197, 94, 0.06);
-}
-
-/* Header do card */
 .ai-highlight-card__header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 6px;
+  gap: 12px;
 }
 
-.ai-highlight-card__title {
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: var(--ink);
+.ai-highlight-card__title-group {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 6px;
 }
 
-.ai-highlight-card__title-icon {
-  font-size: 0.9rem;
+.ai-highlight-card__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  width: fit-content;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(225, 29, 72, 0.14);
+  color: #fb7185;
+  border: 1px solid rgba(225, 29, 72, 0.25);
+}
+
+[data-theme="light"] .ai-highlight-card__badge {
+  color: #be123c;
+  background: rgba(225, 29, 72, 0.1);
+}
+
+.ai-highlight-card__title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.3;
 }
 
 /* Botão dispensar */
 .ai-highlight-card__dismiss {
-  background: none;
+  background: transparent;
   border: none;
   color: var(--muted);
   cursor: pointer;
-  font-size: 0.9rem;
-  padding: 0;
-  line-height: 1;
-  transition: color 0.2s;
+  padding: 4px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s, background 0.2s;
 }
 
 .ai-highlight-card__dismiss:hover {
   color: var(--ink);
+  background: var(--surface-hover, rgba(15, 23, 42, 0.08));
 }
 
-/* Mensagem */
+/* Mensagem com alto contraste garantido nos dois temas */
 .ai-highlight-card__message {
-  font-size: 0.82rem;
-  color: var(--ink-secondary, #555);
-  margin: 0 0 10px 0;
-  line-height: 1.5;
+  font-size: 0.85rem;
+  color: var(--ink-secondary, var(--ink));
+  margin: 0;
+  line-height: 1.55;
 }
 
 /* Ações (feedback) */
 .ai-highlight-card__actions {
   display: flex;
   gap: 8px;
+  margin-top: auto;
+  padding-top: 4px;
 }
 
 .ai-highlight-card__feedback-btn {
-  background: rgba(28, 26, 23, 0.04);
-  border: 1px solid rgba(28, 26, 23, 0.08);
-  color: var(--muted);
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-size: 0.72rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--card);
+  border: 1px solid var(--border-strong, rgba(15, 23, 42, 0.14));
+  color: var(--ink-secondary, var(--ink));
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-weight: 500;
 }
 
 .ai-highlight-card__feedback-btn:hover {
-  background: rgba(28, 26, 23, 0.08);
+  background: var(--surface-hover);
   color: var(--ink);
 }
 
 .ai-highlight-card__feedback-btn--yes:hover {
-  border-color: #22c55e;
-  color: #22c55e;
+  border-color: #10b981;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.08);
 }
 
 .ai-highlight-card__feedback-btn--no:hover {
-  border-color: #E63946;
-  color: #E63946;
+  border-color: #e11d48;
+  color: #e11d48;
+  background: rgba(225, 29, 72, 0.08);
 }
 
 /* ===== RESPONSIVO ===== */
@@ -159,18 +205,10 @@
 @media (max-width: 640px) {
   .ai-highlights-section {
     padding: 16px;
-    border-radius: 12px;
+    border-radius: 14px;
   }
 
-  .ai-highlight-card {
-    padding: 12px 14px;
-  }
-
-  .ai-highlight-card__title {
-    font-size: 0.82rem;
-  }
-
-  .ai-highlight-card__message {
-    font-size: 0.78rem;
+  .ai-highlights-list {
+    grid-template-columns: 1fr;
   }
 }

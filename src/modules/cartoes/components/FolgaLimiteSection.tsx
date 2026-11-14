@@ -8,7 +8,8 @@ import {
   X,
   Lightbulb,
   CheckCheck,
-  Receipt
+  Receipt,
+  LayoutGrid
 } from 'lucide-react'
 import { FolgaLimiteItem } from '../../../services/iaService'
 import { Cartao } from '../../../types/cartoes'
@@ -19,12 +20,13 @@ interface FolgaLimiteSectionProps {
   cartoes?: Cartao[]
   onDismiss: (id: string) => void
   onDismissAll?: () => void
+  defaultShowGrid?: boolean
 }
 
 function getFallbackColor(nome: string): string {
   const n = (nome || '').toLowerCase()
   if (n.includes('nubank')) return '#820AD1'
-  if (n.includes('banco do brasil') || n.includes('bb')) return '#F9DD16'
+  if (n.includes('banco do brasil') || n.includes('bb')) return '#EAB308'
   if (n.includes('inter')) return '#FF7A00'
   if (n.includes('itaú') || n.includes('itau')) return '#EC7000'
   if (n.includes('bradesco')) return '#CC092F'
@@ -38,9 +40,11 @@ export function FolgaLimiteSection({
   items,
   cartoes = [],
   onDismiss,
-  onDismissAll
+  onDismissAll,
+  defaultShowGrid = false
 }: FolgaLimiteSectionProps) {
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({})
+  const [showGrid, setShowGrid] = useState(defaultShowGrid)
 
   const safeItems = useMemo(() => (Array.isArray(items) ? items : []), [items])
   const safeCartoes = useMemo(() => (Array.isArray(cartoes) ? cartoes : []), [cartoes])
@@ -48,7 +52,6 @@ export function FolgaLimiteSection({
   const formatCurrency = (val: number) =>
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val || 0)
 
-  // Mapa de cores dos cartões
   const cartaoColorMap = useMemo(() => {
     const map = new Map<string, string>()
     safeCartoes.forEach((c) => {
@@ -100,7 +103,6 @@ export function FolgaLimiteSection({
     [aVistaItems]
   )
 
-  // Agrupamento por cartão para parcelamentos quitados
   const breakdownPorCartao = useMemo(() => {
     const map = new Map<
       string,
@@ -122,7 +124,6 @@ export function FolgaLimiteSection({
     return Array.from(map.values())
   }, [parcelamentoItems, cartaoColorMap])
 
-  // Agrupamento por cartão para compras à vista (1x)
   const breakdownAVistaPorCartao = useMemo(() => {
     const map = new Map<
       string,
@@ -155,14 +156,13 @@ export function FolgaLimiteSection({
     }))
   }
 
-  // O early return só pode ocorrer DEPOIS de todos os hooks do React
   if (safeItems.length === 0) {
     return null
   }
 
   return (
     <section className="folga-container" aria-label="Folga de Limite Financeiro">
-      {/* Hero Banner Moderno */}
+      {/* Hero Banner Compacto e Moderno */}
       <div className={`folga-hero ${!hasParcelamentos && hasAVista ? 'folga-hero--avista-only' : ''}`}>
         <div className="folga-hero__glow" />
 
@@ -174,17 +174,33 @@ export function FolgaLimiteSection({
             </span>
           </div>
 
-          {onDismissAll && (
+          <div className="folga-hero__top-actions">
             <button
               type="button"
-              className="folga-hero__dismiss-all"
-              onClick={onDismissAll}
-              title="Dispensar todos os avisos de folga"
+              className="folga-hero__toggle-grid-btn"
+              onClick={() => setShowGrid((prev) => !prev)}
             >
-              <CheckCheck size={14} />
-              <span>Dispensar todos</span>
+              <LayoutGrid size={14} />
+              <span>
+                {showGrid
+                  ? 'Recolher detalhamento'
+                  : `Ver itens detalhados (${orderedItems.length})`}
+              </span>
+              {showGrid ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
             </button>
-          )}
+
+            {onDismissAll && (
+              <button
+                type="button"
+                className="folga-hero__dismiss-all"
+                onClick={onDismissAll}
+                title="Dispensar todos os avisos de folga"
+              >
+                <CheckCheck size={14} />
+                <span>Dispensar todos</span>
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="folga-hero__content">
@@ -196,8 +212,8 @@ export function FolgaLimiteSection({
             </h2>
             <p className="folga-hero__subtitle">
               {hasParcelamentos
-                ? 'Estes parcelamentos chegam ao fim nesta fatura. A partir do próximo ciclo, esse valor deixa de ser cobrado e fica livre no seu bolso!'
-                : 'Estas compras de parcela única (1x) não geram parcelas automáticas nas próximas faturas. Assinaturas recorrentes não estão incluídas.'}
+                ? 'Estes parcelamentos chegam ao fim nesta fatura. A partir do próximo ciclo, esse valor deixa de ser cobrado e fica livre no seu orçamento!'
+                : 'Estas compras de parcela única (1x) não geram parcelas automáticas nas próximas faturas.'}
             </p>
           </div>
 
@@ -293,175 +309,173 @@ export function FolgaLimiteSection({
         )}
       </div>
 
-      {/* Grid de Cards Modernos */}
-      <div className="folga-grid">
-        {orderedItems.map((item) => {
-          const cardColor = getColor(item.cartaoId, item.cartaoNome)
-          const isExpanded = !!expandedItems[item.id]
-          const impacto = Number(item.impactoMensal) || 0
-          const isAVista = item.tipo === 'A_VISTA_AGRUPADO'
-          const qtdCompras = item.quantidadeCompras || item.detalhes?.length || 1
-          const detalhes = Array.isArray(item.detalhes) ? item.detalhes : []
+      {/* Grid de Cards Sob Demanda (Colapsável) */}
+      {showGrid && (
+        <div className="folga-grid">
+          {orderedItems.map((item) => {
+            const cardColor = getColor(item.cartaoId, item.cartaoNome)
+            const isExpanded = !!expandedItems[item.id]
+            const impacto = Number(item.impactoMensal) || 0
+            const isAVista = item.tipo === 'A_VISTA_AGRUPADO'
+            const qtdCompras = item.quantidadeCompras || item.detalhes?.length || 1
+            const detalhes = Array.isArray(item.detalhes) ? item.detalhes : []
 
-          return (
-            <article
-              key={item.id}
-              className={`folga-item-card ${isAVista ? 'folga-item-card--avista' : ''}`}
-              style={
-                {
-                  '--card-brand-color': cardColor
-                } as React.CSSProperties
-              }
-            >
-              {/* Barra de cor temática do cartão */}
-              <div
-                className="folga-item-card__color-accent"
-                style={{ backgroundColor: cardColor }}
-              />
+            return (
+              <article
+                key={item.id}
+                className={`folga-item-card ${isAVista ? 'folga-item-card--avista' : ''}`}
+                style={
+                  {
+                    '--card-brand-color': cardColor
+                  } as React.CSSProperties
+                }
+              >
+                <div
+                  className="folga-item-card__color-accent"
+                  style={{ backgroundColor: cardColor }}
+                />
 
-              <div className="folga-item-card__inner">
-                {/* Header do Card */}
-                <header className="folga-item-card__header">
-                  <div className="folga-item-card__tags">
-                    <span
-                      className="folga-item-card__cartao-badge"
-                      style={{
-                        borderColor: `${cardColor}40`,
-                        backgroundColor: `${cardColor}15`
-                      }}
-                    >
+                <div className="folga-item-card__inner">
+                  <header className="folga-item-card__header">
+                    <div className="folga-item-card__tags">
                       <span
-                        className="folga-item-card__cartao-dot"
-                        style={{ backgroundColor: cardColor }}
-                      />
-                      <CreditCard size={12} className="folga-item-card__cartao-icon" />
-                      <span className="folga-item-card__cartao-nome">{item.cartaoNome}</span>
-                    </span>
-
-                    {isAVista ? (
-                      <span className="folga-item-card__status-badge folga-item-card__status-badge--avista">
-                        <Receipt size={12} />
-                        <span>
-                          {qtdCompras} {qtdCompras === 1 ? 'compra 1x' : 'compras 1x'}
-                        </span>
+                        className="folga-item-card__cartao-badge"
+                        style={{
+                          borderColor: `${cardColor}40`,
+                          backgroundColor: `${cardColor}15`
+                        }}
+                      >
+                        <span
+                          className="folga-item-card__cartao-dot"
+                          style={{ backgroundColor: cardColor }}
+                        />
+                        <CreditCard size={12} className="folga-item-card__cartao-icon" />
+                        <span className="folga-item-card__cartao-nome">{item.cartaoNome}</span>
                       </span>
-                    ) : (
-                      <span className="folga-item-card__status-badge">
-                        <CheckCircle2 size={12} />
-                        <span>
-                          {item.totalParcelas}/{item.totalParcelas} Quitada
-                        </span>
-                      </span>
-                    )}
-                  </div>
 
-                  <button
-                    type="button"
-                    className="folga-item-card__dismiss-btn"
-                    onClick={() => onDismiss(item.id)}
-                    title="Dispensar alerta deste item"
-                    aria-label="Dispensar"
-                  >
-                    <X size={15} />
-                  </button>
-                </header>
-
-                {/* Conteúdo Principal */}
-                <div className="folga-item-card__body">
-                  <div className="folga-item-card__title-group">
-                    <h3 className="folga-item-card__descricao" title={item.descricao}>
-                      {item.descricao}
-                    </h3>
-                    {isAVista && (
-                      <span className="folga-item-card__subnote">
-                        Não gera parcela no próximo ciclo
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="folga-item-card__financial">
-                    <span className="folga-item-card__financial-label">
-                      {isAVista ? 'Pontual na fatura' : 'Valor liberado'}
-                    </span>
-                    <div
-                      className={`folga-item-card__financial-value ${
-                        isAVista ? 'folga-item-card__financial-value--avista' : ''
-                      }`}
-                    >
-                      {isAVista ? formatCurrency(impacto) : `+${formatCurrency(impacto)}`}
-                      {!isAVista && (
-                        <span className="folga-item-card__financial-frequency">/mês</span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Rodapé Colapsável */}
-                <div className="folga-item-card__ai-wrapper">
-                  <button
-                    type="button"
-                    className="folga-item-card__ai-toggle"
-                    onClick={() => toggleExpand(item.id)}
-                    aria-expanded={isExpanded}
-                  >
-                    <div className="folga-item-card__ai-toggle-left">
                       {isAVista ? (
-                        <>
-                          <Receipt size={13} className="folga-item-card__avista-icon" />
-                          <span>Ver compras incluídas ({qtdCompras})</span>
-                        </>
+                        <span className="folga-item-card__status-badge folga-item-card__status-badge--avista">
+                          <Receipt size={12} />
+                          <span>
+                            {qtdCompras} {qtdCompras === 1 ? 'compra 1x' : 'compras 1x'}
+                          </span>
+                        </span>
                       ) : (
-                        <>
-                          <Lightbulb size={13} className="folga-item-card__ai-icon" />
-                          <span>Recomendação de Destino</span>
-                        </>
+                        <span className="folga-item-card__status-badge">
+                          <CheckCircle2 size={12} />
+                          <span>
+                            {item.totalParcelas}/{item.totalParcelas} Quitada
+                          </span>
+                        </span>
                       )}
                     </div>
-                    {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                  </button>
 
-                  {isExpanded && (
-                    <div
-                      className={`folga-item-card__ai-content ${
-                        isAVista ? 'folga-item-card__ai-content--avista' : ''
-                      }`}
+                    <button
+                      type="button"
+                      className="folga-item-card__dismiss-btn"
+                      onClick={() => onDismiss(item.id)}
+                      title="Dispensar alerta deste item"
+                      aria-label="Dispensar"
                     >
-                      {isAVista ? (
-                        detalhes.length > 0 ? (
-                          <ul className="folga-avista-list">
-                            {detalhes.map((detalhe, idx) => (
-                              <li key={`${item.id}-det-${idx}`} className="folga-avista-list__item">
-                                <span
-                                  className="folga-avista-list__desc"
-                                  title={detalhe.descricao}
-                                >
-                                  {detalhe.descricao}
-                                </span>
-                                <span className="folga-avista-list__val">
-                                  {formatCurrency(Number(detalhe.valor) || 0)}
-                                </span>
-                              </li>
-                            ))}
-                          </ul>
+                      <X size={15} />
+                    </button>
+                  </header>
+
+                  <div className="folga-item-card__body">
+                    <div className="folga-item-card__title-group">
+                      <h3 className="folga-item-card__descricao" title={item.descricao}>
+                        {item.descricao}
+                      </h3>
+                      {isAVista && (
+                        <span className="folga-item-card__subnote">
+                          Não gera parcela no próximo ciclo
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="folga-item-card__financial">
+                      <span className="folga-item-card__financial-label">
+                        {isAVista ? 'Pontual na fatura' : 'Valor liberado'}
+                      </span>
+                      <div
+                        className={`folga-item-card__financial-value ${
+                          isAVista ? 'folga-item-card__financial-value--avista' : ''
+                        }`}
+                      >
+                        {isAVista ? formatCurrency(impacto) : `+${formatCurrency(impacto)}`}
+                        {!isAVista && (
+                          <span className="folga-item-card__financial-frequency">/mês</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="folga-item-card__ai-wrapper">
+                    <button
+                      type="button"
+                      className="folga-item-card__ai-toggle"
+                      onClick={() => toggleExpand(item.id)}
+                      aria-expanded={isExpanded}
+                    >
+                      <div className="folga-item-card__ai-toggle-left">
+                        {isAVista ? (
+                          <>
+                            <Receipt size={13} className="folga-item-card__avista-icon" />
+                            <span>Ver compras incluídas ({qtdCompras})</span>
+                          </>
                         ) : (
-                          <p>{item.mensagem}</p>
-                        )
-                      ) : (
-                        <p>
-                          A partir da próxima fatura, você terá este valor mensal de{' '}
-                          <strong>{formatCurrency(impacto)}</strong> disponível no seu orçamento.
-                          Considere direcionar essa quantia para reserva de emergência ou
-                          investimentos!
-                        </p>
-                      )}
-                    </div>
-                  )}
+                          <>
+                            <Lightbulb size={13} className="folga-item-card__ai-icon" />
+                            <span>Recomendação de Destino</span>
+                          </>
+                        )}
+                      </div>
+                      {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                    </button>
+
+                    {isExpanded && (
+                      <div
+                        className={`folga-item-card__ai-content ${
+                          isAVista ? 'folga-item-card__ai-content--avista' : ''
+                        }`}
+                      >
+                        {isAVista ? (
+                          detalhes.length > 0 ? (
+                            <ul className="folga-avista-list">
+                              {detalhes.map((detalhe, idx) => (
+                                <li key={`${item.id}-det-${idx}`} className="folga-avista-list__item">
+                                  <span
+                                    className="folga-avista-list__desc"
+                                    title={detalhe.descricao}
+                                  >
+                                    {detalhe.descricao}
+                                  </span>
+                                  <span className="folga-avista-list__val">
+                                    {formatCurrency(Number(detalhe.valor) || 0)}
+                                  </span>
+                                </li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <p>{item.mensagem}</p>
+                          )
+                        ) : (
+                          <p>
+                            A partir da próxima fatura, você terá este valor mensal de{' '}
+                            <strong>{formatCurrency(impacto)}</strong> disponível no seu orçamento.
+                            Considere direcionar essa quantia para reserva de emergência ou
+                            investimentos!
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </article>
-          )
-        })}
-      </div>
+              </article>
+            )
+          })}
+        </div>
+      )}
     </section>
   )
 }

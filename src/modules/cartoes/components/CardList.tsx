@@ -1,3 +1,4 @@
+import { CreditCard as CreditCardIcon, Plus } from 'lucide-react'
 import { Cartao, Conta, ProjecaoCartao } from '../../../types'
 import { IaInsight } from '../../../services/iaService'
 import { CreditCard } from './CreditCard'
@@ -14,14 +15,28 @@ interface CardListProps {
   onNovaTransacao: (cartao: Cartao) => void
   onPagarFatura: (cartao: Cartao) => void
   onRefreshInsights: () => void
+  onCreateNew?: () => void
 }
 
-export function CardList({ cartoes, contas, loading, insights, projecoes, onEdit, onDelete, onViewFaturas, onNovaTransacao, onPagarFatura, onRefreshInsights }: CardListProps) {
+export function CardList({
+  cartoes,
+  contas,
+  loading,
+  insights,
+  projecoes,
+  onEdit,
+  onDelete,
+  onViewFaturas,
+  onNovaTransacao,
+  onPagarFatura,
+  onRefreshInsights,
+  onCreateNew
+}: CardListProps) {
   if (loading) {
     return (
-      <div className="account-list">
+      <div className="cartoes-cards-grid">
         {[1, 2].map((i) => (
-          <div key={i} className="account-card account-card--skeleton" style={{ height: 210 }} />
+          <div key={i} className="account-card account-card--skeleton" style={{ height: 370, borderRadius: 20 }} />
         ))}
       </div>
     )
@@ -29,23 +44,25 @@ export function CardList({ cartoes, contas, loading, insights, projecoes, onEdit
 
   if (cartoes.length === 0) {
     return (
-      <div className="account-list">
-        <div className="account-list--empty">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <rect x="2" y="5" width="20" height="14" rx="3" />
-            <line x1="2" y1="10" x2="22" y2="10" />
-          </svg>
-          <p>Nenhum cartão de crédito cadastrado ainda.</p>
-          <p style={{ marginTop: 4, fontSize: '0.85rem' }}>
-            Clique em <strong>+ Novo Cartão</strong> para começar.
-          </p>
+      <div className="cartoes-empty-state">
+        <div className="cartoes-empty-state__icon">
+          <CreditCardIcon size={32} />
         </div>
+        <h3 className="cartoes-empty-state__title">Nenhum cartão de crédito cadastrado</h3>
+        <p className="cartoes-empty-state__desc">
+          Cadastre seus cartões para acompanhar faturas, projeções de fechamento por IA e folga de limite mensal.
+        </p>
+        {onCreateNew && (
+          <button type="button" className="btn-nova-conta" onClick={onCreateNew}>
+            <Plus size={16} /> Cadastrar Primeiro Cartão
+          </button>
+        )}
       </div>
     )
   }
 
   return (
-    <div className="account-list">
+    <div className="cartoes-cards-grid">
       {cartoes.map((cartao) => (
         <CreditCard
           key={cartao.id}

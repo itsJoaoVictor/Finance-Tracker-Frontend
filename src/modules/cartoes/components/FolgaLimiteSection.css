@@ -43,15 +43,46 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
   position: relative;
   z-index: 1;
+}
+
+.folga-hero__top-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.folga-hero__toggle-grid-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  color: #ffffff;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.folga-hero__toggle-grid-btn:hover {
+  background: rgba(255, 255, 255, 0.26);
+  border-color: rgba(255, 255, 255, 0.45);
+  transform: translateY(-1px);
 }
 
 .folga-hero__badge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(255, 255, 255, 0.16);
+  background: rgba(0, 0, 0, 0.28);
   backdrop-filter: blur(8px);
   padding: 5px 12px;
   border-radius: 999px;
@@ -83,21 +114,22 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: #d1fae5;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: #ecfdf5;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: 0.78rem;
   font-weight: 600;
-  padding: 5px 12px;
-  border-radius: 8px;
+  padding: 6px 12px;
+  border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .folga-hero__dismiss-all:hover {
-  background: rgba(0, 0, 0, 0.35);
+  background: rgba(0, 0, 0, 0.5);
   color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.38);
 }
 
 .folga-hero__content {
@@ -308,10 +340,10 @@
 .folga-item-card {
   position: relative;
   background: var(--card, #ffffff);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--border-subtle, rgba(15, 23, 42, 0.08));
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
   display: flex;
   flex-direction: column;
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
@@ -319,8 +351,8 @@
 
 .folga-item-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-  border-color: rgba(0, 0, 0, 0.14);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  border-color: var(--border-strong, rgba(15, 23, 42, 0.16));
 }
 
 .folga-item-card__color-accent {
@@ -381,9 +413,9 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background: #ecfdf5;
-  color: #059669;
-  border: 1px solid rgba(5, 150, 105, 0.2);
+  background: rgba(16, 185, 129, 0.14);
+  color: var(--green-positive, #10b981);
+  border: 1px solid rgba(16, 185, 129, 0.28);
   font-size: 0.72rem;
   font-weight: 700;
   padding: 3px 8px;
@@ -391,9 +423,13 @@
 }
 
 .folga-item-card__status-badge--avista {
-  background: #f0f9ff;
+  background: rgba(14, 165, 233, 0.14);
+  color: #38bdf8;
+  border-color: rgba(14, 165, 233, 0.28);
+}
+
+[data-theme="light"] .folga-item-card__status-badge--avista {
   color: #0284c7;
-  border-color: rgba(2, 132, 199, 0.22);
 }
 
 .folga-item-card__dismiss-btn {
@@ -410,8 +446,8 @@
 }
 
 .folga-item-card__dismiss-btn:hover {
-  background: rgba(0, 0, 0, 0.05);
-  color: #ef4444;
+  background: var(--surface-subtle, rgba(15, 23, 42, 0.06));
+  color: var(--danger, #e11d48);
 }
 
 .folga-item-card__body {

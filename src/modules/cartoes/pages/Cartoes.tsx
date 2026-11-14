@@ -1,5 +1,22 @@
-import { useEffect, useState, useCallback } from 'react'
-import { Cartao, CartaoCriacaoRequest, CartaoEdicaoRequest, Conta, ProjecaoCartao, TransacaoCriacaoRequest, PagamentoFaturaRequest } from '../../../types'
+import { useEffect, useState, useCallback, useMemo } from 'react'
+import {
+  Sparkles,
+  Plus,
+  Wallet,
+  Receipt,
+  CreditCard as CreditCardIcon,
+  AlertTriangle,
+  Leaf
+} from 'lucide-react'
+import {
+  Cartao,
+  CartaoCriacaoRequest,
+  CartaoEdicaoRequest,
+  Conta,
+  ProjecaoCartao,
+  TransacaoCriacaoRequest,
+  PagamentoFaturaRequest
+} from '../../../types'
 import { cartaoService } from '../../../services/cartaoService'
 import { contaService } from '../../../services/contaService'
 import { transacaoService } from '../../../services/transacaoService'
@@ -17,6 +34,12 @@ import { Toast, useToast } from '../../contas/components/Toast'
 import '../../contas/contas.css'
 import '../cartoes.css'
 
+const ALERT_HIGHLIGHT_TIPOS = new Set([
+  'CONCENTRACAO_GASTOS_FATURA',
+  'ESTOURO_FATURA',
+  'AVISO_FECHAMENTO'
+])
+
 export function Cartoes() {
   const [cartoes, setCartoes] = useState<Cartao[]>([])
   const [contas, setContas] = useState<Conta[]>([])
@@ -27,7 +50,7 @@ export function Cartoes() {
   const [resumo, setResumo] = useState({
     totalLimite: 0,
     totalLimiteDisponivel: 0,
-    totalFaturaEstimada: 0,
+    totalFaturaEstimada: 0
   })
   const [showCreate, setShowCreate] = useState(false)
   const [editCartao, setEditCartao] = useState<Cartao | null>(null)
@@ -35,56 +58,104 @@ export function Cartoes() {
   const [novaTransacaoCartao, setNovaTransacaoCartao] = useState<Cartao | null>(null)
   const [pagarFaturaCartao, setPagarFaturaCartao] = useState<Cartao | null>(null)
   const [showPlanejador, setShowPlanejador] = useState(false)
+  const [hubTab, setHubTab] = useState<'folga' | 'alertas'>('folga')
   const { toasts, addToast, dismiss } = useToast()
 
   const loadDados = useCallback(async () => {
     setLoading(true)
     try {
-      // Processa TODOS os insights dedicados de cartão em uma única chamada
       await iaService.processarTodosInsightsCartao().catch(() => {})
 
-      const [cartoesRes, contasRes, resumoRes, insightsRes, projecoesRes, folgaRes] = await Promise.all([
-        cartaoService.getAll(),
-        contaService.getAll(),
-        cartaoService.getResumo(),
-        iaService.getInsights().catch(() => ({ data: [] as IaInsight[] })),
-        iaService.getProjecaoCartoes().catch(() => ({ data: { projecoes: [] as ProjecaoCartao[] } })),
-        iaService.verificarOtimizacaoParcelamento().catch(() => ({ data: { items: [] } })),
-      ])
+      const [cartoesRes, contasRes, resumoRes, insightsRes, projecoesRes, folgaRes] =
+        await Promise.all([
+          cartaoService.getAll(),
+          contaService.getAll(),
+          cartaoService.getResumo(),
+          iaService.getInsights().catch(() => ({ data: [] as IaInsight[] })),
+          iaService
+            .getProjecaoCartoes()
+            .catch(() => ({ data: { projecoes: [] as ProjecaoCartao[] } })),
+          iaService.verificarOtimizacaoParcelamento().catch(() => ({ data: { items: [] } }))
+        ])
       setCartoes(cartoesRes.data)
       setContas(contasRes.data)
-      // Deduplica insights: MELHOR_CARTAO uma vez
+
+      // Deduplicação rigorosa de insights (por tipo único ou assinatura de conteúdo)
       const TIPOS_UNICOS = new Set(['MELHOR_CARTAO'])
       const seenTipos = new Set<string>()
+      const seenContentKeys = new Set<string>()
+
       const insightsDedupados = insightsRes.data.filter((ins) => {
+        if (ins.tipo === 'OTIMIZACAO_PARCELAMENTO') return false
         if (TIPOS_UNICOS.has(ins.tipo)) {
           if (seenTipos.has(ins.tipo)) return false
           seenTipos.add(ins.tipo)
           return true
         }
-        // OTIMIZACAO_PARCELAMENTO não vem mais por aqui (endpoint dedicado)
-        if (ins.tipo === 'OTIMIZACAO_PARCELAMENTO') return false
+        const contentKey = `${ins.tipo}::${ins.titulo?.trim()}::${ins.mensagem?.trim()}`
+        if (seenContentKeys.has(contentKey)) return false
+        seenContentKeys.add(contentKey)
         return true
       })
+
       setInsights(insightsDedupados)
       setFolgaLimiteItems(folgaRes.data.items)
-
       setProjecoes(projecoesRes.data.projecoes)
       setResumo({
         totalLimite: resumoRes.data.totalLimite,
         totalLimiteDisponivel: resumoRes.data.totalLimiteDisponivel,
-        totalFaturaEstimada: resumoRes.data.totalFaturaEstimada,
+        totalFaturaEstimada: resumoRes.data.totalFaturaEstimada
       })
     } catch {
       addToast('Erro ao carregar dados dos cartões.', 'error')
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [addToast])
 
   useEffect(() => {
     loadDados()
   }, [loadDados])
+
+  // Deduplicated alert insights for the Hub counter
+  const alertInsights = useMemo(
+    () => insights.filter((ins) => ALERT_HIGHLIGHT_TIPOS.has(ins.tipo)),
+    [insights]
+  )
+
+  // Ajusta aba ativa do Hub automaticamente quando uma delas está vazia
+  useEffect(() => {
+    if (folgaLimiteItems.length === 0 && alertInsights.length > 0) {
+      setHubTab('alertas')
+    } else if (folgaLimiteItems.length > 0 && alertInsights.length === 0) {
+      setHubTab('folga')
+    }
+  }, [folgaLimiteItems.length, alertInsights.length])
+
+  // Identifica o Melhor Cartão do momento
+  const melhorCartaoInfo = useMemo(() => {
+    const melhorIns = insights.find((i) => i.tipo === 'MELHOR_CARTAO')
+    if (melhorIns?.metadados) {
+      try {
+        const meta = JSON.parse(melhorIns.metadados)
+        const found = cartoes.find((c) => c.id === meta.cartaoId)
+        if (found) return { cartao: found, mensagem: melhorIns.mensagem }
+      } catch {
+        /* ignore */
+      }
+    }
+    if (cartoes.length > 0) {
+      const sorted = [...cartoes].sort((a, b) => b.limiteDisponivel - a.limiteDisponivel)
+      return { cartao: sorted[0], mensagem: 'Maior limite disponível no momento' }
+    }
+    return null
+  }, [insights, cartoes])
+
+  const totalFolgaMensal = useMemo(() => {
+    return folgaLimiteItems
+      .filter((i) => i.tipo !== 'A_VISTA_AGRUPADO')
+      .reduce((acc, i) => acc + (Number(i.impactoMensal) || 0), 0)
+  }, [folgaLimiteItems])
 
   // ─── Criar ───────────────────────────────────────────────────
   async function handleCreate(data: CartaoCriacaoRequest) {
@@ -92,12 +163,11 @@ export function Cartoes() {
       const res = await cartaoService.create(data)
       const novo = res.data
       setCartoes((prev) => [...prev, novo])
-      
-      // Atualiza valores do resumo
+
       setResumo((prev) => ({
         totalLimite: prev.totalLimite + novo.limite,
         totalLimiteDisponivel: prev.totalLimiteDisponivel + novo.limiteDisponivel,
-        totalFaturaEstimada: prev.totalFaturaEstimada + (novo.limite - novo.limiteDisponivel),
+        totalFaturaEstimada: prev.totalFaturaEstimada + (novo.limite - novo.limiteDisponivel)
       }))
 
       setShowCreate(false)
@@ -115,38 +185,33 @@ export function Cartoes() {
     const previousCartoes = cartoes
     const previousResumo = resumo
 
-    // Encontra o cartão atual
     const antigo = cartoes.find((c) => c.id === id)
     if (!antigo) return
 
-    // Recalcula limites de forma otimista
     const diferenca = data.limite - antigo.limite
     const novoDisponivel = antigo.limiteDisponivel + diferenca
     const novaFatura = data.limite - novoDisponivel
 
-    // Atualização otimista do estado
     setCartoes((prev) =>
       prev.map((c) => (c.id === id ? { ...c, ...data, limiteDisponivel: novoDisponivel } : c))
     )
     setResumo((prev) => ({
       totalLimite: prev.totalLimite + diferenca,
       totalLimiteDisponivel: prev.totalLimiteDisponivel + diferenca,
-      totalFaturaEstimada: prev.totalFaturaEstimada + (novaFatura - (antigo.limite - antigo.limiteDisponivel)),
+      totalFaturaEstimada:
+        prev.totalFaturaEstimada + (novaFatura - (antigo.limite - antigo.limiteDisponivel))
     }))
     setEditCartao(null)
 
     try {
       const res = await cartaoService.update(id, data)
-      // Atualiza com os valores oficiais do servidor
       setCartoes((prev) => prev.map((c) => (c.id === id ? res.data : c)))
-      
-      // Recarrega o resumo oficial
+
       const resumoRes = await cartaoService.getResumo()
       setResumo(resumoRes.data)
 
       addToast('Cartão de crédito atualizado com sucesso!', 'success')
     } catch (err: unknown) {
-      // Rollback
       setCartoes(previousCartoes)
       setResumo(previousResumo)
       const axiosErr = err as { response?: { data?: { error?: string } } }
@@ -162,19 +227,17 @@ export function Cartoes() {
     const previousCartoes = cartoes
     const previousResumo = resumo
 
-    // Atualização otimista
     setCartoes((prev) => prev.filter((c) => c.id !== cartao.id))
     setResumo((prev) => ({
       totalLimite: prev.totalLimite - cartao.limite,
       totalLimiteDisponivel: prev.totalLimiteDisponivel - cartao.limiteDisponivel,
-      totalFaturaEstimada: prev.totalFaturaEstimada - (cartao.limite - cartao.limiteDisponivel),
+      totalFaturaEstimada: prev.totalFaturaEstimada - (cartao.limite - cartao.limiteDisponivel)
     }))
 
     try {
       await cartaoService.softDelete(cartao.id)
       addToast('Cartão excluído com sucesso!', 'success')
     } catch (err: unknown) {
-      // Rollback
       setCartoes(previousCartoes)
       setResumo(previousResumo)
       const axiosErr = err as { response?: { data?: { error?: string } } }
@@ -227,88 +290,265 @@ export function Cartoes() {
     setFolgaLimiteItems([])
   }
 
+  const handleOpenCreate = () => {
+    if (contas.length === 0) {
+      addToast('Você precisa criar uma conta antes de cadastrar um cartão.', 'error')
+    } else {
+      setShowCreate(true)
+    }
+  }
+
+  const percDisponivel =
+    resumo.totalLimite > 0
+      ? Math.min(100, Math.max(0, (resumo.totalLimiteDisponivel / resumo.totalLimite) * 100))
+      : 0
+  const percConsumido =
+    resumo.totalLimite > 0
+      ? Math.min(100, Math.max(0, (resumo.totalFaturaEstimada / resumo.totalLimite) * 100))
+      : 0
+
+  const showIntelligenceHub = folgaLimiteItems.length > 0 || alertInsights.length > 0
+
   return (
-    <div className="contas-page">
-      {/* Header */}
-      <div className="contas-header">
-        <div style={{ display: 'flex', gap: '12px' }}>
+    <div className="cartoes-page">
+      {/* 1. Action Bar Superior */}
+      <header className="cartoes-top-bar">
+        <div className="cartoes-top-bar__intro">
+          <h1 className="cartoes-top-bar__title">Meus Cartões & Faturas</h1>
+          <p className="cartoes-top-bar__subtitle">
+            Gerencie limites, acompanhe projeções de fechamento com IA e simule novas compras
+          </p>
+        </div>
+
+        <div className="cartoes-top-bar__actions">
           <button
-            className="btn-cancel"
+            type="button"
+            className="btn-planejador"
             onClick={() => setShowPlanejador(true)}
-            style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#10b981', borderColor: '#10b981' }}
           >
-            <span>✨</span> Planejador de Compras
+            <Sparkles size={16} />
+            <span>Planejador de Compras</span>
           </button>
           <button
+            type="button"
             className="btn-nova-conta"
-            onClick={() => {
-              if (contas.length === 0) {
-                addToast('Você precisa criar uma conta antes de cadastrar um cartão.', 'error')
-              } else {
-                setShowCreate(true)
-              }
-            }}
+            onClick={handleOpenCreate}
             id="btn-novo-cartao"
           >
-            + Novo Cartão
+            <Plus size={16} />
+            <span>Novo Cartão</span>
           </button>
         </div>
-      </div>
+      </header>
 
-      {/* Resumos */}
-      <div className="contas-resumo">
-        <div className="contas-resumo__item">
-          <span className="contas-resumo__label">Limite Disponível</span>
-          <span className="contas-resumo__value contas-resumo__value--green">
+      {/* 2. Bento Grid de 4 KPIs */}
+      <section className="cartoes-kpi-grid" aria-label="Resumo geral dos cartões">
+        {/* KPI 1: Limite Disponível */}
+        <div className="cartoes-kpi-card cartoes-kpi-card--emerald">
+          <div className="cartoes-kpi-card__top">
+            <span className="cartoes-kpi-card__label">Limite Disponível</span>
+            <div className="cartoes-kpi-card__icon cartoes-kpi-card__icon--emerald">
+              <Wallet size={17} />
+            </div>
+          </div>
+          <div className="cartoes-kpi-card__value cartoes-kpi-card__value--emerald">
             {loading ? '...' : formatCurrency(resumo.totalLimiteDisponivel)}
-          </span>
+          </div>
+          <div className="cartoes-kpi-card__footer">
+            <div className="cartoes-kpi-card__mini-bar">
+              <div
+                className="cartoes-kpi-card__mini-bar-fill cartoes-kpi-card__mini-bar-fill--emerald"
+                style={{ width: `${percDisponivel}%` }}
+              />
+            </div>
+            <span className="cartoes-kpi-card__meta">
+              <strong>{percDisponivel.toFixed(0)}%</strong> livre para uso
+            </span>
+          </div>
         </div>
-        <div className="contas-resumo__item">
-          <span className="contas-resumo__label">Limite Total</span>
-          <span className="contas-resumo__value">
-            {loading ? '...' : formatCurrency(resumo.totalLimite)}
-          </span>
-        </div>
-        <div className="contas-resumo__item">
-          <span className="contas-resumo__label">Fatura Estimada</span>
-          <span className="contas-resumo__value" style={{ color: '#E63946' }}>
+
+        {/* KPI 2: Fatura Estimada */}
+        <div className="cartoes-kpi-card cartoes-kpi-card--rose">
+          <div className="cartoes-kpi-card__top">
+            <span className="cartoes-kpi-card__label">Fatura Estimada</span>
+            <div className="cartoes-kpi-card__icon cartoes-kpi-card__icon--rose">
+              <Receipt size={17} />
+            </div>
+          </div>
+          <div className="cartoes-kpi-card__value cartoes-kpi-card__value--rose">
             {loading ? '...' : formatCurrency(resumo.totalFaturaEstimada)}
-          </span>
+          </div>
+          <div className="cartoes-kpi-card__footer">
+            <div className="cartoes-kpi-card__mini-bar">
+              <div
+                className="cartoes-kpi-card__mini-bar-fill cartoes-kpi-card__mini-bar-fill--rose"
+                style={{ width: `${percConsumido}%` }}
+              />
+            </div>
+            <span className="cartoes-kpi-card__meta">
+              <strong>{percConsumido.toFixed(0)}%</strong> do limite comprometido
+            </span>
+          </div>
         </div>
-        <div className="contas-resumo__item">
-          <span className="contas-resumo__label">Cartões Ativos</span>
-          <span className="contas-resumo__value">{loading ? '...' : cartoes.length}</span>
+
+        {/* KPI 3: Limite Total */}
+        <div className="cartoes-kpi-card">
+          <div className="cartoes-kpi-card__top">
+            <span className="cartoes-kpi-card__label">Limite Total</span>
+            <div className="cartoes-kpi-card__icon cartoes-kpi-card__icon--blue">
+              <CreditCardIcon size={17} />
+            </div>
+          </div>
+          <div className="cartoes-kpi-card__value">
+            {loading ? '...' : formatCurrency(resumo.totalLimite)}
+          </div>
+          <div className="cartoes-kpi-card__footer">
+            <span className="cartoes-kpi-card__meta">
+              Soma de {cartoes.length} {cartoes.length === 1 ? 'cartão' : 'cartões'}
+            </span>
+          </div>
         </div>
-      </div>
 
-      {/* Destaques da IA */}
-      <AICardHighlights
-        insights={insights}
-        onDismiss={handleDismissHighlight}
-      />
+        {/* KPI 4: Cartões Ativos & Recomendação IA */}
+        <div className="cartoes-kpi-card">
+          <div className="cartoes-kpi-card__top">
+            <span className="cartoes-kpi-card__label">Cartões Ativos</span>
+            <div className="cartoes-kpi-card__icon cartoes-kpi-card__icon--purple">
+              <Sparkles size={17} />
+            </div>
+          </div>
+          <div className="cartoes-kpi-card__value">{loading ? '...' : cartoes.length}</div>
+          <div className="cartoes-kpi-card__footer">
+            {melhorCartaoInfo ? (
+              <span
+                className="cartoes-kpi-card__best-pill"
+                title={melhorCartaoInfo.mensagem}
+              >
+                <span
+                  className="cartoes-kpi-card__best-dot"
+                  style={{
+                    backgroundColor: melhorCartaoInfo.cartao.corHexadecimal || '#10b981'
+                  }}
+                />
+                Melhor hoje: <strong>{melhorCartaoInfo.cartao.nome}</strong>
+              </span>
+            ) : (
+              <span className="cartoes-kpi-card__meta">Nenhum cartão ativo</span>
+            )}
+          </div>
+        </div>
+      </section>
 
-      {/* Folga de Limite: Parcelamentos que terminam nesta fatura */}
-      <FolgaLimiteSection
-        items={folgaLimiteItems}
-        cartoes={cartoes}
-        onDismiss={handleDismissFolga}
-        onDismissAll={handleDismissAllFolga}
-      />
+      {/* 3. Grid de Cartões de Crédito (Primeira Dobra!) */}
+      <section className="cartoes-main-section" aria-label="Cartões de Crédito">
+        <div className="cartoes-section-header">
+          <div>
+            <h2 className="cartoes-section-header__title">Carteira de Cartões</h2>
+            <p className="cartoes-section-header__subtitle">
+              Clique sobre qualquer cartão para abrir faturas, evolução mensal e antecipação de parcelas
+            </p>
+          </div>
+        </div>
 
-      {/* Lista de Cartões */}
-      <CardList
-        cartoes={cartoes}
-        contas={contas}
-        loading={loading}
-        insights={insights}
-        projecoes={projecoes}
-        onEdit={setEditCartao}
-        onDelete={handleDelete}
-        onViewFaturas={setViewFaturasCartao}
-        onNovaTransacao={setNovaTransacaoCartao}
-        onPagarFatura={setPagarFaturaCartao}
-        onRefreshInsights={loadDados}
-      />
+        <CardList
+          cartoes={cartoes}
+          contas={contas}
+          loading={loading}
+          insights={insights}
+          projecoes={projecoes}
+          onEdit={(c) => setEditCartao(c)}
+          onDelete={handleDelete}
+          onViewFaturas={(c) => setViewFaturasCartao(c)}
+          onNovaTransacao={(c) => setNovaTransacaoCartao(c)}
+          onPagarFatura={(c) => setPagarFaturaCartao(c)}
+          onRefreshInsights={loadDados}
+          onCreateNew={handleOpenCreate}
+        />
+      </section>
+
+      {/* 4. Hub Unificado: Inteligência & Alívio de Limite */}
+      {showIntelligenceHub && (
+        <section className="cartoes-intelligence-hub" aria-label="Inteligência e Alívio de Limite">
+          <div className="cartoes-intelligence-hub__header">
+            <div className="cartoes-intelligence-hub__title-group">
+              <div className="cartoes-intelligence-hub__badge-icon">
+                <Sparkles size={16} />
+              </div>
+              <div>
+                <h2 className="cartoes-intelligence-hub__title">
+                  Inteligência & Alívio de Limite
+                </h2>
+                <p className="cartoes-intelligence-hub__subtitle">
+                  Otimização automática de faturas, parcelas prestes a quitar e alertas da IA
+                </p>
+              </div>
+            </div>
+
+            <div className="cartoes-intelligence-hub__tabs" role="tablist">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={hubTab === 'folga'}
+                className={`cartoes-hub-tab ${hubTab === 'folga' ? 'active' : ''}`}
+                onClick={() => setHubTab('folga')}
+              >
+                <Leaf size={14} />
+                <span>Alívio no Próximo Ciclo</span>
+                {totalFolgaMensal > 0 ? (
+                  <span className="cartoes-hub-tab__pill cartoes-hub-tab__pill--emerald">
+                    +{formatCurrency(totalFolgaMensal)}
+                  </span>
+                ) : (
+                  <span className="cartoes-hub-tab__pill">{folgaLimiteItems.length}</span>
+                )}
+              </button>
+
+              <button
+                type="button"
+                role="tab"
+                aria-selected={hubTab === 'alertas'}
+                className={`cartoes-hub-tab ${hubTab === 'alertas' ? 'active' : ''}`}
+                onClick={() => setHubTab('alertas')}
+              >
+                <AlertTriangle size={14} />
+                <span>Alertas de Gastos (IA)</span>
+                <span
+                  className={`cartoes-hub-tab__pill ${
+                    alertInsights.length > 0 ? 'cartoes-hub-tab__pill--rose' : ''
+                  }`}
+                >
+                  {alertInsights.length}
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <div className="cartoes-intelligence-hub__body">
+            {hubTab === 'folga' ? (
+              folgaLimiteItems.length > 0 ? (
+                <FolgaLimiteSection
+                  items={folgaLimiteItems}
+                  cartoes={cartoes}
+                  onDismiss={handleDismissFolga}
+                  onDismissAll={handleDismissAllFolga}
+                  defaultShowGrid={false}
+                />
+              ) : (
+                <div className="ai-highlights-empty">
+                  <Leaf size={20} />
+                  <p>Nenhum parcelamento encerrando no ciclo atual no momento.</p>
+                </div>
+              )
+            ) : (
+              <AICardHighlights
+                insights={insights}
+                onDismiss={handleDismissHighlight}
+                embedded={true}
+              />
+            )}
+          </div>
+        </section>
+      )}
 
       {/* Modais */}
       {showCreate && (
@@ -318,6 +558,7 @@ export function Cartoes() {
           onSubmit={handleCreate}
         />
       )}
+
       {editCartao && (
         <EditCardModal
           cartao={editCartao}
@@ -326,28 +567,33 @@ export function Cartoes() {
           onSubmit={handleEdit}
         />
       )}
+
       {viewFaturasCartao && (
         <CartaoFaturasModal
           cartao={viewFaturasCartao}
           projecao={projecoes.find((p) => p.cartaoId === viewFaturasCartao.id)}
           onClose={() => setViewFaturasCartao(null)}
+          onPagarFatura={(c) => setPagarFaturaCartao(c)}
         />
       )}
+
       {novaTransacaoCartao && (
         <CreateTransacaoModal
+          initialTipo="COMPRA_CREDITO"
+          initialCartaoId={novaTransacaoCartao.id}
           onClose={() => setNovaTransacaoCartao(null)}
           onSubmit={handleNovaTransacaoSubmit}
-          initialCartaoId={novaTransacaoCartao.id}
-          initialTipo="COMPRA_CREDITO"
         />
       )}
+
       {pagarFaturaCartao && (
         <PagamentoFaturaModal
+          initialCartaoId={pagarFaturaCartao.id}
           onClose={() => setPagarFaturaCartao(null)}
           onSubmit={handlePagarFaturaSubmit}
-          initialCartaoId={pagarFaturaCartao.id}
         />
       )}
+
       {showPlanejador && (
         <PlanejadorComprasModal
           onClose={() => setShowPlanejador(false)}
