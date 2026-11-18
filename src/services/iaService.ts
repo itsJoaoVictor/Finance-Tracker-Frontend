@@ -8,6 +8,17 @@ export interface IaCategorizarResponse {
   justificativa: string
 }
 
+export interface IaExtrairComprovanteResponse {
+  descricao?: string
+  valor?: number
+  data?: string
+  totalParcelas?: number
+  categoriaSugerida?: string
+  categoriaId?: string
+  confianca?: number
+  justificativa?: string
+}
+
 export interface IaInsight {
   id: string
   tipo: string
@@ -37,6 +48,10 @@ export const iaService = {
   // RN-07 / RN-12: Categorização PLN
   categorizar: (descricaoFatura: string) =>
     api.post<IaCategorizarResponse>('/api/ia/categorizar', { descricaoFatura }),
+
+  // Extração de Comprovante / Nota Fiscal via Imagem (Vision IA)
+  extrairComprovante: (imagemBase64: string) =>
+    api.post<IaExtrairComprovanteResponse>('/api/ia/extrair-comprovante', { imagemBase64 }),
 
   // RN-14: Feedback Loop — registrar correção manual de categoria
   registrarCorrecao: (descricaoFatura: string, categoriaNovaId: string, categoriaAntigaId?: string) =>
