@@ -31,7 +31,7 @@ export function TabelaDetalhes({
   }
 
   const isDespesa = (tipo: string) =>
-    tipo === 'SAQUE' || tipo === 'PIX' || tipo === 'COMPRA_CREDITO'
+    tipo === 'SAQUE' || tipo === 'PIX' || tipo === 'COMPRA_CREDITO' || tipo === 'PAGAMENTO_BOLETO'
 
   return (
     <div className="widget tabela-detalhes">

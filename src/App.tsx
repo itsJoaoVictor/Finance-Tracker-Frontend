@@ -12,6 +12,7 @@ import { Categorias } from './modules/categorias/pages/Categorias'
 import { Transacoes } from './modules/transacoes/pages/Transacoes'
 import { Tags } from './modules/tags/pages/Tags'
 import { Assinaturas } from './modules/assinaturas/pages/Assinaturas'
+import { ContasPagar } from './modules/contas-pagar/pages/ContasPagar'
 import { Metas } from './modules/metas/pages/Metas'
 import { Orcamentos } from './modules/orcamentos/pages/Orcamentos'
 import { Dashboard } from './modules/dashboard/Dashboard'
@@ -72,6 +73,8 @@ function AppShell({
         navigate('/transacoes')
       } else if (item === 'assinaturas') {
         navigate('/assinaturas')
+      } else if (item === 'contas-pagar') {
+        navigate('/contas-pagar')
       } else if (item === 'tags') {
         navigate('/tags')
       } else if (item === 'metas' || item === 'cofrinhos') {
@@ -224,6 +227,15 @@ function AssinaturasLayout() {
   return (
     <AppShell pageTitle="Assinaturas" activeItem="assinaturas">
       <Assinaturas />
+    </AppShell>
+  )
+}
+
+// ─── Contas a Pagar Layout ────────────────────────────────────────────────────
+function ContasPagarLayout() {
+  return (
+    <AppShell pageTitle="Contas a Pagar & Financiamentos" activeItem="contas-pagar">
+      <ContasPagar />
     </AppShell>
   )
 }
@@ -467,6 +479,14 @@ function AppContent() {
           element={
             <PrivateRoute>
               <AssinaturasLayout />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/contas-pagar"
+          element={
+            <PrivateRoute>
+              <ContasPagarLayout />
             </PrivateRoute>
           }
         />

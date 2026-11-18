@@ -15,6 +15,7 @@ const TIPO_LABEL: Record<string, string> = {
   COMPRA_CREDITO: 'Crédito',
   TRANSFERENCIA: 'Transferência',
   PAGAMENTO_CREDITO: 'Pag. Fatura',
+  PAGAMENTO_BOLETO: 'Boleto',
 }
 
 function formatCurrency(value: number): string {
@@ -61,6 +62,7 @@ export function TransacaoCard({ transacao, onEstornar, onExcluir, onAntecipar }:
       case 'COMPRA_CREDITO': return '#7c5cfc'
       case 'TRANSFERENCIA': return '#1abc9c'
       case 'PAGAMENTO_CREDITO': return '#2c3e50'
+      case 'PAGAMENTO_BOLETO': return '#d35400'
       default: return '#999'
     }
   }
@@ -110,7 +112,7 @@ export function TransacaoCard({ transacao, onEstornar, onExcluir, onAntecipar }:
               </span>
             )}
 
-            {(transacao.tipo === 'SAQUE' || transacao.tipo === 'PIX') && transacao.contaOrigemNome && (
+            {(transacao.tipo === 'SAQUE' || transacao.tipo === 'PIX' || transacao.tipo === 'PAGAMENTO_BOLETO') && transacao.contaOrigemNome && (
               <span className="transacao-card__conta" title="Conta de origem">
                 Conta: {transacao.contaOrigemNome}
                 {transacao.metaDestinoNome && (

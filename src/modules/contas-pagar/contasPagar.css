@@ -1,0 +1,270 @@
+.contas-pagar {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.contas-pagar__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.contas-pagar__controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.contas-pagar__tabs {
+  display: inline-flex;
+  background: var(--surface, rgba(128, 128, 128, 0.1));
+  border: 1px solid var(--border, rgba(128, 128, 128, 0.2));
+  border-radius: 10px;
+  padding: 3px;
+}
+
+.contas-pagar__tab {
+  border: none;
+  background: transparent;
+  color: inherit;
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  opacity: 0.7;
+  transition: all 0.2s;
+}
+
+.contas-pagar__tab--active {
+  background: var(--primary, #2f5b4b);
+  color: #fff;
+  opacity: 1;
+}
+
+.contas-pagar__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 15px;
+  border-radius: 10px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--border, rgba(128, 128, 128, 0.25));
+  background: var(--surface, #fff);
+  color: inherit;
+  transition: all 0.2s;
+}
+
+.contas-pagar__btn--primary {
+  background: var(--primary, #2f5b4b);
+  color: #fff;
+  border-color: var(--primary, #2f5b4b);
+}
+
+.contas-pagar__btn--danger {
+  background: rgba(231, 76, 60, 0.12);
+  color: #e74c3c;
+  border-color: rgba(231, 76, 60, 0.3);
+}
+
+.contas-pagar__agrupadores {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.contas-pagar__chip {
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border, rgba(128, 128, 128, 0.25));
+  background: transparent;
+  color: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.contas-pagar__chip--active {
+  background: var(--primary, #2f5b4b);
+  color: #fff;
+  border-color: var(--primary, #2f5b4b);
+}
+
+.contas-pagar__legend {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-size: 0.78rem;
+  opacity: 0.85;
+  align-items: center;
+}
+
+.contas-pagar__legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.contas-pagar__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* Grade Mensal */
+.contas-pagar__grade-wrapper {
+  overflow-x: auto;
+  border-radius: 14px;
+  border: 1px solid var(--border, rgba(128, 128, 128, 0.2));
+  background: var(--surface, rgba(255, 255, 255, 0.02));
+}
+
+.contas-pagar__grade {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 780px;
+}
+
+.contas-pagar__grade th,
+.contas-pagar__grade td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border, rgba(128, 128, 128, 0.15));
+  text-align: left;
+  vertical-align: middle;
+}
+
+.contas-pagar__grade th {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  opacity: 0.75;
+  background: rgba(128, 128, 128, 0.06);
+}
+
+.contas-pagar__modelo-col {
+  min-width: 220px;
+  position: sticky;
+  left: 0;
+  background: var(--bg-color, var(--surface, #1a1d24));
+  z-index: 2;
+  border-right: 1px solid var(--border, rgba(128, 128, 128, 0.18));
+}
+
+.contas-pagar__cell {
+  min-width: 125px;
+  padding: 8px 10px;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: transform 0.12s, box-shadow 0.12s;
+  border: 1px solid transparent;
+}
+
+.contas-pagar__cell:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
+}
+
+.contas-pagar__cell--PAGA {
+  background: rgba(39, 174, 96, 0.14);
+  border-color: rgba(39, 174, 96, 0.35);
+  color: #27ae60;
+}
+
+.contas-pagar__cell--PENDENTE {
+  background: rgba(241, 196, 15, 0.14);
+  border-color: rgba(241, 196, 15, 0.38);
+  color: #d68910;
+}
+
+.contas-pagar__cell--AGUARDANDO_VALOR {
+  background: rgba(128, 128, 128, 0.12);
+  border-color: rgba(128, 128, 128, 0.3);
+  font-style: italic;
+}
+
+.contas-pagar__cell--ATRASADA {
+  background: rgba(231, 76, 60, 0.16);
+  border-color: rgba(231, 76, 60, 0.45);
+  color: #e74c3c;
+}
+
+.contas-pagar__cell--CANCELADA {
+  background: rgba(128, 128, 128, 0.06);
+  opacity: 0.45;
+  text-decoration: line-through;
+}
+
+/* Drawer lateral */
+.cp-drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1100;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.cp-drawer {
+  width: 100%;
+  max-width: 460px;
+  height: 100%;
+  background: var(--bg-color, #161920);
+  color: var(--text-color, inherit);
+  border-left: 1px solid var(--border, rgba(128, 128, 128, 0.25));
+  padding: 24px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  box-shadow: -8px 0 30px rgba(0, 0, 0, 0.3);
+}
+
+.cp-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.cp-field label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  opacity: 0.8;
+}
+
+.cp-field input,
+.cp-field select,
+.cp-field textarea {
+  padding: 9px 11px;
+  border-radius: 8px;
+  border: 1px solid var(--border, rgba(128, 128, 128, 0.3));
+  background: var(--surface, rgba(128, 128, 128, 0.08));
+  color: inherit;
+  font-size: 0.9rem;
+}
+
+.cp-card-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 14px;
+}
+
+.cp-card {
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border, rgba(128, 128, 128, 0.2));
+  background: var(--surface, rgba(255, 255, 255, 0.02));
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}

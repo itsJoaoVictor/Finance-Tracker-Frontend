@@ -1,4 +1,4 @@
-export type TipoTransacao = 'DEPOSITO' | 'SAQUE' | 'TRANSFERENCIA' | 'PIX' | 'COMPRA_CREDITO' | 'PAGAMENTO_CREDITO'
+export type TipoTransacao = 'DEPOSITO' | 'SAQUE' | 'TRANSFERENCIA' | 'PIX' | 'COMPRA_CREDITO' | 'PAGAMENTO_CREDITO' | 'PAGAMENTO_BOLETO'
 export type TipoPagamentoFatura = 'TOTAL' | 'PARCIAL' | 'ANTECIPADO'
 export type StatusFatura = 'ABERTA' | 'FECHADA' | 'PAGA' | 'PAGA_PARCIAL' | 'ATRASADA'
 export type Recorrencia = 'MENSAL' | 'SEMANAL' | 'QUINZENAL'

@@ -8,6 +8,7 @@ import { InsightsFeedWidget } from './InsightsFeedWidget'
 import { GraficosWidget } from './GraficosWidget'
 import { UltimasTransacoesWidget } from './UltimasTransacoesWidget'
 import { ProjecaoWidget } from './ProjecaoWidget'
+import { ContasPagarWidget } from './ContasPagarWidget'
 import { AlertCircle } from 'lucide-react'
 import './dashboard.css'
 
@@ -41,6 +42,7 @@ export function Dashboard() {
     dashboardService.getProjecao().then(res => setData(prev => ({ ...prev, projetcao15Dias: res.data }))).catch(console.error)
     dashboardService.getTransacoes(periodo).then(res => setData(prev => ({ ...prev, ultimasTransacoes: res.data }))).catch(console.error)
     dashboardService.getInsights().then(res => setData(prev => ({ ...prev, insightsAtivos: res.data }))).catch(console.error)
+    dashboardService.getContasPagar().then(res => setData(prev => ({ ...prev, contasPagar: res.data }))).catch(console.error)
   }, [periodo])
 
   useEffect(() => {
@@ -201,6 +203,20 @@ export function Dashboard() {
     return <UltimasTransacoesWidget transacoes={data.ultimasTransacoes} />
   }
 
+  const renderContasPagar = () => {
+    if (widgetsOcultos.has('contasPagar')) return null
+    if (!data.contasPagar) {
+      return (
+        <div className="dashboard__skeleton-card dashboard__skeleton-card--half">
+          <div className="skeleton dashboard__skeleton-line dashboard__skeleton-line--short" />
+          <div className="skeleton dashboard__skeleton-line dashboard__skeleton-line--long" />
+          <div className="skeleton dashboard__skeleton-line dashboard__skeleton-line--long" />
+        </div>
+      )
+    }
+    return <ContasPagarWidget dados={data.contasPagar} />
+  }
+
   return (
     <div className="dashboard">
       <div className="dashboard__toolbar">
@@ -220,6 +236,7 @@ export function Dashboard() {
       <div className="dashboard__grid">
         {renderKpis()}
         {renderProjecao()}
+        {renderContasPagar()}
         {renderContasCartoes()}
         {renderInsights()}
         {renderGraficos()}

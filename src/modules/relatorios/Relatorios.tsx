@@ -92,7 +92,7 @@ export function Relatorios() {
       .filter((t: any) => t.tipo === 'DEPOSITO')
       .reduce((acc: number, t: any) => acc + Math.abs(t.valor), 0)
     const despesas = transacoes
-      .filter((t: any) => t.tipo === 'SAQUE' || t.tipo === 'PIX' || t.tipo === 'COMPRA_CREDITO')
+      .filter((t: any) => t.tipo === 'SAQUE' || t.tipo === 'PIX' || t.tipo === 'COMPRA_CREDITO' || t.tipo === 'PAGAMENTO_BOLETO')
       .reduce((acc: number, t: any) => acc + Math.abs(t.valor), 0)
     return { receitas, despesas, saldo: receitas - despesas }
   }, [transacoes])

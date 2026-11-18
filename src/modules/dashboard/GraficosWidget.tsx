@@ -10,7 +10,7 @@ export function GraficosWidget({ transacoes }: GraficosWidgetProps) {
   const gastosPorCategoria = useMemo(() => {
     const mapa = new Map<string, { valor: number; cor: string; nome: string }>()
     transacoes
-      .filter((t) => t.tipo === 'SAQUE' || t.tipo === 'PIX' || t.tipo === 'COMPRA_CREDITO')
+      .filter((t) => t.tipo === 'SAQUE' || t.tipo === 'PIX' || t.tipo === 'COMPRA_CREDITO' || t.tipo === 'PAGAMENTO_BOLETO')
       .forEach((t) => {
         const chave = t.categoriaNome || 'Outros'
         const existente = mapa.get(chave) || { valor: 0, cor: t.categoriaCorHexadecimal || '#888', nome: chave }
@@ -108,7 +108,7 @@ export function GraficosWidget({ transacoes }: GraficosWidgetProps) {
                   .filter((t) => t.tipo === 'DEPOSITO')
                   .reduce((acc, t) => acc + Math.abs(t.valor), 0)
                 const despesas = transacoes
-                  .filter((t) => t.tipo === 'SAQUE' || t.tipo === 'PIX' || t.tipo === 'COMPRA_CREDITO')
+                  .filter((t) => t.tipo === 'SAQUE' || t.tipo === 'PIX' || t.tipo === 'COMPRA_CREDITO' || t.tipo === 'PAGAMENTO_BOLETO')
                   .reduce((acc, t) => acc + Math.abs(t.valor), 0)
                 const max = Math.max(receitas, despesas, 1)
 

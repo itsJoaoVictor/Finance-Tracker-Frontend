@@ -12,7 +12,7 @@ export function UltimasTransacoesWidget({ transacoes }: UltimasTransacoesWidgetP
     }).format(Math.abs(valor))
 
     if (tipo === 'DEPOSITO') return `+${formatted}`
-    if (tipo === 'SAQUE' || tipo === 'PIX' || tipo === 'COMPRA_CREDITO') return `-${formatted}`
+    if (tipo === 'SAQUE' || tipo === 'PIX' || tipo === 'COMPRA_CREDITO' || tipo === 'PAGAMENTO_BOLETO') return `-${formatted}`
     return formatted
   }
 

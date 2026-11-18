@@ -253,6 +253,7 @@ export function CreateTransacaoModal({ onClose, onSubmit, initialCartaoId, initi
       COMPRA_CREDITO: 'Compra no Crédito',
       TRANSFERENCIA: 'Transferência',
       PAGAMENTO_CREDITO: 'Pagamento de Fatura',
+      PAGAMENTO_BOLETO: 'Pagamento de Boleto',
     }
     return labels[t]
   }

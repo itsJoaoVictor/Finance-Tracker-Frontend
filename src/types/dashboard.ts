@@ -17,6 +17,29 @@ export interface DashboardResumo {
   cartoes: CartaoDashboard[]
   ultimasTransacoes: TransacaoDashboard[]
   insightsAtivos: InsightDashboard[]
+  contasPagar: ContasPagarDashboard
+}
+
+export interface ContasPagarDashboard {
+  totalPagoMes: number
+  totalPendenteMes: number
+  totalEstimadoMes: number
+  totalAtrasado: number
+  qtdAtrasadas: number
+  qtdVencendo7Dias: number
+  proximasOuAtrasadas: {
+    ocorrenciaId: string
+    modeloId: string
+    nome: string
+    agrupador?: string | null
+    tipo: string
+    dataVencimento: string
+    valorEfetivo: number
+    valorEstimado: boolean
+    statusEfetivo: string
+    numeroParcela?: number | null
+    totalParcelas?: number | null
+  }[]
 }
 
 export interface ContaDashboard {

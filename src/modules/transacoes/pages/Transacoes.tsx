@@ -18,6 +18,7 @@ const TIPO_FILTER_OPTIONS: { value: TipoFiltro; label: string }[] = [
   { value: 'DEPOSITO', label: 'Depósitos' },
   { value: 'SAQUE', label: 'Saques' },
   { value: 'PIX', label: 'Pix' },
+  { value: 'PAGAMENTO_BOLETO', label: 'Boletos / Contas' },
   { value: 'COMPRA_CREDITO', label: 'Compra no Crédito' },
   { value: 'TRANSFERENCIA', label: 'Transferências' },
 ]

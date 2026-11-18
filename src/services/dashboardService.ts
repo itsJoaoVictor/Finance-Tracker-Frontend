@@ -9,6 +9,7 @@ export const dashboardService = {
   getProjecao: () => api.get<DashboardResumo['projetcao15Dias']>('/api/dashboard/projecao'),
   getTransacoes: (periodo: string = 'MES_ATUAL') => api.get<DashboardResumo['ultimasTransacoes']>('/api/dashboard/transacoes', { params: { periodo } }),
   getInsights: () => api.get<DashboardResumo['insightsAtivos']>('/api/dashboard/insights'),
+  getContasPagar: () => api.get<DashboardResumo['contasPagar']>('/api/dashboard/contas-pagar'),
 
   salvarLayout: (payload: LayoutRequest) =>
     api.put<void>('/api/dashboard/layout', payload),
