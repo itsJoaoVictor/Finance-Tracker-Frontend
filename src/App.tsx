@@ -136,13 +136,16 @@ function DashboardLayout() {
     contas: 'Contas',
     cartoes: 'Cartões',
     assinaturas: 'Assinaturas',
+    'contas-pagar': 'Contas a Pagar & Financiamentos',
     categorias: 'Categorias',
     relatorios: 'Relatórios',
     configuracoes: 'Configurações',
   }
 
   const handleSelectItem = (item: string) => {
-    if (item === 'contas') {
+    if (item === 'dashboard') {
+      navigate('/dashboard')
+    } else if (item === 'contas') {
       navigate('/contas')
     } else if (item === 'cartoes') {
       navigate('/cartoes')
@@ -152,6 +155,8 @@ function DashboardLayout() {
       navigate('/transacoes')
     } else if (item === 'assinaturas') {
       navigate('/assinaturas')
+    } else if (item === 'contas-pagar') {
+      navigate('/contas-pagar')
     } else if (item === 'tags') {
       navigate('/tags')
     } else if (item === 'metas' || item === 'cofrinhos') {
