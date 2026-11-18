@@ -209,29 +209,75 @@ export function CreateTransacaoModal({ onClose, onSubmit, initialCartaoId, initi
       const ext = res.data
 
       if (ext) {
+        // 1. Auto-selecionar o Tipo da Transação (se o modal não foi aberto travado em um Cartão específico)
+        const tiposValidos: TipoTransacao[] = ['DEPOSITO', 'SAQUE', 'PIX', 'COMPRA_CREDITO', 'TRANSFERENCIA']
+        let novoTipo = tipo
+        if (!initialCartaoId && ext.tipoSugerido && tiposValidos.includes(ext.tipoSugerido as TipoTransacao)) {
+          novoTipo = ext.tipoSugerido as TipoTransacao
+          setTipo(novoTipo)
+          if (!['SAQUE', 'PIX', 'TRANSFERENCIA'].includes(novoTipo) && !initialContaId) {
+            setContaOrigemId('')
+          }
+          if (!['DEPOSITO', 'TRANSFERENCIA'].includes(novoTipo) && !initialContaId) {
+            setContaDestinoId('')
+          }
+          if (novoTipo !== 'COMPRA_CREDITO') {
+            setCartaoId('')
+            setTotalParcelas('')
+          }
+        }
+
+        // 2. Auto-selecionar Conta Origem e/ou Conta Destino quando identificadas no comprovante
+        if (ext.contaOrigemId) {
+          setContaOrigemId(ext.contaOrigemId)
+        } else if (ext.contaOrigemSugerida) {
+          const matchOrigem = contas.find(
+            (c) =>
+              c.nome.toLowerCase() === ext.contaOrigemSugerida!.trim().toLowerCase() ||
+              c.nome.toLowerCase().includes(ext.contaOrigemSugerida!.trim().toLowerCase())
+          )
+          if (matchOrigem) setContaOrigemId(matchOrigem.id)
+        }
+
+        if (ext.contaDestinoId) {
+          setContaDestinoId(ext.contaDestinoId)
+        } else if (ext.contaDestinoSugerida) {
+          const matchDestino = contas.find(
+            (c) =>
+              c.nome.toLowerCase() === ext.contaDestinoSugerida!.trim().toLowerCase() ||
+              c.nome.toLowerCase().includes(ext.contaDestinoSugerida!.trim().toLowerCase())
+          )
+          if (matchDestino) setContaDestinoId(matchDestino.id)
+        }
+
+        // 3. Descrição
         if (ext.descricao && ext.descricao.trim()) {
           skipNextAutoCategorizeRef.current = true
           setDescricao(ext.descricao.trim())
         }
 
+        // 4. Valor
         if (ext.valor != null && !isNaN(Number(ext.valor)) && Number(ext.valor) > 0) {
           setValor(Number(ext.valor).toFixed(2))
         }
 
+        // 5. Data
         if (ext.data && /^\d{4}-\d{2}-\d{2}$/.test(ext.data)) {
           const [y, m, d] = ext.data.split('-')
           setData(ext.data)
           setDataExibicao(`${d}/${m}/${y}`)
         }
 
-        if (ext.totalParcelas != null && Number(ext.totalParcelas) >= 1) {
+        // 6. Parcelas (apenas para COMPRA_CREDITO)
+        if (novoTipo === 'COMPRA_CREDITO' && ext.totalParcelas != null && Number(ext.totalParcelas) >= 1) {
           setTotalParcelas(String(Math.min(120, Math.max(1, Math.round(Number(ext.totalParcelas))))))
         }
 
+        // 7. Categoria
         if (ext.categoriaId) {
           setCategoriaId(ext.categoriaId)
           setIaSugestao(null)
-        } else if (ext.categoriaSugerida) {
+        } else if (ext.categoriaSugerida && !['DEPOSITO', 'SAQUE'].includes(novoTipo)) {
           // Procura correspondência local case-insensitive ou oferece criação
           const matchLocal = categorias.find(
             (c) => c.nome.toLowerCase() === ext.categoriaSugerida!.trim().toLowerCase()
@@ -262,12 +308,10 @@ export function CreateTransacaoModal({ onClose, onSubmit, initialCartaoId, initi
     } finally {
       setExtractingReceipt(false)
     }
-  }, [categorias])
+  }, [categorias, contas, initialCartaoId, initialContaId, tipo])
 
   // Suporte a Ctrl+V (colar print/imagem diretamente no modal aberto)
   useEffect(() => {
-    if (tipo !== 'COMPRA_CREDITO') return
-
     function handlePaste(e: ClipboardEvent) {
       if (extractingReceipt || loadingSubmit) return
       const items = e.clipboardData?.items
@@ -286,7 +330,7 @@ export function CreateTransacaoModal({ onClose, onSubmit, initialCartaoId, initi
 
     window.addEventListener('paste', handlePaste)
     return () => window.removeEventListener('paste', handlePaste)
-  }, [tipo, extractingReceipt, loadingSubmit, processReceiptFile])
+  }, [extractingReceipt, loadingSubmit, processReceiptFile])
 
   function handleFileChange(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -456,124 +500,122 @@ export function CreateTransacaoModal({ onClose, onSubmit, initialCartaoId, initi
             </p>
           )}
 
-          {/* Captura de Comprovante com IA (exclusivo para Compra no Cartão de Crédito) */}
-          {tipo === 'COMPRA_CREDITO' && (
-            <div className="receipt-ai-box">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                style={{ display: 'none' }}
-                disabled={extractingReceipt || loadingSubmit}
-              />
+          {/* Captura de Comprovante com IA (Cartão, Pix, Transferência, Saque e Depósito) */}
+          <div className="receipt-ai-box">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              style={{ display: 'none' }}
+              disabled={extractingReceipt || loadingSubmit}
+            />
 
-              <div
-                className={`receipt-ai-dropzone ${isDraggingOver ? 'receipt-ai-dropzone--drag' : ''} ${
-                  extractingReceipt ? 'receipt-ai-dropzone--loading' : ''
-                } ${receiptSuccessInfo ? 'receipt-ai-dropzone--success' : ''}`}
-                onClick={() => {
-                  if (!extractingReceipt && !loadingSubmit) {
-                    fileInputRef.current?.click()
-                  }
-                }}
-                onDragOver={(e) => {
+            <div
+              className={`receipt-ai-dropzone ${isDraggingOver ? 'receipt-ai-dropzone--drag' : ''} ${
+                extractingReceipt ? 'receipt-ai-dropzone--loading' : ''
+              } ${receiptSuccessInfo ? 'receipt-ai-dropzone--success' : ''}`}
+              onClick={() => {
+                if (!extractingReceipt && !loadingSubmit) {
+                  fileInputRef.current?.click()
+                }
+              }}
+              onDragOver={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                if (!extractingReceipt && !loadingSubmit) setIsDraggingOver(true)
+              }}
+              onDragLeave={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                setIsDraggingOver(false)
+              }}
+              onDrop={handleDrop}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if ((e.key === 'Enter' || e.key === ' ') && !extractingReceipt && !loadingSubmit) {
                   e.preventDefault()
-                  e.stopPropagation()
-                  if (!extractingReceipt && !loadingSubmit) setIsDraggingOver(true)
-                }}
-                onDragLeave={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  setIsDraggingOver(false)
-                }}
-                onDrop={handleDrop}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if ((e.key === 'Enter' || e.key === ' ') && !extractingReceipt && !loadingSubmit) {
-                    e.preventDefault()
-                    fileInputRef.current?.click()
-                  }
-                }}
-              >
-                {receiptPreview ? (
-                  <div className="receipt-ai-preview">
-                    <img
-                      src={receiptPreview}
-                      alt="Comprovante enviado"
-                      className="receipt-ai-preview__img"
-                    />
-                    <div className="receipt-ai-preview__info">
-                      {extractingReceipt ? (
-                        <>
-                          <div className="receipt-ai-preview__badge receipt-ai-preview__badge--loading">
-                            <Loader2 size={14} className="receipt-ai-spin" />
-                            <span>Lendo comprovante com IA...</span>
-                          </div>
-                          <p className="receipt-ai-preview__sub">
-                            Extraindo estabelecimento, valor, parcelas, data e categoria
-                          </p>
-                        </>
-                      ) : receiptError ? (
-                        <>
-                          <div className="receipt-ai-preview__badge receipt-ai-preview__badge--error">
-                            <AlertCircle size={14} />
-                            <span>Falha na leitura</span>
-                          </div>
-                          <p className="receipt-ai-preview__sub receipt-ai-preview__sub--error">
-                            {receiptError}
-                          </p>
-                        </>
-                      ) : (
-                        <>
-                          <div className="receipt-ai-preview__badge receipt-ai-preview__badge--ok">
-                            <CheckCircle2 size={14} />
-                            <span>Preenchido via Comprovante IA</span>
-                          </div>
-                          <p className="receipt-ai-preview__sub">
-                            {receiptSuccessInfo || 'Confira os dados abaixo antes de salvar.'}
-                          </p>
-                        </>
-                      )}
-                    </div>
-                    {!extractingReceipt && (
-                      <button
-                        type="button"
-                        className="receipt-ai-preview__remove"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleClearReceipt()
-                        }}
-                        title="Remover imagem"
-                        aria-label="Remover imagem"
-                      >
-                        <Trash2 size={15} />
-                      </button>
+                  fileInputRef.current?.click()
+                }
+              }}
+            >
+              {receiptPreview ? (
+                <div className="receipt-ai-preview">
+                  <img
+                    src={receiptPreview}
+                    alt="Comprovante enviado"
+                    className="receipt-ai-preview__img"
+                  />
+                  <div className="receipt-ai-preview__info">
+                    {extractingReceipt ? (
+                      <>
+                        <div className="receipt-ai-preview__badge receipt-ai-preview__badge--loading">
+                          <Loader2 size={14} className="receipt-ai-spin" />
+                          <span>Lendo comprovante com IA...</span>
+                        </div>
+                        <p className="receipt-ai-preview__sub">
+                          Identificando tipo, valor, descrição, data, conta e categoria
+                        </p>
+                      </>
+                    ) : receiptError ? (
+                      <>
+                        <div className="receipt-ai-preview__badge receipt-ai-preview__badge--error">
+                          <AlertCircle size={14} />
+                          <span>Falha na leitura</span>
+                        </div>
+                        <p className="receipt-ai-preview__sub receipt-ai-preview__sub--error">
+                          {receiptError}
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <div className="receipt-ai-preview__badge receipt-ai-preview__badge--ok">
+                          <CheckCircle2 size={14} />
+                          <span>Preenchido via Comprovante IA</span>
+                        </div>
+                        <p className="receipt-ai-preview__sub">
+                          {receiptSuccessInfo || 'Confira os dados abaixo antes de salvar.'}
+                        </p>
+                      </>
                     )}
                   </div>
-                ) : (
-                  <div className="receipt-ai-empty">
-                    <div className="receipt-ai-empty__icon">
-                      <ImagePlus size={20} />
-                    </div>
-                    <div className="receipt-ai-empty__text">
-                      <div className="receipt-ai-empty__title">
-                        <span>Enviar foto ou print do comprovante</span>
-                        <span className="receipt-ai-empty__pill">
-                          <Sparkles size={11} />
-                          Auto-preencher IA
-                        </span>
-                      </div>
-                      <p className="receipt-ai-empty__hint">
-                        Clique para escolher, arraste a imagem ou cole com <strong>Ctrl+V</strong>
-                      </p>
-                    </div>
+                  {!extractingReceipt && (
+                    <button
+                      type="button"
+                      className="receipt-ai-preview__remove"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleClearReceipt()
+                      }}
+                      title="Remover imagem"
+                      aria-label="Remover imagem"
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <div className="receipt-ai-empty">
+                  <div className="receipt-ai-empty__icon">
+                    <ImagePlus size={20} />
                   </div>
-                )}
-              </div>
+                  <div className="receipt-ai-empty__text">
+                    <div className="receipt-ai-empty__title">
+                      <span>Enviar foto ou print do comprovante</span>
+                      <span className="receipt-ai-empty__pill">
+                        <Sparkles size={11} />
+                        Auto-preencher IA
+                      </span>
+                    </div>
+                    <p className="receipt-ai-empty__hint">
+                      Pix, Cartão, Transferência, Saque ou Depósito • Clique, arraste ou <strong>Ctrl+V</strong>
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
-          )}
+          </div>
 
           {/* Descrição */}
           <div className="form-group">

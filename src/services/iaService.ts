@@ -9,12 +9,17 @@ export interface IaCategorizarResponse {
 }
 
 export interface IaExtrairComprovanteResponse {
+  tipoSugerido?: 'DEPOSITO' | 'SAQUE' | 'PIX' | 'COMPRA_CREDITO' | 'TRANSFERENCIA'
   descricao?: string
   valor?: number
   data?: string
   totalParcelas?: number
   categoriaSugerida?: string
   categoriaId?: string
+  contaOrigemSugerida?: string
+  contaOrigemId?: string
+  contaDestinoSugerida?: string
+  contaDestinoId?: string
   confianca?: number
   justificativa?: string
 }
