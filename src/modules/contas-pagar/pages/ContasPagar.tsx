@@ -176,7 +176,7 @@ export function ContasPagar() {
       {/* Filtro por Agrupador (Imóvel) + Navegação de Período */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
         <div className="contas-pagar__agrupadores">
-          <span style={{ fontSize: '0.8rem', opacity: 0.7, fontWeight: 600 }}>Imóvel / Agrupador:</span>
+          <span className="contas-pagar__agrupadores-label">Imóvel / Agrupador:</span>
           <button
             type="button"
             className={`contas-pagar__chip ${agrupador === 'TODOS' ? 'contas-pagar__chip--active' : ''}`}
@@ -304,10 +304,8 @@ export function ContasPagar() {
                 {grade.meses.map((mes) => (
                   <th
                     key={mes}
-                    style={{
-                      textAlign: 'center',
-                      color: mes === mesAtualIso ? 'var(--primary, #2ecc71)' : undefined,
-                    }}
+                    className={mes === mesAtualIso ? 'contas-pagar__th-current' : ''}
+                    style={{ textAlign: 'center' }}
                   >
                     {formatMesLabel(mes)}
                     {mes === mesAtualIso && ' (Atual)'}
@@ -321,15 +319,15 @@ export function ContasPagar() {
                   <td className="contas-pagar__modelo-col">
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
                       <div>
-                        <div style={{ fontWeight: 700, fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <div className="contas-pagar__modelo-name">
                           {modelo.nome}
                           {modelo.debitoAutomatico && (
-                            <span title="Débito automático ativo" style={{ color: '#f39c12' }}>
+                            <span title="Débito automático ativo" style={{ color: '#f59e0b' }}>
                               <Zap size={13} />
                             </span>
                           )}
                         </div>
-                        <div style={{ fontSize: '0.73rem', opacity: 0.68 }}>
+                        <div className="contas-pagar__modelo-meta">
                           Dia {modelo.diaVencimento} · {modelo.tipo}
                           {modelo.agrupador ? ` · ${modelo.agrupador}` : ''}
                         </div>
@@ -338,29 +336,29 @@ export function ContasPagar() {
                         {modelo.tipo === 'PARCELADO' && (
                           <button
                             type="button"
+                            className="contas-pagar__icon-btn contas-pagar__icon-btn--purple"
                             onClick={() => setFinanciamentoModeloId(modelo.id)}
                             title="Ver financiamento / Amortizar"
-                            style={{ background: 'none', border: 'none', color: '#7c5cfc', cursor: 'pointer', padding: '4px' }}
                           >
                             <Building2 size={15} />
                           </button>
                         )}
                         <button
                           type="button"
+                          className="contas-pagar__icon-btn"
                           onClick={() => {
                             setModeloEditar(modelo)
                             setShowModeloModal(true)
                           }}
                           title="Editar modelo"
-                          style={{ background: 'none', border: 'none', color: 'inherit', opacity: 0.7, cursor: 'pointer', padding: '4px' }}
                         >
                           <Edit3 size={14} />
                         </button>
                         <button
                           type="button"
+                          className="contas-pagar__icon-btn contas-pagar__icon-btn--danger"
                           onClick={() => handleExcluirModelo(modelo)}
                           title="Desativar conta"
-                          style={{ background: 'none', border: 'none', color: '#e74c3c', opacity: 0.8, cursor: 'pointer', padding: '4px' }}
                         >
                           <Trash2 size={14} />
                         </button>
@@ -372,7 +370,7 @@ export function ContasPagar() {
                     const mesCol = grade.meses[idx]
                     if (!cel) {
                       return (
-                        <td key={mesCol} style={{ textAlign: 'center', opacity: 0.35 }}>
+                        <td key={mesCol} className="contas-pagar__empty-cell">
                           —
                         </td>
                       )
@@ -388,7 +386,7 @@ export function ContasPagar() {
                             {isEstimado ? '~ ' : ''}
                             {formatarMoeda(cel.valorEfetivo)}
                           </div>
-                          <div style={{ fontSize: '0.7rem', opacity: 0.8, display: 'flex', justifyContent: 'space-between' }}>
+                          <div style={{ fontSize: '0.72rem', opacity: 0.9, display: 'flex', justifyContent: 'space-between', marginTop: '2px' }}>
                             <span>Venc. {cel.dataVencimento.substring(8, 10)}/{cel.dataVencimento.substring(5, 7)}</span>
                             {cel.numeroParcela && cel.totalParcelas && (
                               <span>
@@ -404,13 +402,13 @@ export function ContasPagar() {
               ))}
             </tbody>
             <tfoot>
-              <tr style={{ background: 'rgba(128,128,128,0.06)', fontWeight: 700 }}>
+              <tr>
                 <td className="contas-pagar__modelo-col">Total do Mês</td>
                 {grade.totaisPorMes.map((t) => (
-                  <td key={t.mesReferencia} style={{ fontSize: '0.8rem' }}>
-                    <div>Total: {formatarMoeda(t.totalGeral)}</div>
-                    <div style={{ color: '#27ae60', fontWeight: 600 }}>Pago: {formatarMoeda(t.totalPago)}</div>
-                    <div style={{ color: '#d68910', fontWeight: 600 }}>
+                  <td key={t.mesReferencia} style={{ fontSize: '0.8rem', lineHeight: 1.45 }}>
+                    <div className="contas-pagar__tfoot-total">Total: {formatarMoeda(t.totalGeral)}</div>
+                    <div className="contas-pagar__tfoot-pago">Pago: {formatarMoeda(t.totalPago)}</div>
+                    <div className="contas-pagar__tfoot-falta">
                       Falta: {formatarMoeda(t.totalPendente + t.totalEstimado)}
                     </div>
                   </td>

@@ -371,26 +371,18 @@ export function OcorrenciaDrawer({
             </div>
           </div>
           <button
+            type="button"
+            className="modal__close"
             onClick={onClose}
-            style={{ background: 'none', border: 'none', color: 'inherit', fontSize: '1.2rem', cursor: 'pointer' }}
+            aria-label="Fechar"
           >
             ✕
           </button>
         </div>
 
         {ocorrencia.status === 'PAGA' ? (
-          <div
-            style={{
-              padding: '16px',
-              borderRadius: '12px',
-              background: 'rgba(39, 174, 96, 0.12)',
-              border: '1px solid rgba(39, 174, 96, 0.35)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '8px',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#27ae60', fontWeight: 700 }}>
+          <div className="cp-section-box--paid">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--green-positive, #16a34a)', fontWeight: 700 }}>
               <CheckCircle2 size={18} /> Conta Paga
             </div>
             <div style={{ fontSize: '0.88rem' }}>
@@ -543,17 +535,8 @@ export function OcorrenciaDrawer({
             </div>
 
             {/* Seção 1: Confirmar Fatura / Boleto */}
-            <div
-              style={{
-                padding: '14px',
-                borderRadius: '12px',
-                border: '1px solid var(--border, rgba(128,128,128,0.22))',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '12px',
-              }}
-            >
-              <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>
+            <div className="cp-section-box">
+              <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--ink)' }}>
                 1. Dados da Fatura / Boleto do Mês
               </div>
 
@@ -635,17 +618,9 @@ export function OcorrenciaDrawer({
             {ocorrencia.status !== 'CANCELADA' && (
               <form
                 onSubmit={handlePagar}
-                style={{
-                  padding: '14px',
-                  borderRadius: '12px',
-                  border: '1px solid rgba(39, 174, 96, 0.35)',
-                  background: 'rgba(39, 174, 96, 0.05)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '12px',
-                }}
+                className="cp-section-box cp-section-box--pay"
               >
-                <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#27ae60' }}>
+                <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--green-positive, #16a34a)' }}>
                   2. Registrar Pagamento
                 </div>
 

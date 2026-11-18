@@ -443,18 +443,10 @@ export function ModeloModal({ modeloEditar, onClose, onSaved, onError }: ModeloM
                     key={op.id}
                     type="button"
                     onClick={() => setTipo(op.id)}
-                    style={{
-                      padding: '10px',
-                      borderRadius: '10px',
-                      border: `2px solid ${tipo === op.id ? 'var(--primary, #2f5b4b)' : 'var(--border, rgba(128,128,128,0.25))'}`,
-                      background: tipo === op.id ? 'rgba(47, 91, 75, 0.14)' : 'transparent',
-                      color: 'inherit',
-                      textAlign: 'left',
-                      cursor: 'pointer',
-                    }}
+                    className={`cp-type-card ${tipo === op.id ? 'cp-type-card--active' : ''}`}
                   >
-                    <div style={{ fontWeight: 700, fontSize: '0.86rem' }}>{op.title}</div>
-                    <div style={{ fontSize: '0.72rem', opacity: 0.7 }}>{op.sub}</div>
+                    <div className="cp-type-card__title">{op.title}</div>
+                    <div className="cp-type-card__sub">{op.sub}</div>
                   </button>
                 ))}
               </div>
@@ -652,9 +644,10 @@ export function ModeloModal({ modeloEditar, onClose, onSaved, onError }: ModeloM
               gridTemplateColumns: '1fr 1fr',
               gap: '12px',
               alignItems: 'center',
-              padding: '10px 12px',
-              borderRadius: '10px',
-              border: '1px solid var(--border, rgba(128,128,128,0.2))',
+              padding: '12px 14px',
+              borderRadius: '12px',
+              background: 'var(--surface-subtle, #f8fafc)',
+              border: '1px solid var(--border-strong, rgba(15, 23, 42, 0.14))',
             }}
           >
             <div className="cp-field">

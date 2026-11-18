@@ -129,17 +129,8 @@ export function NotificacaoConfigModal({ onClose, onToast }: NotificacaoConfigMo
             <strong>D+1 (atraso)</strong>.
           </div>
 
-          <div
-            style={{
-              padding: '12px',
-              borderRadius: '10px',
-              border: '1px solid var(--border, rgba(128,128,128,0.25))',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '10px',
-            }}
-          >
-            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 700 }}>
+          <div className="cp-section-box">
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 700, color: 'var(--ink)' }}>
               <input
                 type="checkbox"
                 checked={telegramAtivo}
@@ -167,7 +158,7 @@ export function NotificacaoConfigModal({ onClose, onToast }: NotificacaoConfigMo
                   <Send size={14} /> Testar
                 </button>
               </div>
-              <span style={{ fontSize: '0.73rem', opacity: 0.68 }}>
+              <span style={{ fontSize: '0.74rem', color: 'var(--muted)' }}>
                 Status do Bot no servidor:{' '}
                 {config?.telegramBotConfiguradoNoServidor
                   ? '🟢 TELEGRAM_BOT_TOKEN configurado'
@@ -177,18 +168,16 @@ export function NotificacaoConfigModal({ onClose, onToast }: NotificacaoConfigMo
           </div>
 
           <div
+            className="cp-section-box"
             style={{
-              padding: '12px',
-              borderRadius: '10px',
-              border: '1px solid var(--border, rgba(128,128,128,0.25))',
-              display: 'flex',
+              flexDirection: 'row',
               justifyContent: 'space-between',
               alignItems: 'center',
             }}
           >
             <div>
-              <div style={{ fontWeight: 700, fontSize: '0.88rem' }}>Web Push (PWA / Navegador)</div>
-              <div style={{ fontSize: '0.75rem', opacity: 0.7 }}>
+              <div style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--ink)' }}>Web Push (PWA / Navegador)</div>
+              <div style={{ fontSize: '0.76rem', color: 'var(--muted)' }}>
                 {webPushAtivo ? 'Ativo neste dispositivo' : 'Receba alertas direto no navegador/celular'}
               </div>
             </div>
