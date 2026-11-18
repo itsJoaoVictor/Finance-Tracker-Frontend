@@ -1,10 +1,57 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback, useRef, DragEvent, ChangeEvent } from 'react'
 import { ContaPagarOcorrencia } from '../../../types/contasPagar'
 import { contaService } from '../../../services/contaService'
 import { cartaoService } from '../../../services/cartaoService'
 import { contaPagarService } from '../../../services/contaPagarService'
 import { transacaoService } from '../../../services/transacaoService'
-import { Copy, Check, CheckCircle2, RotateCcw, Ban } from 'lucide-react'
+import { iaService } from '../../../services/iaService'
+import {
+  Copy,
+  Check,
+  CheckCircle2,
+  RotateCcw,
+  Ban,
+  ImagePlus,
+  Sparkles,
+  AlertCircle,
+  Trash2,
+  Loader2,
+} from 'lucide-react'
+
+function compressImageToBase64(file: File, maxDimension = 1280, quality = 0.85): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      const img = new Image()
+      img.onload = () => {
+        let { width, height } = img
+        if (width > maxDimension || height > maxDimension) {
+          if (width > height) {
+            height = Math.round((height * maxDimension) / width)
+            width = maxDimension
+          } else {
+            width = Math.round((width * maxDimension) / height)
+            height = maxDimension
+          }
+        }
+        const canvas = document.createElement('canvas')
+        canvas.width = width
+        canvas.height = height
+        const ctx = canvas.getContext('2d')
+        if (!ctx) {
+          resolve(reader.result as string)
+          return
+        }
+        ctx.drawImage(img, 0, 0, width, height)
+        resolve(canvas.toDataURL('image/jpeg', quality))
+      }
+      img.onerror = () => reject(new Error('Falha ao decodificar a imagem selecionada.'))
+      img.src = reader.result as string
+    }
+    reader.onerror = () => reject(new Error('Falha ao ler o arquivo de imagem.'))
+    reader.readAsDataURL(file)
+  })
+}
 
 interface OcorrenciaDrawerProps {
   ocorrencia: ContaPagarOcorrencia
@@ -20,6 +67,7 @@ export function OcorrenciaDrawer({
   onToast,
 }: OcorrenciaDrawerProps) {
   const hoje = new Date().toISOString().split('T')[0]
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [valorReal, setValorReal] = useState(
     ocorrencia.valorReal != null
@@ -50,6 +98,13 @@ export function OcorrenciaDrawer({
   const [cartoes, setCartoes] = useState<{ id: string; nome: string }[]>([])
   const [loading, setLoading] = useState(false)
 
+  // Estados de leitura de Fatura / Boleto / Comprovante via IA
+  const [receiptPreview, setReceiptPreview] = useState<string | null>(null)
+  const [extractingReceipt, setExtractingReceipt] = useState(false)
+  const [receiptError, setReceiptError] = useState<string | null>(null)
+  const [receiptSuccessInfo, setReceiptSuccessInfo] = useState<string | null>(null)
+  const [isDraggingOver, setIsDraggingOver] = useState(false)
+
   useEffect(() => {
     contaService.getAll().then((res) => {
       const list = Array.isArray(res) ? res : (res as any).data || []
@@ -62,6 +117,123 @@ export function OcorrenciaDrawer({
       if (list.length > 0) setCartaoId(list[0].id)
     })
   }, [])
+
+  const processReceiptFile = useCallback(async (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      setReceiptError('Selecione um arquivo de imagem válido (PNG, JPG, WEBP).')
+      return
+    }
+
+    setReceiptError(null)
+    setReceiptSuccessInfo(null)
+    setExtractingReceipt(true)
+
+    try {
+      const base64DataUri = await compressImageToBase64(file)
+      setReceiptPreview(base64DataUri)
+
+      const res = await iaService.extrairBoleto(base64DataUri)
+      const ext = res.data
+
+      if (ext) {
+        if (ext.valor != null && !isNaN(Number(ext.valor)) && Number(ext.valor) > 0) {
+          const valFormatted = Number(ext.valor).toFixed(2)
+          setValorReal(valFormatted)
+          setValorPago(valFormatted)
+        }
+
+        if (ext.dataVencimento && /^\d{4}-\d{2}-\d{2}$/.test(ext.dataVencimento)) {
+          setDataVencimento(ext.dataVencimento)
+        }
+
+        if (ext.linhaDigitavel && ext.linhaDigitavel.trim()) {
+          setLinhaDigitavel(ext.linhaDigitavel.trim())
+        }
+
+        if (ext.observacao && ext.observacao.trim()) {
+          setObservacao(ext.observacao.trim())
+        }
+
+        if (ext.jaPago) {
+          if (ext.dataPagamento && /^\d{4}-\d{2}-\d{2}$/.test(ext.dataPagamento)) {
+            setDataPagamento(ext.dataPagamento)
+          }
+          if (ext.contaBancariaId) {
+            setMeio('CONTA')
+            setContaId(ext.contaBancariaId)
+          } else if (ext.contaBancariaSugerida) {
+            const matchConta = contas.find(
+              (c) =>
+                c.nome.toLowerCase() === ext.contaBancariaSugerida!.trim().toLowerCase() ||
+                c.nome.toLowerCase().includes(ext.contaBancariaSugerida!.trim().toLowerCase())
+            )
+            if (matchConta) {
+              setMeio('CONTA')
+              setContaId(matchConta.id)
+            }
+          }
+        }
+
+        setReceiptSuccessInfo(
+          ext.jaPago
+            ? 'Comprovante de pagamento identificado! Confira os dados na Seção 2 para dar baixa.'
+            : ext.justificativa || 'Fatura/Boleto lido com sucesso! Confira o valor e a linha digitável.'
+        )
+      }
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { error?: string } } }
+      setReceiptError(
+        axiosErr?.response?.data?.error ||
+          'Não foi possível ler a imagem da fatura/boleto. Preencha manualmente.'
+      )
+    } finally {
+      setExtractingReceipt(false)
+    }
+  }, [contas])
+
+  useEffect(() => {
+    if (ocorrencia.status === 'PAGA') return
+
+    function handlePaste(e: ClipboardEvent) {
+      if (extractingReceipt || loading) return
+      const items = e.clipboardData?.items
+      if (!items) return
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.startsWith('image/')) {
+          const file = items[i].getAsFile()
+          if (file) {
+            e.preventDefault()
+            processReceiptFile(file)
+            break
+          }
+        }
+      }
+    }
+
+    window.addEventListener('paste', handlePaste)
+    return () => window.removeEventListener('paste', handlePaste)
+  }, [ocorrencia.status, extractingReceipt, loading, processReceiptFile])
+
+  function handleFileChange(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (file) processReceiptFile(file)
+    e.target.value = ''
+  }
+
+  function handleDrop(e: DragEvent<HTMLDivElement>) {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDraggingOver(false)
+    if (extractingReceipt || loading) return
+    const file = e.dataTransfer.files?.[0]
+    if (file) processReceiptFile(file)
+  }
+
+  function handleClearReceipt() {
+    setReceiptPreview(null)
+    setReceiptError(null)
+    setReceiptSuccessInfo(null)
+  }
 
   const formatarMoeda = (v?: number | null) =>
     v == null
@@ -253,6 +425,123 @@ export function OcorrenciaDrawer({
           </div>
         ) : (
           <>
+            {/* Captura de Fatura / Boleto / Comprovante via IA */}
+            <div className="receipt-ai-box">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                style={{ display: 'none' }}
+                disabled={extractingReceipt || loading}
+              />
+
+              <div
+                className={`receipt-ai-dropzone ${isDraggingOver ? 'receipt-ai-dropzone--drag' : ''} ${
+                  extractingReceipt ? 'receipt-ai-dropzone--loading' : ''
+                } ${receiptSuccessInfo ? 'receipt-ai-dropzone--success' : ''}`}
+                onClick={() => {
+                  if (!extractingReceipt && !loading) {
+                    fileInputRef.current?.click()
+                  }
+                }}
+                onDragOver={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  if (!extractingReceipt && !loading) setIsDraggingOver(true)
+                }}
+                onDragLeave={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  setIsDraggingOver(false)
+                }}
+                onDrop={handleDrop}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if ((e.key === 'Enter' || e.key === ' ') && !extractingReceipt && !loading) {
+                    e.preventDefault()
+                    fileInputRef.current?.click()
+                  }
+                }}
+              >
+                {receiptPreview ? (
+                  <div className="receipt-ai-preview">
+                    <img
+                      src={receiptPreview}
+                      alt="Fatura ou boleto enviado"
+                      className="receipt-ai-preview__img"
+                    />
+                    <div className="receipt-ai-preview__info">
+                      {extractingReceipt ? (
+                        <>
+                          <div className="receipt-ai-preview__badge receipt-ai-preview__badge--loading">
+                            <Loader2 size={14} className="receipt-ai-spin" />
+                            <span>Lendo fatura / boleto com IA...</span>
+                          </div>
+                          <p className="receipt-ai-preview__sub">
+                            Extraindo valor real, vencimento, linha digitável e dados de pagamento
+                          </p>
+                        </>
+                      ) : receiptError ? (
+                        <>
+                          <div className="receipt-ai-preview__badge receipt-ai-preview__badge--error">
+                            <AlertCircle size={14} />
+                            <span>Falha na leitura</span>
+                          </div>
+                          <p className="receipt-ai-preview__sub receipt-ai-preview__sub--error">
+                            {receiptError}
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          <div className="receipt-ai-preview__badge receipt-ai-preview__badge--ok">
+                            <CheckCircle2 size={14} />
+                            <span>Preenchido via Leitura IA</span>
+                          </div>
+                          <p className="receipt-ai-preview__sub">
+                            {receiptSuccessInfo || 'Confira os dados abaixo antes de confirmar.'}
+                          </p>
+                        </>
+                      )}
+                    </div>
+                    {!extractingReceipt && (
+                      <button
+                        type="button"
+                        className="receipt-ai-preview__remove"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleClearReceipt()
+                        }}
+                        title="Remover imagem"
+                        aria-label="Remover imagem"
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <div className="receipt-ai-empty">
+                    <div className="receipt-ai-empty__icon">
+                      <ImagePlus size={20} />
+                    </div>
+                    <div className="receipt-ai-empty__text">
+                      <div className="receipt-ai-empty__title">
+                        <span>Enviar conta / boleto ou comprovante</span>
+                        <span className="receipt-ai-empty__pill">
+                          <Sparkles size={11} />
+                          Auto-preencher IA
+                        </span>
+                      </div>
+                      <p className="receipt-ai-empty__hint">
+                        Extrai valor real, vencimento e linha digitável • Clique, arraste ou <strong>Ctrl+V</strong>
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
             {/* Seção 1: Confirmar Fatura / Boleto */}
             <div
               style={{

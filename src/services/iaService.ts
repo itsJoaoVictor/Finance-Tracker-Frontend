@@ -24,6 +24,26 @@ export interface IaExtrairComprovanteResponse {
   justificativa?: string
 }
 
+export interface IaExtrairBoletoResponse {
+  nome?: string
+  tipoContaPagar?: 'VARIAVEL' | 'FIXO' | 'PARCELADO'
+  valor?: number
+  dataVencimento?: string
+  diaVencimento?: number
+  linhaDigitavel?: string
+  observacao?: string
+  numeroParcela?: number | null
+  totalParcelas?: number | null
+  jaPago?: boolean
+  dataPagamento?: string | null
+  contaBancariaSugerida?: string
+  contaBancariaId?: string
+  categoriaSugerida?: string
+  categoriaId?: string
+  confianca?: number
+  justificativa?: string
+}
+
 export interface IaInsight {
   id: string
   tipo: string
@@ -57,6 +77,10 @@ export const iaService = {
   // Extração de Comprovante / Nota Fiscal via Imagem (Vision IA)
   extrairComprovante: (imagemBase64: string) =>
     api.post<IaExtrairComprovanteResponse>('/api/ia/extrair-comprovante', { imagemBase64 }),
+
+  // Extração de Conta a Pagar / Boleto / Financiamento via Imagem (Vision IA)
+  extrairBoleto: (imagemBase64: string) =>
+    api.post<IaExtrairBoletoResponse>('/api/ia/extrair-boleto', { imagemBase64 }),
 
   // RN-14: Feedback Loop — registrar correção manual de categoria
   registrarCorrecao: (descricaoFatura: string, categoriaNovaId: string, categoriaAntigaId?: string) =>

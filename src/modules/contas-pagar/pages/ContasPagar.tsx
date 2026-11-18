@@ -22,6 +22,7 @@ import {
   Trash2,
   Zap,
 } from 'lucide-react'
+import '../../contas/contas.css'
 import '../contasPagar.css'
 
 const MESES_NOMES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
