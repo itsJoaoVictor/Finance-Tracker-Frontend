@@ -1,4 +1,4 @@
-export type TipoContaPagar = 'VARIAVEL' | 'FIXO' | 'PARCELADO'
+export type TipoContaPagar = 'VARIAVEL' | 'FIXO' | 'PARCELADO' | 'AVULSO'
 export type StatusOcorrencia = 'AGUARDANDO_VALOR' | 'PENDENTE' | 'PAGA' | 'CANCELADA'
 export type StatusEfetivoOcorrencia = StatusOcorrencia | 'ATRASADA'
 
@@ -36,6 +36,8 @@ export interface ContaPagarModeloCriacaoRequest {
   dataFim?: string | null
   debitoAutomatico?: boolean
   contaPadraoId?: string | null
+  linhaDigitavel?: string | null
+  observacao?: string | null
 }
 
 export interface ContaPagarModeloEdicaoRequest {

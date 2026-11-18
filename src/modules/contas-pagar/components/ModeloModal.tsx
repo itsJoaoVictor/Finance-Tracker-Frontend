@@ -74,6 +74,8 @@ export function ModeloModal({ modeloEditar, onClose, onSaved, onError }: ModeloM
   )
   const [contaPadraoId, setContaPadraoId] = useState(modeloEditar?.contaPadraoId || '')
   const [aplicarFuturas, setAplicarFuturas] = useState(true)
+  const [linhaDigitavel, setLinhaDigitavel] = useState('')
+  const [observacao, setObservacao] = useState('')
 
   const [categorias, setCategorias] = useState<{ id: string; nome: string }[]>([])
   const [contas, setContas] = useState<{ id: string; nome: string }[]>([])
@@ -116,7 +118,11 @@ export function ModeloModal({ modeloEditar, onClose, onSaved, onError }: ModeloM
       const ext = res.data
 
       if (ext) {
-        if (!isEdit && ext.tipoContaPagar && ['VARIAVEL', 'FIXO', 'PARCELADO'].includes(ext.tipoContaPagar)) {
+        if (
+          !isEdit &&
+          ext.tipoContaPagar &&
+          ['VARIAVEL', 'FIXO', 'PARCELADO', 'AVULSO'].includes(ext.tipoContaPagar)
+        ) {
           setTipo(ext.tipoContaPagar)
         }
 
@@ -139,7 +145,15 @@ export function ModeloModal({ modeloEditar, onClose, onSaved, onError }: ModeloM
           setDataInicio(ext.dataVencimento)
         }
 
-        if (!isEdit && ext.totalParcelas != null && Number(ext.totalParcelas) >= 1) {
+        if (ext.linhaDigitavel && ext.linhaDigitavel.trim()) {
+          setLinhaDigitavel(ext.linhaDigitavel.trim())
+        }
+
+        if (ext.observacao && ext.observacao.trim()) {
+          setObservacao(ext.observacao.trim())
+        }
+
+        if (!isEdit && ext.totalParcelas != null && Number(ext.totalParcelas) > 1) {
           setTotalParcelas(String(Math.round(Number(ext.totalParcelas))))
           setTipo('PARCELADO')
         }
@@ -224,12 +238,15 @@ export function ModeloModal({ modeloEditar, onClose, onSaved, onError }: ModeloM
     e.preventDefault()
     if (!nome.trim()) return onError('Informe o nome da conta.')
     if (!categoriaId) return onError('Selecione uma categoria.')
-    const dia = parseInt(diaVencimento, 10)
+    const dia =
+      tipo === 'AVULSO' && dataInicio && /^\d{4}-\d{2}-\d{2}$/.test(dataInicio)
+        ? parseInt(dataInicio.split('-')[2], 10)
+        : parseInt(diaVencimento, 10)
     if (isNaN(dia) || dia < 1 || dia > 31) return onError('Dia de vencimento deve ser entre 1 e 31.')
 
     const valNum = valorPadrao ? parseFloat(valorPadrao.replace(',', '.')) : null
-    if ((tipo === 'FIXO' || tipo === 'PARCELADO') && (!valNum || valNum <= 0)) {
-      return onError('Informe o valor padrão/parcela estimada.')
+    if ((tipo === 'FIXO' || tipo === 'PARCELADO' || tipo === 'AVULSO') && (!valNum || valNum <= 0)) {
+      return onError('Informe o valor do boleto/conta.')
     }
     if (debitoAutomatico && !contaPadraoId) {
       return onError('Selecione a conta padrão para o débito automático.')
@@ -257,12 +274,14 @@ export function ModeloModal({ modeloEditar, onClose, onSaved, onError }: ModeloM
           agrupador: agrupador.trim() || null,
           diaVencimento: dia,
           valorPadrao: valNum,
-          totalParcelas: tipo === 'PARCELADO' ? parseInt(totalParcelas, 10) : null,
-          parcelaInicial: tipo === 'PARCELADO' ? parseInt(parcelaInicial || '1', 10) : null,
+          totalParcelas: tipo === 'PARCELADO' ? parseInt(totalParcelas, 10) : tipo === 'AVULSO' ? 1 : null,
+          parcelaInicial: tipo === 'PARCELADO' ? parseInt(parcelaInicial || '1', 10) : tipo === 'AVULSO' ? 1 : null,
           dataInicio,
-          dataFim: tipo !== 'PARCELADO' && dataFim ? dataFim : null,
+          dataFim: tipo === 'AVULSO' ? dataInicio : tipo !== 'PARCELADO' && dataFim ? dataFim : null,
           debitoAutomatico,
           contaPadraoId: contaPadraoId || null,
+          linhaDigitavel: linhaDigitavel.trim() || null,
+          observacao: observacao.trim() || null,
         })
       }
       onSaved()
@@ -411,12 +430,13 @@ export function ModeloModal({ modeloEditar, onClose, onSaved, onError }: ModeloM
           {!isEdit && (
             <div className="cp-field">
               <label>Tipo de Conta</label>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
                 {(
                   [
                     { id: 'VARIAVEL', title: 'Variável', sub: 'Água, Luz, Gás' },
-                    { id: 'FIXO', title: 'Fixa', sub: 'Condomínio, Internet' },
+                    { id: 'FIXO', title: 'Fixa Mensal', sub: 'Condomínio, Internet' },
                     { id: 'PARCELADO', title: 'Parcelada / Imóvel', sub: 'Financiamento, IPTU' },
+                    { id: 'AVULSO', title: 'Boleto Único / Avulso', sub: 'Taxa Detran, Multa, Serviço' },
                   ] as const
                 ).map((op) => (
                   <button
@@ -443,7 +463,7 @@ export function ModeloModal({ modeloEditar, onClose, onSaved, onError }: ModeloM
 
           <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '12px' }}>
             <div className="cp-field">
-              <label>Nome da Conta *</label>
+              <label>{tipo === 'AVULSO' ? 'Descrição do Boleto *' : 'Nome da Conta *'}</label>
               <input
                 type="text"
                 placeholder={
@@ -451,6 +471,8 @@ export function ModeloModal({ modeloEditar, onClose, onSaved, onError }: ModeloM
                     ? 'Ex: Conta de Luz - Enel'
                     : tipo === 'PARCELADO'
                     ? 'Ex: Financiamento Imóvel Caixa'
+                    : tipo === 'AVULSO'
+                    ? 'Ex: Taxa Detran - Licenciamento'
                     : 'Ex: Condomínio'
                 }
                 value={nome}
@@ -463,7 +485,7 @@ export function ModeloModal({ modeloEditar, onClose, onSaved, onError }: ModeloM
               <label>Agrupador / Imóvel (opcional)</label>
               <input
                 type="text"
-                placeholder="Ex: Apto Novo, Casa Atual"
+                placeholder="Ex: Apto Novo, Carro"
                 value={agrupador}
                 onChange={(e) => setAgrupador(e.target.value)}
               />
@@ -483,17 +505,34 @@ export function ModeloModal({ modeloEditar, onClose, onSaved, onError }: ModeloM
               </select>
             </div>
 
-            <div className="cp-field">
-              <label>Dia de Vencimento (1–31) *</label>
-              <input
-                type="number"
-                min={1}
-                max={31}
-                value={diaVencimento}
-                onChange={(e) => setDiaVencimento(e.target.value)}
-                required
-              />
-            </div>
+            {tipo === 'AVULSO' ? (
+              <div className="cp-field">
+                <label>Data de Vencimento *</label>
+                <input
+                  type="date"
+                  value={dataInicio}
+                  onChange={(e) => {
+                    setDataInicio(e.target.value)
+                    if (/^\d{4}-\d{2}-\d{2}$/.test(e.target.value)) {
+                      setDiaVencimento(String(parseInt(e.target.value.split('-')[2], 10)))
+                    }
+                  }}
+                  required
+                />
+              </div>
+            ) : (
+              <div className="cp-field">
+                <label>Dia de Vencimento (1–31) *</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={31}
+                  value={diaVencimento}
+                  onChange={(e) => setDiaVencimento(e.target.value)}
+                  required
+                />
+              </div>
+            )}
 
             <div className="cp-field">
               <label>
@@ -501,6 +540,8 @@ export function ModeloModal({ modeloEditar, onClose, onSaved, onError }: ModeloM
                   ? 'Estimativa inicial (R$)'
                   : tipo === 'PARCELADO'
                   ? 'Parcela estimada atual (R$) *'
+                  : tipo === 'AVULSO'
+                  ? 'Valor do Boleto (R$) *'
                   : 'Valor mensal (R$) *'}
               </label>
               <input
@@ -512,6 +553,29 @@ export function ModeloModal({ modeloEditar, onClose, onSaved, onError }: ModeloM
               />
             </div>
           </div>
+
+          {!isEdit && tipo === 'AVULSO' && (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div className="cp-field">
+                <label>Linha Digitável / Código de Barras (opcional)</label>
+                <input
+                  type="text"
+                  placeholder="Cole ou extraia via imagem do boleto..."
+                  value={linhaDigitavel}
+                  onChange={(e) => setLinhaDigitavel(e.target.value)}
+                />
+              </div>
+              <div className="cp-field">
+                <label>Observação (opcional)</label>
+                <input
+                  type="text"
+                  placeholder="Ex: Guia RENAVAM, Serviço CNH..."
+                  value={observacao}
+                  onChange={(e) => setObservacao(e.target.value)}
+                />
+              </div>
+            </div>
+          )}
 
           {!isEdit && tipo === 'PARCELADO' && (
             <div
@@ -558,7 +622,7 @@ export function ModeloModal({ modeloEditar, onClose, onSaved, onError }: ModeloM
             </div>
           )}
 
-          {tipo !== 'PARCELADO' && (
+          {tipo !== 'PARCELADO' && tipo !== 'AVULSO' && (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
               {!isEdit && (
                 <div className="cp-field">

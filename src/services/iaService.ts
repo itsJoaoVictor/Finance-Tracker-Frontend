@@ -26,7 +26,7 @@ export interface IaExtrairComprovanteResponse {
 
 export interface IaExtrairBoletoResponse {
   nome?: string
-  tipoContaPagar?: 'VARIAVEL' | 'FIXO' | 'PARCELADO'
+  tipoContaPagar?: 'VARIAVEL' | 'FIXO' | 'PARCELADO' | 'AVULSO'
   valor?: number
   dataVencimento?: string
   diaVencimento?: number
