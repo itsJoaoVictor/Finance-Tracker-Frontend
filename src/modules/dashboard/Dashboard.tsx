@@ -227,7 +227,14 @@ export function Dashboard() {
         </div>
       )
     }
-    return <ProjecaoWidget projecao={data.projetcao15Dias} ocultarValores={ocultarValores} />
+    return (
+      <ProjecaoWidget
+        projecao={data.projetcao15Dias}
+        saldoAtual={data.kpis?.saldoTotal}
+        contasPagar={data.contasPagar}
+        ocultarValores={ocultarValores}
+      />
+    )
   }
 
   const renderContasCartoes = () => {
@@ -266,6 +273,7 @@ export function Dashboard() {
         contasPagar={data.contasPagar}
         transacoes={data.ultimasTransacoes}
         insights={data.insightsAtivos}
+        projecao={data.projetcao15Dias}
         onAtualizarIa={handleAtualizarIa}
         atualizandoIa={atualizandoIa}
       />

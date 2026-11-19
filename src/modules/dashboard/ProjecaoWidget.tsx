@@ -1,27 +1,23 @@
+import { useMemo } from 'react'
 import { CalendarRange, ShieldAlert, ShieldCheck, AlertTriangle } from 'lucide-react'
 import { DashboardResumo } from '../../types/dashboard'
 
 interface ProjecaoWidgetProps {
   projecao: DashboardResumo['projetcao15Dias']
+  saldoAtual?: number
+  contasPagar?: DashboardResumo['contasPagar']
   ocultarValores?: boolean
 }
 
-export function ProjecaoWidget({ projecao, ocultarValores = false }: ProjecaoWidgetProps) {
+export function ProjecaoWidget({
+  projecao,
+  saldoAtual = 0,
+  contasPagar,
+  ocultarValores = false,
+}: ProjecaoWidgetProps) {
   const formatar = (valor: number) => {
     if (ocultarValores) return 'R$ •••••'
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor)
-  }
-
-  const formatarMensagemMoeda = (texto?: string) => {
-    if (!texto) return ''
-    if (ocultarValores) {
-      return texto.replace(/R\$\s*-?\d+(?:[.,]\d+)?/g, 'R$ •••••')
-    }
-    return texto.replace(/R\$\s*(-?\d+(?:\.\d+)?)/g, (_match, numStr) => {
-      const parsed = parseFloat(numStr)
-      if (isNaN(parsed)) return _match
-      return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(parsed)
-    })
   }
 
   const getStatusClass = () => {
@@ -57,6 +53,27 @@ export function ProjecaoWidget({ projecao, ocultarValores = false }: ProjecaoWid
     }
   }
 
+  // Calcula o total de contas que impactam os próximos 15 dias
+  const totalContasProximas = useMemo(() => {
+    if (contasPagar?.totalPendenteMes && contasPagar.totalPendenteMes > 0) {
+      return contasPagar.totalPendenteMes
+    }
+    // Se não houver pendente do mês, calcula a diferença entre o saldo atual e o saldo projetado
+    const diff = saldoAtual - projecao.saldoProjetado
+    return diff > 0 ? diff : 0
+  }, [contasPagar, saldoAtual, projecao.saldoProjetado])
+
+  // Frase explicativa limpa e sem duplicações esquisitas de texto
+  const explicacaoLimpa = useMemo(() => {
+    if (projecao.status === 'CRITICO' || projecao.saldoProjetado < 0) {
+      return `Contas a pagar de ${formatar(totalContasProximas)} vencem no período e superam seu saldo em conta.`
+    }
+    if (projecao.status === 'ATENCAO') {
+      return `Contas de ${formatar(totalContasProximas)} vencem em breve, deixando sua margem de segurança apertada.`
+    }
+    return 'Seu saldo atual cobre com tranquilidade todas as contas previstas para os próximos 15 dias.'
+  }, [projecao.status, projecao.saldoProjetado, totalContasProximas, ocultarValores])
+
   return (
     <div className={`widget projecao-widget ${getStatusClass()}`}>
       <div className="projecao-widget__header">
@@ -76,9 +93,25 @@ export function ProjecaoWidget({ projecao, ocultarValores = false }: ProjecaoWid
           <span className="projecao-widget__label">Saldo Projetado</span>
           <span className="projecao-widget__valor">{formatar(projecao.saldoProjetado)}</span>
         </div>
-        {projecao.mensagem && (
-          <p className="projecao-widget__mensagem">{formatarMensagemMoeda(projecao.mensagem)}</p>
-        )}
+
+        {/* Resumo visual do cálculo da projeção (elimina o espaço vazio no card) */}
+        <div className="projecao-widget__breakdown">
+          <div className="projecao-widget__breakdown-item">
+            <span className="projecao-widget__breakdown-label">Saldo em contas</span>
+            <span className="projecao-widget__breakdown-val">{formatar(saldoAtual)}</span>
+          </div>
+
+          <div className="projecao-widget__breakdown-sep" />
+
+          <div className="projecao-widget__breakdown-item">
+            <span className="projecao-widget__breakdown-label">Contas a pagar (15d)</span>
+            <span className="projecao-widget__breakdown-val projecao-widget__breakdown-val--neg">
+              - {formatar(totalContasProximas)}
+            </span>
+          </div>
+        </div>
+
+        <p className="projecao-widget__mensagem">{explicacaoLimpa}</p>
       </div>
     </div>
   )

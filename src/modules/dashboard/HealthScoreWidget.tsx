@@ -17,6 +17,7 @@ interface HealthScoreWidgetProps {
   contasPagar?: DashboardResumo['contasPagar']
   transacoes?: DashboardResumo['ultimasTransacoes']
   insights?: DashboardResumo['insightsAtivos']
+  projecao?: DashboardResumo['projetcao15Dias']
   onAtualizarIa?: () => void
   atualizandoIa?: boolean
 }
@@ -49,6 +50,7 @@ export function HealthScoreWidget({
   contasPagar,
   transacoes = [],
   insights = [],
+  projecao,
   onAtualizarIa,
   atualizandoIa = false,
 }: HealthScoreWidgetProps) {
@@ -169,7 +171,17 @@ export function HealthScoreWidget({
     }
 
     // Score Final (0 a 100)
-    const score = Math.min(100, Math.max(0, cartaoScore + boletosScore + poupancaScore))
+    let score = Math.min(100, Math.max(0, cartaoScore + boletosScore + poupancaScore))
+
+    // Se a projeção de 15 dias for negativa ou crítica, a saúde financeira precisa refletir esse risco
+    const projecaoNegativa = projecao && (projecao.status === 'CRITICO' || projecao.saldoProjetado < 0)
+    const projecaoAlerta = projecao && projecao.status === 'ATENCAO'
+
+    if (projecaoNegativa) {
+      score = Math.min(score, 45) // Enquadra em ATENÇÃO
+    } else if (projecaoAlerta) {
+      score = Math.min(score, 68) // Enquadra em ESTÁVEL
+    }
 
     let level: 'EXCELENTE' | 'ESTAVEL' | 'ATENCAO' = 'ESTAVEL'
     let color = '#3b82f6'
@@ -185,12 +197,14 @@ export function HealthScoreWidget({
       level = 'ESTAVEL'
       color = '#f59e0b'
       tituloNivel = 'Sua saúde financeira está equilibrada'
-      subtituloNivel = 'Tudo caminha bem, mas fique atento aos gastos nos cartões.'
+      subtituloNivel = 'Tudo caminha bem, mas fique atento aos gastos e compromissos futuros.'
     } else {
       level = 'ATENCAO'
       color = 'var(--danger, #e11d48)'
       tituloNivel = 'Sua saúde financeira precisa de atenção'
-      subtituloNivel = 'Os compromissos do mês estão pesando mais do que deveriam.'
+      subtituloNivel = projecaoNegativa
+        ? 'Contas a vencer nos próximos 15 dias vão superar seu saldo em conta.'
+        : 'Os compromissos do mês estão pesando mais do que deveriam.'
     }
 
     // Análise de maior categoria de gastos
@@ -225,6 +239,10 @@ export function HealthScoreWidget({
     if (boletosAtrasados > 0) {
       fraseSituacao = `Você tem ${boletosAtrasados} conta(s) atrasada(s) este mês.`
       fraseDica = 'Priorize quitar esse boleto para estancar juros e multas.'
+    } else if (projecaoNegativa && projecao) {
+      const valorProj = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(projecao.saldoProjetado)
+      fraseSituacao = `Atenção aos próximos 15 dias: seu saldo projetado é de ${valorProj} devido a contas a vencer.`
+      fraseDica = 'Garanta saldo em conta antes dos vencimentos para evitar entrar no cheque especial.'
     } else if (cartaoScore <= 15 && poupancaNivel === 'critico') {
       fraseSituacao = 'Você gastou mais do que recebeu e a fatura do cartão já passou da metade do limite.'
       fraseDica = 'Evite novas compras a prazo até a fatura fechar e foque apenas em despesas essenciais.'
@@ -269,7 +287,7 @@ export function HealthScoreWidget({
       fraseSituacao,
       fraseDica,
     }
-  }, [kpis, contasPagar, transacoes, insights])
+  }, [kpis, contasPagar, transacoes, insights, projecao])
 
   // Parâmetros do SVG Gauge Circular
   const radius = 42
