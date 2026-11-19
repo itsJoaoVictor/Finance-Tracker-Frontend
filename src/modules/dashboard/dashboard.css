@@ -641,12 +641,22 @@
   gap: 16px;
 }
 
+.health-score-widget__ia-pill {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--primary);
+  background: var(--primary-soft);
+  padding: 2px 8px;
+  border-radius: 999px;
+  letter-spacing: 0.2px;
+}
+
 .health-score-widget__info-btn {
   background: none;
   border: none;
   color: var(--muted);
   cursor: pointer;
-  padding: 4px;
+  padding: 3px;
   border-radius: 6px;
   display: flex;
   align-items: center;
@@ -670,28 +680,32 @@
 }
 
 .health-score-widget__info-box p {
-  margin: 0 0 6px 0;
+  margin: 0;
 }
 
 .health-score-widget__info-box ul {
-  margin: 0;
+  margin: 6px 0 0 0;
   padding-left: 18px;
   display: flex;
   flex-direction: column;
   gap: 3px;
 }
 
-.health-score-widget__main {
+/* Bloco Hero do Score */
+.health-score-widget__hero {
   display: flex;
   align-items: center;
-  gap: 20px;
-  flex: 1;
+  gap: 18px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: var(--surface-subtle);
+  border: 1px solid var(--border-subtle);
 }
 
 .health-score-widget__gauge-wrap {
   position: relative;
-  width: 104px;
-  height: 104px;
+  width: 96px;
+  height: 96px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -699,8 +713,8 @@
 }
 
 .health-score-widget__gauge {
-  width: 104px;
-  height: 104px;
+  width: 96px;
+  height: 96px;
   transform: rotate(-90deg);
 }
 
@@ -725,161 +739,216 @@
 }
 
 .health-score-widget__score-num {
-  font-size: 1.7rem;
+  font-size: 1.8rem;
   font-weight: 800;
   color: var(--ink);
   letter-spacing: -0.5px;
-  line-height: 1.1;
+  line-height: 1;
   font-variant-numeric: tabular-nums;
 }
 
-.health-score-widget__level-badge {
-  font-size: 0.65rem;
-  font-weight: 700;
-  padding: 1px 7px;
-  border-radius: 999px;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-  margin-top: 2px;
+.health-score-widget__score-max {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--muted);
 }
 
-.health-score-widget__level-badge--excelente {
-  background: var(--green-soft);
-  color: var(--green-positive);
-}
-
-.health-score-widget__level-badge--estavel {
-  background: var(--warning-soft);
-  color: var(--warning);
-}
-
-.health-score-widget__level-badge--atencao {
-  background: var(--danger-soft);
-  color: var(--danger);
-}
-
-.health-score-widget__pillars {
+.health-score-widget__hero-text {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 7px;
-  min-width: 0;
+  gap: 3px;
 }
 
-.health-score-widget__pillar-item {
-  display: flex;
+.health-score-widget__status-tag-row {
+  margin-bottom: 2px;
+}
+
+.health-score-widget__badge {
+  display: inline-flex;
   align-items: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  letter-spacing: 0.2px;
+}
+
+.health-score-widget__badge--excelente {
+  background: var(--green-soft);
+  color: var(--green-positive);
+  border: 1px solid color-mix(in srgb, var(--green-positive) 25%, transparent);
+}
+
+.health-score-widget__badge--estavel {
+  background: var(--warning-soft);
+  color: var(--warning);
+  border: 1px solid color-mix(in srgb, var(--warning) 25%, transparent);
+}
+
+.health-score-widget__badge--atencao {
+  background: var(--danger-soft);
+  color: var(--danger);
+  border: 1px solid color-mix(in srgb, var(--danger) 25%, transparent);
+}
+
+.health-score-widget__hero-title {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.2px;
+}
+
+.health-score-widget__hero-sub {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+/* Grid com os 3 Pilares */
+.health-score-widget__cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 10px;
-  padding: 7px 11px;
-  border-radius: 10px;
+}
+
+.health-score-widget__card-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: 12px;
   background: var(--surface-subtle);
   border: 1px solid var(--border-subtle);
-  transition: background 0.15s ease;
+  transition: all 0.2s ease;
 }
 
-.health-score-widget__pillar-item:hover {
+.health-score-widget__card-item:hover {
   background: var(--surface-hover);
+  border-color: var(--border-strong);
 }
 
-.health-score-widget__pillar-icon {
-  width: 26px;
-  height: 26px;
-  border-radius: 7px;
+.health-score-widget__card-item--ok .health-score-widget__indicator-dot {
+  background-color: var(--green-positive, #10b981);
+}
+.health-score-widget__card-item--aviso .health-score-widget__indicator-dot {
+  background-color: var(--warning, #f59e0b);
+}
+.health-score-widget__card-item--critico .health-score-widget__indicator-dot {
+  background-color: var(--danger, #e11d48);
+}
+
+.health-score-widget__card-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+
+.health-score-widget__card-category {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.health-score-widget__indicator-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.health-score-widget__card-main {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.25;
+}
+
+.health-score-widget__card-desc {
+  font-size: 0.7rem;
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+/* Caixa de Recomendação Amigável da IA */
+.health-score-widget__advice-box {
+  padding: 13px 15px;
+  border-radius: 13px;
+  background: var(--surface-subtle);
+  border: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.health-score-widget__advice-header {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.health-score-widget__advice-avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: var(--primary-soft);
+  color: var(--primary);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 }
 
-.health-score-widget__pillar-icon--card {
-  background: var(--info-soft);
-  color: var(--info);
-}
-
-.health-score-widget__pillar-icon--ok {
-  background: var(--green-soft);
-  color: var(--green-positive);
-}
-
-.health-score-widget__pillar-icon--warn {
-  background: var(--danger-soft);
-  color: var(--danger);
-}
-
-.health-score-widget__pillar-info {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-
-.health-score-widget__pillar-label {
-  font-size: 0.76rem;
-  font-weight: 600;
-  color: var(--ink);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.health-score-widget__pillar-desc {
-  font-size: 0.68rem;
-  color: var(--muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.health-score-widget__pillar-badge {
-  font-size: 0.7rem;
+.health-score-widget__advice-title {
+  font-size: 0.74rem;
   font-weight: 700;
-  padding: 2px 7px;
-  border-radius: 6px;
-  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--primary);
+}
+
+.health-score-widget__advice-statement {
+  margin: 0;
+  font-size: 0.83rem;
+  color: var(--ink);
+  line-height: 1.45;
+}
+
+.health-score-widget__advice-tip {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 9px;
+  background: var(--card);
+  border: 1px dashed var(--border-strong);
+}
+
+.health-score-widget__tip-icon {
+  color: var(--warning, #f59e0b);
+  margin-top: 1px;
   flex-shrink: 0;
 }
 
-.health-score-widget__pillar-badge--ok {
-  background: var(--green-soft);
-  color: var(--green-positive);
-}
-
-.health-score-widget__pillar-badge--warn {
-  background: var(--warning-soft);
-  color: var(--warning);
-}
-
-.health-score-widget__pillar-badge--critico {
-  background: var(--danger-soft);
-  color: var(--danger);
-}
-
-.health-score-widget__synthesis {
-  padding: 11px 14px;
-  border-radius: 12px;
-  background: var(--surface-subtle);
-  border: 1px solid var(--border-subtle);
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.health-score-widget__synthesis-badge {
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: var(--primary);
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.health-score-widget__synthesis-text {
+.health-score-widget__tip-text {
   margin: 0;
-  font-size: 0.81rem;
+  font-size: 0.79rem;
   color: var(--ink-secondary);
-  line-height: 1.45;
-  font-style: italic;
+  line-height: 1.4;
+}
+
+.health-score-widget__tip-text strong {
+  color: var(--ink);
 }
 
 /* ─── Insights Feed Widget (6 columns on Row 2) ─── */
