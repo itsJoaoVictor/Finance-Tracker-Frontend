@@ -632,9 +632,261 @@
   border-radius: 11px;
 }
 
-/* ─── Insights Feed Widget (12 columns banner/feed) ─── */
+/* ─── Health Score Widget (6 columns on Row 2) ─── */
+.health-score-widget {
+  grid-column: span 6;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.health-score-widget__info-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+
+.health-score-widget__info-btn:hover {
+  background: var(--surface-hover);
+  color: var(--ink);
+}
+
+.health-score-widget__info-box {
+  background: var(--surface-subtle);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 0.78rem;
+  color: var(--ink-secondary);
+  line-height: 1.5;
+  animation: slideDown 0.2s ease;
+}
+
+.health-score-widget__info-box p {
+  margin: 0 0 6px 0;
+}
+
+.health-score-widget__info-box ul {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.health-score-widget__main {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex: 1;
+}
+
+.health-score-widget__gauge-wrap {
+  position: relative;
+  width: 104px;
+  height: 104px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.health-score-widget__gauge {
+  width: 104px;
+  height: 104px;
+  transform: rotate(-90deg);
+}
+
+.health-score-widget__gauge-bg {
+  fill: none;
+  stroke: var(--surface-hover);
+}
+
+.health-score-widget__gauge-fill {
+  fill: none;
+  transition: stroke-dashoffset 0.8s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.3s ease;
+}
+
+.health-score-widget__gauge-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.health-score-widget__score-num {
+  font-size: 1.7rem;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: -0.5px;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.health-score-widget__level-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-top: 2px;
+}
+
+.health-score-widget__level-badge--excelente {
+  background: var(--green-soft);
+  color: var(--green-positive);
+}
+
+.health-score-widget__level-badge--estavel {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+.health-score-widget__level-badge--atencao {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.health-score-widget__pillars {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+.health-score-widget__pillar-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 11px;
+  border-radius: 10px;
+  background: var(--surface-subtle);
+  border: 1px solid var(--border-subtle);
+  transition: background 0.15s ease;
+}
+
+.health-score-widget__pillar-item:hover {
+  background: var(--surface-hover);
+}
+
+.health-score-widget__pillar-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.health-score-widget__pillar-icon--card {
+  background: var(--info-soft);
+  color: var(--info);
+}
+
+.health-score-widget__pillar-icon--ok {
+  background: var(--green-soft);
+  color: var(--green-positive);
+}
+
+.health-score-widget__pillar-icon--warn {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.health-score-widget__pillar-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.health-score-widget__pillar-label {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.health-score-widget__pillar-desc {
+  font-size: 0.68rem;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.health-score-widget__pillar-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.health-score-widget__pillar-badge--ok {
+  background: var(--green-soft);
+  color: var(--green-positive);
+}
+
+.health-score-widget__pillar-badge--warn {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+.health-score-widget__pillar-badge--critico {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.health-score-widget__synthesis {
+  padding: 11px 14px;
+  border-radius: 12px;
+  background: var(--surface-subtle);
+  border: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.health-score-widget__synthesis-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.health-score-widget__synthesis-text {
+  margin: 0;
+  font-size: 0.81rem;
+  color: var(--ink-secondary);
+  line-height: 1.45;
+  font-style: italic;
+}
+
+/* ─── Insights Feed Widget (6 columns on Row 2) ─── */
 .insights-feed-widget {
-  grid-column: span 12;
+  grid-column: span 6;
+  display: flex;
+  flex-direction: column;
 }
 
 .insights-feed-widget--compact {
@@ -1724,6 +1976,7 @@
   .kpi-widget { grid-column: span 12; }
   .kpi-widget__grid { grid-template-columns: repeat(4, 1fr); }
   .projecao-widget { grid-column: span 12; }
+  .health-score-widget { grid-column: span 12; }
   .insights-feed-widget { grid-column: span 12; }
   .contas-pagar-widget { grid-column: span 6; }
   .contas-cartoes-widget { grid-column: span 6; }
@@ -1736,6 +1989,8 @@
 
 @media (max-width: 1024px) {
   .kpi-widget__grid { grid-template-columns: repeat(2, 1fr); }
+  .health-score-widget { grid-column: span 12; }
+  .insights-feed-widget { grid-column: span 12; }
   .contas-pagar-widget { grid-column: span 12; }
   .contas-cartoes-widget { grid-column: span 12; }
   .graficos-widget { grid-column: span 12; }

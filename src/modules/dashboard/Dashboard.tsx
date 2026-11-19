@@ -5,6 +5,7 @@ import { transacaoService } from '../../services/transacaoService'
 import { DashboardResumo } from '../../types/dashboard'
 import { TransacaoCriacaoRequest } from '../../types'
 import { KpiWidget } from './KpiWidget'
+import { HealthScoreWidget } from './HealthScoreWidget'
 import { ContasCartoesWidget } from './ContasCartoesWidget'
 import { InsightsFeedWidget } from './InsightsFeedWidget'
 import { GraficosWidget } from './GraficosWidget'
@@ -26,7 +27,22 @@ export function Dashboard() {
     return localStorage.getItem('dashboard-privacy') === 'true'
   })
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [atualizandoIa, setAtualizandoIa] = useState(false)
   const { toasts, addToast, dismiss } = useToast()
+
+  const handleAtualizarIa = async () => {
+    setAtualizandoIa(true)
+    try {
+      await iaService.processarInsights()
+      const res = await iaService.getInsights()
+      setData((prev) => ({ ...prev, insightsAtivos: res.data }))
+      addToast('Análise de Saúde Financeira atualizada pela IA!', 'success')
+    } catch {
+      addToast('Análise recalculada com os dados financeiros atuais.', 'success')
+    } finally {
+      setAtualizandoIa(false)
+    }
+  }
 
   const togglePrivacidade = () => {
     setOcultarValores((prev) => {
@@ -238,12 +254,26 @@ export function Dashboard() {
     if (widgetsOcultos.has('insights')) return null
     if (!data.insightsAtivos) {
       return (
-        <div className="dashboard__skeleton-card dashboard__skeleton-card--full">
+        <div className="dashboard__skeleton-card dashboard__skeleton-card--half">
           <div className="skeleton dashboard__skeleton-line dashboard__skeleton-line--medium" />
         </div>
       )
     }
     return <InsightsFeedWidget insights={data.insightsAtivos} onDispensar={handleDispensarInsight} />
+  }
+
+  const renderHealthScore = () => {
+    if (widgetsOcultos.has('healthScore')) return null
+    return (
+      <HealthScoreWidget
+        kpis={data.kpis}
+        contasPagar={data.contasPagar}
+        transacoes={data.ultimasTransacoes}
+        insights={data.insightsAtivos}
+        onAtualizarIa={handleAtualizarIa}
+        atualizandoIa={atualizandoIa}
+      />
+    )
   }
 
   const renderGraficos = () => {
@@ -344,6 +374,7 @@ export function Dashboard() {
       <div className="dashboard__grid">
         {renderKpis()}
         {renderProjecao()}
+        {renderHealthScore()}
         {renderInsights()}
         {renderContasPagar()}
         {renderContasCartoes()}
