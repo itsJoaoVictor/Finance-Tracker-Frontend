@@ -1490,6 +1490,372 @@
   margin: 0;
 }
 
+.contas-cartoes-widget__item--destaque {
+  border-color: rgba(16, 185, 129, 0.35);
+  background: linear-gradient(90deg, rgba(16, 185, 129, 0.05) 0%, var(--surface-subtle) 100%);
+}
+
+.contas-cartoes-widget__name-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.contas-cartoes-widget__badge-melhor {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #047857;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: 999px;
+  padding: 1px 6px;
+  white-space: nowrap;
+}
+
+body.dark-theme .contas-cartoes-widget__badge-melhor {
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.18);
+  border-color: rgba(16, 185, 129, 0.35);
+}
+
+.contas-cartoes-widget__corte-meta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+
+/* ─── Mini-Card: Qual Cartão Usar Hoje? ─── */
+.melhor-cartao-card {
+  margin-bottom: 14px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(99, 102, 241, 0.04) 100%), var(--surface-subtle);
+  border: 1px solid rgba(16, 185, 129, 0.22);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+  transition: all 0.25s ease;
+}
+
+.melhor-cartao-card:hover {
+  border-color: rgba(16, 185, 129, 0.35);
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.08);
+}
+
+body.dark-theme .melhor-cartao-card {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(99, 102, 241, 0.06) 100%), var(--surface-subtle);
+  border-color: rgba(16, 185, 129, 0.25);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+}
+
+.melhor-cartao-card--loading {
+  padding: 16px;
+}
+
+.melhor-cartao-card--alerta {
+  background: rgba(239, 68, 68, 0.06);
+  border-color: rgba(239, 68, 68, 0.25);
+}
+
+.melhor-cartao-card__head {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.melhor-cartao-card__badge--alerta {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #b91c1c;
+  background: rgba(239, 68, 68, 0.12);
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+body.dark-theme .melhor-cartao-card__badge--alerta {
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.2);
+}
+
+.melhor-cartao-card__msg-alerta {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.melhor-cartao-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.melhor-cartao-card__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--primary, #10b981);
+}
+
+.melhor-cartao-card__spark-icon {
+  color: var(--primary, #10b981);
+}
+
+.melhor-cartao-card__toggle-btn {
+  background: transparent;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.melhor-cartao-card__toggle-btn:hover {
+  color: var(--primary, #10b981);
+  background: var(--surface-hover);
+}
+
+.melhor-cartao-card__title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.melhor-cartao-card__color-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 2px var(--card);
+}
+
+.melhor-cartao-card__title {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.melhor-cartao-card__title strong {
+  font-weight: 700;
+  color: var(--primary-dark, #059669);
+}
+
+body.dark-theme .melhor-cartao-card__title strong {
+  color: #34d399;
+}
+
+.melhor-cartao-card__frase {
+  margin: 0 0 10px 0;
+  font-size: 0.84rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.melhor-cartao-card__frase strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.melhor-cartao-card__metrics {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: var(--card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+}
+
+.melhor-cartao-card__metric-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.melhor-cartao-card__metric-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--muted);
+}
+
+.melhor-cartao-card__metric-val {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.melhor-cartao-card__metric-sep {
+  width: 1px;
+  height: 24px;
+  background: var(--border-subtle);
+}
+
+/* Drawer de comparação detalhada */
+.melhor-cartao-card__drawer {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border);
+  animation: fadeIn 0.2s ease;
+}
+
+.melhor-cartao-card__drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--muted);
+}
+
+.melhor-cartao-card__drawer-link {
+  background: transparent;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--primary);
+  cursor: pointer;
+  padding: 0;
+}
+
+.melhor-cartao-card__drawer-link:hover {
+  text-decoration: underline;
+}
+
+.melhor-cartao-card__comparison-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.melhor-cartao-card__comparison-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  transition: all 0.2s ease;
+}
+
+.melhor-cartao-card__comparison-item--best {
+  border-color: rgba(16, 185, 129, 0.35);
+  background: rgba(16, 185, 129, 0.05);
+}
+
+.melhor-cartao-card__comparison-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.melhor-cartao-card__comparison-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.melhor-cartao-card__comparison-name-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.melhor-cartao-card__comparison-name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.melhor-cartao-card__best-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: #047857;
+  background: rgba(16, 185, 129, 0.14);
+  padding: 1px 5px;
+  border-radius: 999px;
+}
+
+body.dark-theme .melhor-cartao-card__best-badge {
+  color: #34d399;
+}
+
+.melhor-cartao-card__bad-badge {
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: #b91c1c;
+  background: rgba(239, 68, 68, 0.12);
+  padding: 1px 5px;
+  border-radius: 999px;
+}
+
+body.dark-theme .melhor-cartao-card__bad-badge {
+  color: #f87171;
+}
+
+.melhor-cartao-card__comparison-sub {
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+
+.melhor-cartao-card__comparison-prazo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+
+.melhor-cartao-card__prazo-num {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--primary-dark, #059669);
+  font-variant-numeric: tabular-nums;
+}
+
+body.dark-theme .melhor-cartao-card__prazo-num {
+  color: #34d399;
+}
+
+.melhor-cartao-card__prazo-label {
+  font-size: 0.65rem;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
 /* ─── Gráficos Widget (6 columns) ─── */
 .graficos-widget {
   grid-column: span 6;

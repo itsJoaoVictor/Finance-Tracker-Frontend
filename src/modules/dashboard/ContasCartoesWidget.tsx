@@ -1,6 +1,11 @@
+import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Landmark, CreditCard, ArrowRight } from 'lucide-react'
+import { Landmark, CreditCard, ArrowRight, Sparkles } from 'lucide-react'
 import { DashboardResumo } from '../../types/dashboard'
+import { Cartao } from '../../types/cartoes'
+import { cartaoService } from '../../services/cartaoService'
+import { calcularMelhorCartao } from './utils/melhorCartao'
+import { MelhorCartaoCard } from './MelhorCartaoCard'
 
 interface ContasCartoesWidgetProps {
   contas: DashboardResumo['contas']
@@ -10,6 +15,35 @@ interface ContasCartoesWidgetProps {
 
 export function ContasCartoesWidget({ contas, cartoes, ocultarValores = false }: ContasCartoesWidgetProps) {
   const navigate = useNavigate()
+  const [cartoesCompletos, setCartoesCompletos] = useState<Cartao[]>([])
+  const [loadingCartoes, setLoadingCartoes] = useState(false)
+
+  useEffect(() => {
+    let isMounted = true
+    setLoadingCartoes(true)
+    cartaoService
+      .getAll()
+      .then((res) => {
+        if (isMounted) setCartoesCompletos(res.data || [])
+      })
+      .catch((err) => {
+        console.error('Erro ao carregar dados dos cartões para recomendação:', err)
+      })
+      .finally(() => {
+        if (isMounted) setLoadingCartoes(false)
+      })
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  const resultadoMelhorCartao = useMemo(() => {
+    if (cartoesCompletos.length > 0) {
+      return calcularMelhorCartao(cartoesCompletos)
+    }
+    // Fallback inicial enquanto os cartões completos carregam
+    return calcularMelhorCartao([])
+  }, [cartoesCompletos])
 
   const formatar = (valor: number) => {
     if (ocultarValores) return 'R$ •••••'
@@ -91,6 +125,15 @@ export function ContasCartoesWidget({ contas, cartoes, ocultarValores = false }:
           </button>
         </div>
 
+        {/* Recomendador Inteligente: Qual Cartão Usar Hoje? */}
+        {cartoes.length > 0 && (
+          <MelhorCartaoCard
+            resultado={resultadoMelhorCartao}
+            loading={loadingCartoes && cartoesCompletos.length === 0}
+            ocultarValores={ocultarValores}
+          />
+        )}
+
         <div className="contas-cartoes-widget__list">
           {cartoes.length === 0 && (
             <p className="contas-cartoes-widget__empty">Nenhum cartão ativo</p>
@@ -100,6 +143,9 @@ export function ContasCartoesWidget({ contas, cartoes, ocultarValores = false }:
             const percentualConsumo =
               limiteTotal > 0 ? Math.min(100, (cartao.faturaAtual / limiteTotal) * 100) : 0
             const pctRound = Math.round(percentualConsumo)
+
+            const info = resultadoMelhorCartao.comparativo.find((c) => c.id === cartao.id)
+            const isMelhorHoje = info?.isMelhor
 
             const statusClass =
               percentualConsumo > 80
@@ -118,7 +164,9 @@ export function ContasCartoesWidget({ contas, cartoes, ocultarValores = false }:
             return (
               <div
                 key={cartao.id}
-                className="contas-cartoes-widget__item"
+                className={`contas-cartoes-widget__item ${
+                  isMelhorHoje ? 'contas-cartoes-widget__item--destaque' : ''
+                }`}
                 onClick={() => navigate('/cartoes')}
                 role="button"
                 tabIndex={0}
@@ -132,9 +180,18 @@ export function ContasCartoesWidget({ contas, cartoes, ocultarValores = false }:
                 />
                 <div className="contas-cartoes-widget__info">
                   <div className="contas-cartoes-widget__card-head">
-                    <span className="contas-cartoes-widget__nome">{cartao.nome}</span>
+                    <div className="contas-cartoes-widget__name-group">
+                      <span className="contas-cartoes-widget__nome">{cartao.nome}</span>
+                      {isMelhorHoje && (
+                        <span className="contas-cartoes-widget__badge-melhor" title="Melhor prazo para compras hoje">
+                          <Sparkles size={10} />
+                          Melhor hoje
+                        </span>
+                      )}
+                    </div>
                     <span className="contas-cartoes-widget__pct">{pctRound}% usado</span>
                   </div>
+
                   <div className="contas-cartoes-widget__progress-bar">
                     <div
                       className="contas-cartoes-widget__progress-fill"
@@ -144,6 +201,14 @@ export function ContasCartoesWidget({ contas, cartoes, ocultarValores = false }:
                       }}
                     />
                   </div>
+
+                  {info && (
+                    <div className="contas-cartoes-widget__corte-meta">
+                      <span>Fecha dia {info.diaFechamento} (em {info.diasAteFechamento}d)</span>
+                      <span>•</span>
+                      <span>{info.diasAtePagar}d p/ pagar</span>
+                    </div>
+                  )}
                 </div>
                 <div className="contas-cartoes-widget__valores">
                   <span className={`contas-cartoes-widget__fatura ${statusClass}`}>
