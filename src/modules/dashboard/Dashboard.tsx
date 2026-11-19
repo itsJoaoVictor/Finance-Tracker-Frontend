@@ -1,7 +1,9 @@
 import { useEffect, useState, useCallback } from 'react'
 import { dashboardService } from '../../services/dashboardService'
 import { iaService } from '../../services/iaService'
+import { transacaoService } from '../../services/transacaoService'
 import { DashboardResumo } from '../../types/dashboard'
+import { TransacaoCriacaoRequest } from '../../types'
 import { KpiWidget } from './KpiWidget'
 import { ContasCartoesWidget } from './ContasCartoesWidget'
 import { InsightsFeedWidget } from './InsightsFeedWidget'
@@ -9,7 +11,10 @@ import { GraficosWidget } from './GraficosWidget'
 import { UltimasTransacoesWidget } from './UltimasTransacoesWidget'
 import { ProjecaoWidget } from './ProjecaoWidget'
 import { ContasPagarWidget } from './ContasPagarWidget'
-import { AlertCircle } from 'lucide-react'
+import { CreateTransacaoModal } from '../transacoes/components/CreateTransacaoModal'
+import { Toast, useToast } from '../../components/Toast'
+import { AlertCircle, Eye, EyeOff, Plus, Calendar } from 'lucide-react'
+import '../transacoes/transacoes.css'
 import './dashboard.css'
 
 export function Dashboard() {
@@ -17,32 +22,64 @@ export function Dashboard() {
   const [loadingPrefs, setLoadingPrefs] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [periodo, setPeriodo] = useState('MES_ATUAL')
+  const [ocultarValores, setOcultarValores] = useState<boolean>(() => {
+    return localStorage.getItem('dashboard-privacy') === 'true'
+  })
+  const [showCreateModal, setShowCreateModal] = useState(false)
+  const { toasts, addToast, dismiss } = useToast()
+
+  const togglePrivacidade = () => {
+    setOcultarValores((prev) => {
+      const next = !prev
+      localStorage.setItem('dashboard-privacy', String(next))
+      return next
+    })
+  }
 
   const carregarDados = useCallback(() => {
     setError(null)
     setLoadingPrefs(true)
-    // Limpar os dados antigos para mostrar o skeleton de novo
     setData({})
 
-    // 1. Fetch Preferences (bloqueante para renderizar a estrutura)
-    dashboardService.getPreferencias()
-      .then(res => {
-        setData(prev => ({ ...prev, preferenciasLayout: res.data }))
+    dashboardService
+      .getPreferencias()
+      .then((res) => {
+        setData((prev) => ({ ...prev, preferenciasLayout: res.data }))
         setLoadingPrefs(false)
       })
-      .catch(err => {
+      .catch((err) => {
         setError(err.response?.data?.error || 'Erro ao carregar preferências')
         setLoadingPrefs(false)
       })
 
-    // 2. Disparar chamadas independentes e parciais
-    dashboardService.getKpis(periodo).then(res => setData(prev => ({ ...prev, kpis: res.data }))).catch(console.error)
-    dashboardService.getContas(periodo).then(res => setData(prev => ({ ...prev, contas: res.data }))).catch(console.error)
-    dashboardService.getCartoes(periodo).then(res => setData(prev => ({ ...prev, cartoes: res.data }))).catch(console.error)
-    dashboardService.getProjecao().then(res => setData(prev => ({ ...prev, projetcao15Dias: res.data }))).catch(console.error)
-    dashboardService.getTransacoes(periodo).then(res => setData(prev => ({ ...prev, ultimasTransacoes: res.data }))).catch(console.error)
-    dashboardService.getInsights().then(res => setData(prev => ({ ...prev, insightsAtivos: res.data }))).catch(console.error)
-    dashboardService.getContasPagar().then(res => setData(prev => ({ ...prev, contasPagar: res.data }))).catch(console.error)
+    dashboardService
+      .getKpis(periodo)
+      .then((res) => setData((prev) => ({ ...prev, kpis: res.data })))
+      .catch(console.error)
+    dashboardService
+      .getContas(periodo)
+      .then((res) => setData((prev) => ({ ...prev, contas: res.data })))
+      .catch(console.error)
+    dashboardService
+      .getCartoes(periodo)
+      .then((res) => setData((prev) => ({ ...prev, cartoes: res.data })))
+      .catch(console.error)
+    dashboardService
+      .getProjecao()
+      .then((res) => setData((prev) => ({ ...prev, projetcao15Dias: res.data })))
+      .catch(console.error)
+    dashboardService
+      .getTransacoes(periodo)
+      .then((res) => setData((prev) => ({ ...prev, ultimasTransacoes: res.data })))
+      .catch(console.error)
+    dashboardService
+      .getInsights()
+      .then((res) => setData((prev) => ({ ...prev, insightsAtivos: res.data })))
+      .catch(console.error)
+    dashboardService
+      .getContasPagar()
+      .then((res) => setData((prev) => ({ ...prev, contasPagar: res.data })))
+      .catch(console.error)
   }, [periodo])
 
   useEffect(() => {
@@ -64,6 +101,23 @@ export function Dashboard() {
     }
   }
 
+  const handleCreateTransacao = async (payload: TransacaoCriacaoRequest) => {
+    try {
+      await transacaoService.create(payload)
+      addToast('Transação registrada com sucesso!', 'success')
+      setShowCreateModal(false)
+      carregarDados()
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { error?: string; message?: string } } }
+      const msg =
+        axiosErr.response?.data?.error ||
+        axiosErr.response?.data?.message ||
+        'Erro ao criar transação'
+      addToast(msg, 'error')
+      throw err
+    }
+  }
+
   if (error) {
     return (
       <div className="dashboard__error">
@@ -82,7 +136,6 @@ export function Dashboard() {
     { value: 'MES_ANTERIOR', label: 'Mês Anterior' },
   ]
 
-  // Render Skeleton Grid
   if (loadingPrefs) {
     return (
       <div className="dashboard">
@@ -98,7 +151,6 @@ export function Dashboard() {
         <div className="dashboard__skeleton-grid">
           <div className="dashboard__skeleton-row">
             <div className="dashboard__skeleton-card dashboard__skeleton-card--wide">
-              <div className="skeleton dashboard__skeleton-line dashboard__skeleton-line--short" />
               <div className="dashboard__skeleton-kpi-row">
                 <div className="skeleton dashboard__skeleton-kpi" />
                 <div className="skeleton dashboard__skeleton-kpi" />
@@ -107,7 +159,10 @@ export function Dashboard() {
             </div>
             <div className="dashboard__skeleton-card dashboard__skeleton-card--narrow">
               <div className="skeleton dashboard__skeleton-line dashboard__skeleton-line--short" />
-              <div className="skeleton dashboard__skeleton-line dashboard__skeleton-line--long" style={{ height: 40 }} />
+              <div
+                className="skeleton dashboard__skeleton-line dashboard__skeleton-line--long"
+                style={{ height: 36 }}
+              />
               <div className="skeleton dashboard__skeleton-line dashboard__skeleton-line--medium" />
             </div>
           </div>
@@ -119,36 +174,40 @@ export function Dashboard() {
   const widgetsOcultos = new Set(data.preferenciasLayout?.widgetsOcultos || [])
 
   const renderKpis = () => {
-    if (widgetsOcultos.has('kpis')) return null;
+    if (widgetsOcultos.has('kpis')) return null
     if (!data.kpis) {
       return (
         <div className="dashboard__skeleton-card dashboard__skeleton-card--wide">
-          <div className="skeleton dashboard__skeleton-line dashboard__skeleton-line--short" />
           <div className="dashboard__skeleton-kpi-row">
-            <div className="skeleton dashboard__skeleton-kpi" /><div className="skeleton dashboard__skeleton-kpi" /><div className="skeleton dashboard__skeleton-kpi" />
+            <div className="skeleton dashboard__skeleton-kpi" />
+            <div className="skeleton dashboard__skeleton-kpi" />
+            <div className="skeleton dashboard__skeleton-kpi" />
           </div>
         </div>
       )
     }
-    return <KpiWidget kpis={data.kpis} />
+    return <KpiWidget kpis={data.kpis} ocultarValores={ocultarValores} />
   }
 
   const renderProjecao = () => {
-    if (widgetsOcultos.has('fluxoCaixaProjetado')) return null;
+    if (widgetsOcultos.has('fluxoCaixaProjetado')) return null
     if (!data.projetcao15Dias) {
       return (
         <div className="dashboard__skeleton-card dashboard__skeleton-card--narrow">
           <div className="skeleton dashboard__skeleton-line dashboard__skeleton-line--short" />
-          <div className="skeleton dashboard__skeleton-line dashboard__skeleton-line--long" style={{ height: 40 }} />
+          <div
+            className="skeleton dashboard__skeleton-line dashboard__skeleton-line--long"
+            style={{ height: 36 }}
+          />
           <div className="skeleton dashboard__skeleton-line dashboard__skeleton-line--medium" />
         </div>
       )
     }
-    return <ProjecaoWidget projecao={data.projetcao15Dias} />
+    return <ProjecaoWidget projecao={data.projetcao15Dias} ocultarValores={ocultarValores} />
   }
 
   const renderContasCartoes = () => {
-    if (widgetsOcultos.has('cartoes')) return null;
+    if (widgetsOcultos.has('cartoes')) return null
     if (!data.contas || !data.cartoes) {
       return (
         <div className="dashboard__skeleton-card dashboard__skeleton-card--half">
@@ -158,17 +217,21 @@ export function Dashboard() {
         </div>
       )
     }
-    return <ContasCartoesWidget contas={data.contas} cartoes={data.cartoes} />
+    return (
+      <ContasCartoesWidget
+        contas={data.contas}
+        cartoes={data.cartoes}
+        ocultarValores={ocultarValores}
+      />
+    )
   }
 
   const renderInsights = () => {
-    if (widgetsOcultos.has('insights')) return null;
+    if (widgetsOcultos.has('insights')) return null
     if (!data.insightsAtivos) {
       return (
-        <div className="dashboard__skeleton-card dashboard__skeleton-card--half">
-          <div className="skeleton dashboard__skeleton-line dashboard__skeleton-line--short" />
-          <div className="skeleton dashboard__skeleton-line dashboard__skeleton-line--long" />
-          <div className="skeleton dashboard__skeleton-line dashboard__skeleton-line--long" />
+        <div className="dashboard__skeleton-card dashboard__skeleton-card--full">
+          <div className="skeleton dashboard__skeleton-line dashboard__skeleton-line--medium" />
         </div>
       )
     }
@@ -176,7 +239,7 @@ export function Dashboard() {
   }
 
   const renderGraficos = () => {
-    if (widgetsOcultos.has('graficoDespesas')) return null;
+    if (widgetsOcultos.has('graficoDespesas')) return null
     if (!data.ultimasTransacoes) {
       return (
         <div className="dashboard__skeleton-card dashboard__skeleton-card--half">
@@ -186,11 +249,11 @@ export function Dashboard() {
         </div>
       )
     }
-    return <GraficosWidget transacoes={data.ultimasTransacoes} />
+    return <GraficosWidget transacoes={data.ultimasTransacoes} ocultarValores={ocultarValores} />
   }
 
   const renderTransacoes = () => {
-    if (widgetsOcultos.has('ultimasTransacoes')) return null;
+    if (widgetsOcultos.has('ultimasTransacoes')) return null
     if (!data.ultimasTransacoes) {
       return (
         <div className="dashboard__skeleton-card dashboard__skeleton-card--half">
@@ -200,7 +263,12 @@ export function Dashboard() {
         </div>
       )
     }
-    return <UltimasTransacoesWidget transacoes={data.ultimasTransacoes} />
+    return (
+      <UltimasTransacoesWidget
+        transacoes={data.ultimasTransacoes}
+        ocultarValores={ocultarValores}
+      />
+    )
   }
 
   const renderContasPagar = () => {
@@ -214,34 +282,75 @@ export function Dashboard() {
         </div>
       )
     }
-    return <ContasPagarWidget dados={data.contasPagar} />
+    return <ContasPagarWidget dados={data.contasPagar} ocultarValores={ocultarValores} />
   }
 
   return (
     <div className="dashboard">
       <div className="dashboard__toolbar">
-        <div className="dashboard__periodo-selector">
-          {periodos.map((p) => (
-            <button
-              key={p.value}
-              className={`dashboard__periodo-btn ${periodo === p.value ? 'dashboard__periodo-btn--active' : ''}`}
-              onClick={() => setPeriodo(p.value)}
-            >
-              {p.label}
-            </button>
-          ))}
+        <div className="dashboard__periodo-group">
+          <span className="dashboard__periodo-icon" aria-hidden="true">
+            <Calendar size={15} />
+          </span>
+          <div className="dashboard__periodo-selector" role="tablist" aria-label="Período do dashboard">
+            {periodos.map((p) => (
+              <button
+                key={p.value}
+                role="tab"
+                aria-selected={periodo === p.value}
+                className={`dashboard__periodo-btn ${
+                  periodo === p.value ? 'dashboard__periodo-btn--active' : ''
+                }`}
+                onClick={() => setPeriodo(p.value)}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="dashboard__toolbar-actions">
+          <button
+            type="button"
+            className={`dashboard__privacy-btn ${
+              ocultarValores ? 'dashboard__privacy-btn--active' : ''
+            }`}
+            onClick={togglePrivacidade}
+            title={ocultarValores ? 'Mostrar todos os valores' : 'Ocultar todos os valores'}
+          >
+            {ocultarValores ? <EyeOff size={16} /> : <Eye size={16} />}
+            <span>{ocultarValores ? 'Valores ocultos' : 'Ocultar valores'}</span>
+          </button>
+
+          <button
+            type="button"
+            className="dashboard__new-tx-btn"
+            onClick={() => setShowCreateModal(true)}
+          >
+            <Plus size={17} />
+            <span>Nova Transação</span>
+          </button>
         </div>
       </div>
 
       <div className="dashboard__grid">
         {renderKpis()}
         {renderProjecao()}
+        {renderInsights()}
         {renderContasPagar()}
         {renderContasCartoes()}
-        {renderInsights()}
         {renderGraficos()}
         {renderTransacoes()}
       </div>
+
+      {showCreateModal && (
+        <CreateTransacaoModal
+          onClose={() => setShowCreateModal(false)}
+          onSubmit={handleCreateTransacao}
+        />
+      )}
+
+      <Toast toasts={toasts} onDismiss={dismiss} />
     </div>
   )
 }

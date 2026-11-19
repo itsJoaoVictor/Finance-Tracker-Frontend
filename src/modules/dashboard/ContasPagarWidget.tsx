@@ -4,13 +4,16 @@ import { CalendarClock, AlertTriangle, CheckCircle2, ArrowRight } from 'lucide-r
 
 interface ContasPagarWidgetProps {
   dados: ContasPagarDashboard
+  ocultarValores?: boolean
 }
 
-export function ContasPagarWidget({ dados }: ContasPagarWidgetProps) {
+export function ContasPagarWidget({ dados, ocultarValores = false }: ContasPagarWidgetProps) {
   const navigate = useNavigate()
 
-  const formatar = (valor: number) =>
-    new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor || 0)
+  const formatar = (valor: number) => {
+    if (ocultarValores) return 'R$ •••••'
+    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor || 0)
+  }
 
   const formatarData = (dataStr: string) => {
     const parts = dataStr.split('-')
@@ -21,147 +24,111 @@ export function ContasPagarWidget({ dados }: ContasPagarWidgetProps) {
   const totalAPagarMes = (dados.totalPendenteMes || 0) + (dados.totalEstimadoMes || 0)
 
   return (
-    <div className="widget contas-pagar-widget" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h3 className="widget__header" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <CalendarClock size={18} />
-          Contas & Boletos do Mês
-        </h3>
+    <div className="widget contas-pagar-widget">
+      <div className="widget__header-row">
+        <div className="widget__header-title">
+          <CalendarClock size={18} className="widget__header-icon" />
+          <h3 className="widget__header" style={{ margin: 0 }}>Contas & Boletos do Mês</h3>
+        </div>
         <button
           type="button"
+          className="widget__action-link"
           onClick={() => navigate('/contas-pagar')}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: 'var(--primary, #2f5b4b)',
-            fontSize: '0.82rem',
-            fontWeight: 600,
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px',
-          }}
         >
-          Ver grade <ArrowRight size={14} />
+          <span>Ver grade</span>
+          <ArrowRight size={14} />
         </button>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
-        <div style={{ padding: '10px 12px', borderRadius: '10px', background: 'rgba(46, 204, 113, 0.1)' }}>
-          <div style={{ fontSize: '0.72rem', opacity: 0.75 }}>Pago no mês</div>
-          <div style={{ fontSize: '0.98rem', fontWeight: 700, color: '#27ae60' }}>
-            {formatar(dados.totalPagoMes)}
-          </div>
+      <div className="contas-pagar-widget__summary-grid">
+        <div className="contas-pagar-widget__stat contas-pagar-widget__stat--pago">
+          <span className="contas-pagar-widget__stat-label">Pago no mês</span>
+          <span className="contas-pagar-widget__stat-value">{formatar(dados.totalPagoMes)}</span>
         </div>
-        <div style={{ padding: '10px 12px', borderRadius: '10px', background: 'rgba(241, 196, 15, 0.12)' }}>
-          <div style={{ fontSize: '0.72rem', opacity: 0.75 }}>A pagar no mês</div>
-          <div style={{ fontSize: '0.98rem', fontWeight: 700, color: '#d68910' }}>
-            {formatar(totalAPagarMes)}
-          </div>
+        <div className="contas-pagar-widget__stat contas-pagar-widget__stat--pendente">
+          <span className="contas-pagar-widget__stat-label">A pagar no mês</span>
+          <span className="contas-pagar-widget__stat-value">{formatar(totalAPagarMes)}</span>
         </div>
         <div
-          style={{
-            padding: '10px 12px',
-            borderRadius: '10px',
-            background: dados.qtdAtrasadas > 0 ? 'rgba(231, 76, 60, 0.14)' : 'rgba(128,128,128,0.08)',
-          }}
+          className={`contas-pagar-widget__stat ${
+            dados.qtdAtrasadas > 0
+              ? 'contas-pagar-widget__stat--atraso'
+              : 'contas-pagar-widget__stat--neutro'
+          }`}
         >
-          <div style={{ fontSize: '0.72rem', opacity: 0.75 }}>Em atraso ({dados.qtdAtrasadas})</div>
-          <div
-            style={{
-              fontSize: '0.98rem',
-              fontWeight: 700,
-              color: dados.qtdAtrasadas > 0 ? '#e74c3c' : 'inherit',
-            }}
-          >
-            {formatar(dados.totalAtrasado)}
-          </div>
+          <span className="contas-pagar-widget__stat-label">
+            Em atraso ({dados.qtdAtrasadas})
+          </span>
+          <span className="contas-pagar-widget__stat-value">{formatar(dados.totalAtrasado)}</span>
         </div>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        <div style={{ fontSize: '0.78rem', fontWeight: 600, opacity: 0.7 }}>
-          Atrasadas & Vencendo nos próximos 7 dias ({dados.proximasOuAtrasadas.length})
+      <div className="contas-pagar-widget__upcoming">
+        <div className="contas-pagar-widget__upcoming-header">
+          <span>Atrasadas & Vencendo nos próximos 7 dias</span>
+          <span className="contas-pagar-widget__upcoming-count">
+            {dados.proximasOuAtrasadas.length}
+          </span>
         </div>
+
         {dados.proximasOuAtrasadas.length === 0 ? (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '12px',
-              borderRadius: '8px',
-              background: 'rgba(46, 204, 113, 0.08)',
-              fontSize: '0.85rem',
-              color: '#27ae60',
-            }}
-          >
-            <CheckCircle2 size={16} /> Nenhuma conta atrasada ou vencendo nos próximos 7 dias.
+          <div className="contas-pagar-widget__empty-ok">
+            <CheckCircle2 size={17} />
+            <span>Nenhuma conta atrasada ou vencendo nos próximos 7 dias.</span>
           </div>
         ) : (
-          dados.proximasOuAtrasadas.slice(0, 5).map((item) => {
-            const isAtrasada = item.statusEfetivo === 'ATRASADA'
-            return (
-              <div
-                key={item.ocorrenciaId}
-                onClick={() => navigate('/contas-pagar')}
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '8px 10px',
-                  borderRadius: '8px',
-                  border: `1px solid ${isAtrasada ? 'rgba(231,76,60,0.35)' : 'var(--border, rgba(128,128,128,0.2))'}`,
-                  background: isAtrasada ? 'rgba(231,76,60,0.06)' : 'transparent',
-                  cursor: 'pointer',
-                }}
-              >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                  <span style={{ fontWeight: 600, fontSize: '0.88rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    {isAtrasada && <AlertTriangle size={14} color="#e74c3c" />}
-                    {item.nome}
-                    {item.numeroParcela && item.totalParcelas && (
-                      <span style={{ fontSize: '0.74rem', opacity: 0.7 }}>
-                        ({item.numeroParcela}/{item.totalParcelas})
-                      </span>
-                    )}
-                  </span>
-                  <span style={{ fontSize: '0.75rem', opacity: 0.65 }}>
-                    Vence {formatarData(item.dataVencimento)}
-                    {item.agrupador ? ` · ${item.agrupador}` : ''}
-                  </span>
-                </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div
-                    style={{
-                      fontWeight: 700,
-                      fontSize: '0.88rem',
-                      fontStyle: item.valorEstimado ? 'italic' : 'normal',
-                      color: isAtrasada ? '#e74c3c' : 'inherit',
-                    }}
-                  >
-                    {item.valorEstimado ? '~ ' : ''}
-                    {formatar(item.valorEfetivo)}
+          <div className="contas-pagar-widget__list">
+            {dados.proximasOuAtrasadas.slice(0, 5).map((item) => {
+              const isAtrasada = item.statusEfetivo === 'ATRASADA'
+              return (
+                <div
+                  key={item.ocorrenciaId}
+                  onClick={() => navigate('/contas-pagar')}
+                  className={`contas-pagar-widget__item ${
+                    isAtrasada ? 'contas-pagar-widget__item--atrasada' : ''
+                  }`}
+                >
+                  <div className="contas-pagar-widget__item-info">
+                    <span className="contas-pagar-widget__item-name">
+                      {isAtrasada && <AlertTriangle size={14} className="contas-pagar-widget__alert-icon" />}
+                      <span className="contas-pagar-widget__item-title">{item.nome}</span>
+                      {item.numeroParcela && item.totalParcelas && (
+                        <span className="contas-pagar-widget__item-parcela">
+                          ({item.numeroParcela}/{item.totalParcelas})
+                        </span>
+                      )}
+                    </span>
+                    <span className="contas-pagar-widget__item-meta">
+                      Vence {formatarData(item.dataVencimento)}
+                      {item.agrupador ? ` · ${item.agrupador}` : ''}
+                    </span>
                   </div>
-                  <span
-                    style={{
-                      fontSize: '0.68rem',
-                      padding: '2px 6px',
-                      borderRadius: '999px',
-                      background: isAtrasada
-                        ? 'rgba(231,76,60,0.18)'
-                        : item.valorEstimado
-                        ? 'rgba(128,128,128,0.18)'
-                        : 'rgba(241,196,15,0.2)',
-                      color: isAtrasada ? '#e74c3c' : item.valorEstimado ? '#888' : '#b7950b',
-                    }}
-                  >
-                    {isAtrasada ? 'Atrasada' : item.valorEstimado ? 'Sem valor real' : 'Pendente'}
-                  </span>
+
+                  <div className="contas-pagar-widget__item-right">
+                    <div
+                      className={`contas-pagar-widget__item-valor ${
+                        isAtrasada ? 'contas-pagar-widget__item-valor--atrasada' : ''
+                      } ${item.valorEstimado ? 'contas-pagar-widget__item-valor--estimado' : ''}`}
+                    >
+                      {item.valorEstimado ? '~ ' : ''}
+                      {formatar(item.valorEfetivo)}
+                    </div>
+                    <span
+                      className={`contas-pagar-widget__badge ${
+                        isAtrasada
+                          ? 'contas-pagar-widget__badge--atrasada'
+                          : item.valorEstimado
+                          ? 'contas-pagar-widget__badge--estimado'
+                          : 'contas-pagar-widget__badge--pendente'
+                      }`}
+                    >
+                      {isAtrasada ? 'Atrasada' : item.valorEstimado ? 'Estimado' : 'Pendente'}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            )
-          })
+              )
+            })}
+          </div>
         )}
       </div>
     </div>

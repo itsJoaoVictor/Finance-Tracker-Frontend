@@ -195,18 +195,17 @@ export function Sidebar({ activeItem, onSelectItem, onLogout }: SidebarProps) {
 
         <div className="sidebar__header">
           <div className="sidebar__brand">
-            {isCollapsed ? (
-              <img
-                src="/assets/images/favicon.ico"
-                alt="Finance Tracker Icon"
-                className="sidebar__logo-icon"
-              />
-            ) : (
-              <img
-                src="/assets/images/Logo.png"
-                alt="Finance Tracker Logo"
-                className="sidebar__logo-full"
-              />
+            <div className="sidebar__brand-mark" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+                <polyline points="17 6 23 6 23 12" />
+              </svg>
+            </div>
+            {!isCollapsed && (
+              <div className="sidebar__brand-text">
+                <span className="sidebar__brand-title">Finance</span>
+                <span className="sidebar__brand-subtitle">Tracker</span>
+              </div>
             )}
           </div>
         </div>

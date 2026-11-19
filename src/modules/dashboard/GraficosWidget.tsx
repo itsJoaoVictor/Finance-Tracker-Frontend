@@ -1,33 +1,101 @@
 import { useMemo } from 'react'
+import { PieChart } from 'lucide-react'
 import { DashboardResumo } from '../../types/dashboard'
 
 interface GraficosWidgetProps {
   transacoes: DashboardResumo['ultimasTransacoes']
+  ocultarValores?: boolean
 }
 
-export function GraficosWidget({ transacoes }: GraficosWidgetProps) {
-  // Dados para gráfico de pizza (despesas por categoria)
+const CHART_PALETTE = [
+  '#10b981', // Emerald
+  '#3b82f6', // Blue
+  '#8b5cf6', // Violet
+  '#f59e0b', // Amber
+  '#ec4899', // Pink
+  '#06b6d4', // Cyan
+  '#64748b', // Slate
+]
+
+export function GraficosWidget({ transacoes, ocultarValores = false }: GraficosWidgetProps) {
+  const formatar = (valor: number) => {
+    if (ocultarValores) return 'R$ •••••'
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(valor)
+  }
+
+  const formatarCurto = (valor: number) => {
+    if (ocultarValores) return '••••'
+    if (valor >= 1000) {
+      return `R$ ${(valor / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}k`
+    }
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+      maximumFractionDigits: 0,
+    }).format(valor)
+  }
+
+  // Dados para gráfico de rosca (despesas por categoria) com cores distintas garantidas
   const gastosPorCategoria = useMemo(() => {
     const mapa = new Map<string, { valor: number; cor: string; nome: string }>()
     transacoes
-      .filter((t) => t.tipo === 'SAQUE' || t.tipo === 'PIX' || t.tipo === 'COMPRA_CREDITO' || t.tipo === 'PAGAMENTO_BOLETO')
+      .filter(
+        (t) =>
+          t.tipo === 'SAQUE' ||
+          t.tipo === 'PIX' ||
+          t.tipo === 'COMPRA_CREDITO' ||
+          t.tipo === 'PAGAMENTO_BOLETO'
+      )
       .forEach((t) => {
         const chave = t.categoriaNome || 'Outros'
-        const existente = mapa.get(chave) || { valor: 0, cor: t.categoriaCorHexadecimal || '#888', nome: chave }
+        const existente = mapa.get(chave) || {
+          valor: 0,
+          cor: t.categoriaCorHexadecimal || '',
+          nome: chave,
+        }
         existente.valor += Math.abs(t.valor)
         mapa.set(chave, existente)
       })
-    return Array.from(mapa.values()).sort((a, b) => b.valor - a.valor)
+
+    const sorted = Array.from(mapa.values()).sort((a, b) => b.valor - a.valor)
+    const usedColors = new Set<string>()
+
+    return sorted.map((item, idx) => {
+      let assignedColor = item.cor ? item.cor.toLowerCase() : ''
+      if (!assignedColor || usedColors.has(assignedColor)) {
+        assignedColor = CHART_PALETTE[idx % CHART_PALETTE.length]
+      }
+      usedColors.add(assignedColor)
+      return { ...item, cor: assignedColor }
+    })
   }, [transacoes])
 
   const total = gastosPorCategoria.reduce((acc, c) => acc + c.valor, 0)
 
-  // Gerar fatias do SVG de pizza
   const gerarFatias = () => {
     if (total === 0) return null
-    let anguloAtual = 0
+    let anguloAtual = -90 // começa no topo
     const fatias = []
-    const cx = 60, cy = 60, r = 50
+    const cx = 64,
+      cy = 64,
+      r = 52
+
+    if (gastosPorCategoria.length === 1) {
+      const cat = gastosPorCategoria[0]
+      return (
+        <circle
+          cx={cx}
+          cy={cy}
+          r={r}
+          fill={cat.cor}
+        >
+          <title>{`${cat.nome}: ${formatar(cat.valor)} (100%)`}</title>
+        </circle>
+      )
+    }
 
     for (const cat of gastosPorCategoria) {
       const percentual = cat.valor / total
@@ -47,10 +115,10 @@ export function GraficosWidget({ transacoes }: GraficosWidgetProps) {
           key={cat.nome}
           d={`M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z`}
           fill={cat.cor}
-          stroke="#fff"
-          strokeWidth={1}
+          stroke="var(--surface-subtle, var(--card))"
+          strokeWidth={1.8}
         >
-          <title>{`${cat.nome}: R$ ${cat.valor.toFixed(2)} (${(percentual * 100).toFixed(1)}%)`}</title>
+          <title>{`${cat.nome}: ${formatar(cat.valor)} (${(percentual * 100).toFixed(1)}%)`}</title>
         </path>
       )
 
@@ -59,44 +127,64 @@ export function GraficosWidget({ transacoes }: GraficosWidgetProps) {
     return fatias
   }
 
-  const fatias = useMemo(() => gerarFatias(), [gastosPorCategoria, total])
+  const fatias = useMemo(() => gerarFatias(), [gastosPorCategoria, total, ocultarValores])
 
   return (
     <div className="widget graficos-widget">
-      <h3 className="widget__header">Gráficos</h3>
+      <div className="widget__header-row">
+        <div className="widget__header-title">
+          <PieChart size={18} className="widget__header-icon" />
+          <h3 className="widget__header" style={{ margin: 0 }}>Análise do Período</h3>
+        </div>
+      </div>
 
       <div className="graficos-widget__grid">
         {/* Gráfico de Rosca */}
         <div className="graficos-widget__card">
-          <h4>Despesas por Categoria</h4>
+          <div className="graficos-widget__card-header">
+            <h4>Despesas por Categoria</h4>
+            {total > 0 && (
+              <span className="graficos-widget__card-total">{formatar(total)}</span>
+            )}
+          </div>
+
           {total === 0 ? (
             <p className="graficos-widget__empty">Nenhuma despesa no período</p>
           ) : (
             <div className="graficos-widget__chart-container">
-              <svg width={120} height={120} viewBox="0 0 120 120">
-                {fatias}
-                {/* Círculo interno para efeito de rosca */}
-                <circle cx={60} cy={60} r={25} fill="var(--bg-color, #fff)" />
-              </svg>
+              <div className="graficos-widget__donut-wrap">
+                <svg width={128} height={128} viewBox="0 0 128 128">
+                  {fatias}
+                  {/* Círculo interno adaptado ao tema */}
+                  <circle cx={64} cy={64} r={33} fill="var(--surface-subtle, var(--card))" />
+                </svg>
+                <div className="graficos-widget__donut-center">
+                  <span className="graficos-widget__donut-label">Total</span>
+                  <span className="graficos-widget__donut-value">{formatarCurto(total)}</span>
+                </div>
+              </div>
+
               <div className="graficos-widget__legend">
-                {gastosPorCategoria.slice(0, 5).map((cat) => (
-                  <div key={cat.nome} className="graficos-widget__legend-item">
-                    <span
-                      className="graficos-widget__legend-color"
-                      style={{ backgroundColor: cat.cor }}
-                    />
-                    <span className="graficos-widget__legend-label">{cat.nome}</span>
-                    <span className="graficos-widget__legend-value">
-                      {total > 0 ? ((cat.valor / total) * 100).toFixed(1) : 0}%
-                    </span>
-                  </div>
-                ))}
+                {gastosPorCategoria.slice(0, 5).map((cat) => {
+                  const pct = total > 0 ? ((cat.valor / total) * 100).toFixed(1) : '0.0'
+                  return (
+                    <div key={cat.nome} className="graficos-widget__legend-item">
+                      <span
+                        className="graficos-widget__legend-color"
+                        style={{ backgroundColor: cat.cor }}
+                      />
+                      <span className="graficos-widget__legend-label">{cat.nome}</span>
+                      <span className="graficos-widget__legend-amount">{formatar(cat.valor)}</span>
+                      <span className="graficos-widget__legend-value">{pct}%</span>
+                    </div>
+                  )
+                })}
               </div>
             </div>
           )}
         </div>
 
-        {/* Gráfico de barras simples (últimas transações por tipo) */}
+        {/* Balanço Receitas vs Despesas */}
         <div className="graficos-widget__card">
           <h4>Receitas vs Despesas</h4>
           {transacoes.length === 0 ? (
@@ -108,40 +196,60 @@ export function GraficosWidget({ transacoes }: GraficosWidgetProps) {
                   .filter((t) => t.tipo === 'DEPOSITO')
                   .reduce((acc, t) => acc + Math.abs(t.valor), 0)
                 const despesas = transacoes
-                  .filter((t) => t.tipo === 'SAQUE' || t.tipo === 'PIX' || t.tipo === 'COMPRA_CREDITO' || t.tipo === 'PAGAMENTO_BOLETO')
+                  .filter(
+                    (t) =>
+                      t.tipo === 'SAQUE' ||
+                      t.tipo === 'PIX' ||
+                      t.tipo === 'COMPRA_CREDITO' ||
+                      t.tipo === 'PAGAMENTO_BOLETO'
+                  )
                   .reduce((acc, t) => acc + Math.abs(t.valor), 0)
                 const max = Math.max(receitas, despesas, 1)
+                const resultado = receitas - despesas
 
                 return (
                   <>
                     <div className="graficos-widget__barra-item">
-                      <span className="graficos-widget__barra-label">Receitas</span>
+                      <div className="graficos-widget__barra-head">
+                        <span className="graficos-widget__barra-label">Receitas</span>
+                        <span className="graficos-widget__barra-valor graficos-widget__barra-valor--receita">
+                          {formatar(receitas)}
+                        </span>
+                      </div>
                       <div className="graficos-widget__barra-track">
                         <div
                           className="graficos-widget__barra-fill graficos-widget__barra-fill--receita"
-                          style={{ width: `${(receitas / max) * 100}%` }}
+                          style={{ width: `${Math.max(receitas > 0 ? 4 : 0, (receitas / max) * 100)}%` }}
                         />
                       </div>
-                      <span className="graficos-widget__barra-valor">
-                        {new Intl.NumberFormat('pt-BR', {
-                          style: 'currency',
-                          currency: 'BRL',
-                        }).format(receitas)}
-                      </span>
                     </div>
+
                     <div className="graficos-widget__barra-item">
-                      <span className="graficos-widget__barra-label">Despesas</span>
+                      <div className="graficos-widget__barra-head">
+                        <span className="graficos-widget__barra-label">Despesas</span>
+                        <span className="graficos-widget__barra-valor graficos-widget__barra-valor--despesa">
+                          {formatar(despesas)}
+                        </span>
+                      </div>
                       <div className="graficos-widget__barra-track">
                         <div
                           className="graficos-widget__barra-fill graficos-widget__barra-fill--despesa"
-                          style={{ width: `${(despesas / max) * 100}%` }}
+                          style={{ width: `${Math.max(despesas > 0 ? 4 : 0, (despesas / max) * 100)}%` }}
                         />
                       </div>
-                      <span className="graficos-widget__barra-valor">
-                        {new Intl.NumberFormat('pt-BR', {
-                          style: 'currency',
-                          currency: 'BRL',
-                        }).format(despesas)}
+                    </div>
+
+                    <div className="graficos-widget__net-result">
+                      <span className="graficos-widget__net-label">Resultado do Período</span>
+                      <span
+                        className={`graficos-widget__net-value ${
+                          resultado >= 0
+                            ? 'graficos-widget__net-value--positivo'
+                            : 'graficos-widget__net-value--negativo'
+                        }`}
+                      >
+                        {resultado > 0 && !ocultarValores ? '+' : ''}
+                        {formatar(resultado)}
                       </span>
                     </div>
                   </>

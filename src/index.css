@@ -1,14 +1,22 @@
 @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
 :root {
-  --bg: #f7f3ee;
-  --bg-accent: #efe6da;
-  --ink: #1b1a17;
-  --muted: #6b5f55;
-  --card: #fffaf3;
-  --accent: #f05a3c;
-  --accent-2: #2f5b4b;
-  --shadow: 0 20px 60px rgba(28, 26, 23, 0.14);
+  --bg: #f4f7f9;
+  --bg-accent: #e2e8f0;
+  --ink: #0f172a;
+  --ink-secondary: #334155;
+  --muted: #64748b;
+  --card: #ffffff;
+  --surface-subtle: #f8fafc;
+  --surface-hover: #f1f5f9;
+  --border-subtle: rgba(15, 23, 42, 0.08);
+  --border-strong: rgba(15, 23, 42, 0.14);
+  --primary: #059669;
+  --primary-hover: #047857;
+  --primary-soft: rgba(5, 150, 105, 0.10);
+  --accent: #059669;
+  --accent-2: #059669;
+  --shadow: 0 20px 60px rgba(15, 23, 42, 0.08);
 
   color: var(--ink);
   background-color: var(--bg);

@@ -1,11 +1,11 @@
 /* Modernized Sidebar CSS with Premium UIX */
 
 :root {
-  --sidebar-width-expanded: 280px;
-  --sidebar-width-collapsed: 88px;
-  --sidebar-transition-speed: 0.35s;
-  --sidebar-shadow: 0 10px 30px -5px rgba(27, 26, 23, 0.05), 0 1px 3px rgba(27, 26, 23, 0.02);
-  --sidebar-item-active-shadow: 0 4px 14px -4px rgba(47, 91, 75, 0.4);
+  --sidebar-width-expanded: 264px;
+  --sidebar-width-collapsed: 84px;
+  --sidebar-transition-speed: 0.3s;
+  --sidebar-shadow: 0 4px 24px -4px rgba(15, 23, 42, 0.04);
+  --sidebar-item-active-shadow: 0 6px 18px -4px rgba(5, 150, 105, 0.35);
 }
 
 /* Sidebar Layout Parent */
@@ -20,7 +20,7 @@
 .sidebar-layout__content {
   flex: 1;
   min-width: 0;
-  padding: 40px;
+  padding: 28px 32px;
   transition: padding-left var(--sidebar-transition-speed) ease;
 }
 
@@ -29,7 +29,7 @@
   display: flex;
   flex-direction: column;
   background-color: var(--card);
-  border-right: 1px solid rgba(27, 26, 23, 0.07);
+  border-right: 1px solid var(--border-subtle, rgba(15, 23, 42, 0.08));
   width: var(--sidebar-width-expanded);
   height: 100vh;
   position: sticky;
@@ -49,32 +49,59 @@
 .sidebar__header {
   display: flex;
   align-items: center;
-  padding: 32px 24px;
-  height: 96px;
+  padding: 20px 20px 14px 20px;
+  height: 76px;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .sidebar__brand {
   display: flex;
   align-items: center;
+  gap: 12px;
   width: 100%;
   justify-content: flex-start;
   overflow: hidden;
 }
 
-.sidebar__logo-full {
-  max-width: 180px;
-  max-height: 44px;
-  object-fit: contain;
-  transition: all var(--sidebar-transition-speed) ease;
+.sidebar__brand-mark {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.28);
 }
 
-.sidebar__logo-icon {
-  width: 36px;
-  height: 36px;
-  object-fit: contain;
-  margin: 0 auto;
-  transition: all var(--sidebar-transition-speed) ease;
+.sidebar__brand-mark svg {
+  width: 20px;
+  height: 20px;
+}
+
+.sidebar__brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.08;
+  white-space: nowrap;
+}
+
+.sidebar__brand-title {
+  font-size: 1.08rem;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  color: var(--ink);
+}
+
+.sidebar__brand-subtitle {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.4px;
+  color: var(--primary, #059669);
 }
 
 .sidebar--collapsed .sidebar__brand {
@@ -84,35 +111,35 @@
 /* Floating Collapse Button */
 .sidebar__toggle {
   position: absolute;
-  right: -14px;
-  top: 34px;
-  width: 28px;
-  height: 28px;
+  right: -13px;
+  top: 26px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   background-color: var(--card);
-  border: 1px solid rgba(27, 26, 23, 0.1);
+  border: 1px solid var(--border-strong, rgba(15, 23, 42, 0.14));
   color: var(--muted);
-  box-shadow: 0 4px 10px rgba(27, 26, 23, 0.08);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   z-index: 102;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .sidebar__toggle svg {
-  width: 14px;
-  height: 14px;
+  width: 13px;
+  height: 13px;
   transition: transform var(--sidebar-transition-speed) ease;
 }
 
 .sidebar__toggle:hover {
-  background-color: var(--accent-2);
+  background-color: var(--primary, #059669);
   color: #ffffff;
-  border-color: var(--accent-2);
-  box-shadow: 0 4px 12px rgba(47, 91, 75, 0.3);
-  transform: scale(1.1);
+  border-color: var(--primary, #059669);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+  transform: scale(1.08);
 }
 
 .sidebar--collapsed .sidebar__toggle svg {
@@ -124,22 +151,22 @@
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 12px 14px;
+  padding: 6px 12px;
 }
 
 .sidebar__nav-wrapper::-webkit-scrollbar {
-  width: 5px;
+  width: 4px;
 }
 
 .sidebar__nav-wrapper::-webkit-scrollbar-thumb {
-  background-color: rgba(27, 26, 23, 0.08);
+  background-color: var(--border-strong);
   border-radius: 10px;
 }
 
 .sidebar__nav {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 3px;
   list-style: none;
   margin: 0;
   padding: 0;
@@ -150,18 +177,18 @@
   display: flex;
   align-items: center;
   width: 100%;
-  gap: 16px;
-  padding: 14px 18px;
+  gap: 13px;
+  padding: 10px 14px;
   color: var(--muted);
-  border-radius: 14px;
+  border-radius: 11px;
   border: none;
   background: transparent;
   cursor: pointer;
   font-family: 'Space Grotesk', sans-serif;
   font-weight: 500;
-  font-size: 0.98rem;
+  font-size: 0.91rem;
   text-align: left;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
 }
 
@@ -169,14 +196,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   flex-shrink: 0;
 }
 
 .sidebar__item-icon svg {
-  width: 21px;
-  height: 21px;
+  width: 19px;
+  height: 19px;
   transition: stroke 0.2s ease, transform 0.2s ease;
 }
 
@@ -189,8 +216,8 @@
 /* Collapsed Item styling changes */
 .sidebar--collapsed .sidebar__item {
   justify-content: center;
-  padding: 14px 0;
-  width: 56px;
+  padding: 11px 0;
+  width: 48px;
   margin: 0 auto;
 }
 
@@ -199,12 +226,12 @@
   pointer-events: none;
   width: 0;
   transform: translateX(-10px);
-  display: none; /* remove from accessibility flow when collapsed */
+  display: none;
 }
 
 /* Hover States */
 .sidebar__item:hover {
-  background-color: var(--bg-accent);
+  background-color: var(--surface-hover, var(--bg-accent));
   color: var(--ink);
 }
 
@@ -212,46 +239,57 @@
   transform: scale(1.06);
 }
 
-/* Active State - Premium Contrast */
+/* Active State - High Contrast & Crisp */
 .sidebar__item--active {
-  background-color: var(--accent-2);
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
   color: #ffffff !important;
   font-weight: 600;
   box-shadow: var(--sidebar-item-active-shadow);
 }
 
+.sidebar__item--active:hover {
+  background: linear-gradient(135deg, #047857 0%, #059669 100%);
+  color: #ffffff !important;
+}
+
 .sidebar__item--active .sidebar__item-icon svg {
-  color: #ffffff;
-  stroke: var(--accent); /* Adds a hint of coral accent onto the white active icon */
+  color: #ffffff !important;
+  stroke: #ffffff !important;
 }
 
 /* Footer & Logout Button */
 .sidebar__footer {
-  padding: 20px 14px;
-  border-top: 1px solid rgba(27, 26, 23, 0.07);
+  padding: 12px 12px 16px 12px;
+  border-top: 1px solid var(--border-subtle, rgba(15, 23, 42, 0.08));
+  flex-shrink: 0;
+}
+
+.sidebar__item--theme {
+  background-color: var(--surface-subtle);
+  color: var(--ink-secondary);
 }
 
 .sidebar__item--theme:hover {
-  background-color: var(--bg-accent);
-  color: var(--accent);
+  background-color: var(--primary-soft);
+  color: var(--primary);
 }
 
 .sidebar__item--theme:hover .sidebar__item-icon svg {
-  stroke: var(--accent);
-  transform: rotate(20deg) scale(1.08);
+  stroke: var(--primary);
+  transform: rotate(15deg) scale(1.06);
 }
 
 .sidebar__item--logout {
-  color: var(--accent);
+  color: var(--danger, #e11d48);
 }
 
 .sidebar__item--logout:hover {
-  background-color: rgba(240, 90, 60, 0.08);
-  color: var(--accent);
+  background-color: var(--danger-soft, rgba(225, 29, 72, 0.1));
+  color: var(--danger, #e11d48);
 }
 
 .sidebar__item--logout .sidebar__item-icon svg {
-  stroke: var(--accent);
+  stroke: var(--danger, #e11d48);
 }
 
 /* Mobile responsive hamburger overlay styles */

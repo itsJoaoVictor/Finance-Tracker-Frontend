@@ -1,5 +1,20 @@
 import { useState } from 'react'
-import { AlertTriangle, TrendingUp, Bell, X, Lightbulb, Coins, PiggyBank, Clock, CalendarDays, TrendingDown, Trophy, Rocket, ShoppingCart } from 'lucide-react'
+import {
+  AlertTriangle,
+  TrendingUp,
+  Bell,
+  X,
+  Sparkles,
+  Coins,
+  PiggyBank,
+  Clock,
+  CalendarDays,
+  TrendingDown,
+  Trophy,
+  Rocket,
+  ShoppingCart,
+  CheckCircle2,
+} from 'lucide-react'
 import { DashboardResumo } from '../../types/dashboard'
 
 interface InsightsFeedWidgetProps {
@@ -8,22 +23,20 @@ interface InsightsFeedWidgetProps {
 }
 
 const insightIcons: Record<string, { icon: React.ReactNode; color: string }> = {
-  COBRANCA_DUPLICADA: { icon: <AlertTriangle size={20} />, color: '#FF3B30' },
-  ESTOURO_FATURA: { icon: <TrendingUp size={20} />, color: '#FF9500' },
-  GASTO_INCOMUM: { icon: <AlertTriangle size={20} />, color: '#FF9500' },
-  CARTAO_PREVISAO: { icon: <TrendingUp size={20} />, color: '#007AFF' },
-  // Novos insights comportamentais
-  MICRO_TRANSACOES: { icon: <Coins size={20} />, color: '#AF52DE' },
-  ORCAMENTO_SOBRA_META: { icon: <PiggyBank size={20} />, color: '#34C759' },
-  DINHEIRO_DORMINDO: { icon: <Clock size={20} />, color: '#5AC8FA' },
-  RADAR_FIM_SEMANA: { icon: <CalendarDays size={20} />, color: '#FF6B35' },
-  QUEDA_RECEITA: { icon: <TrendingDown size={20} />, color: '#FF2D55' },
-  REFORCO_POSITIVO: { icon: <Trophy size={20} />, color: '#FFD60A' },
-  ACELERADOR_METAS: { icon: <Rocket size={20} />, color: '#007AFF' },
-  INFLACAO_PESSOAL: { icon: <ShoppingCart size={20} />, color: '#FF9500' },
-  // Insights de cartão (apenas projeção aparece no Dashboard)
-  PROJECAO_PARCELAS: { icon: <TrendingUp size={20} />, color: '#007AFF' },
-  SUGESTAO_VENCIMENTO: { icon: <Bell size={20} />, color: '#5AC8FA' },
+  COBRANCA_DUPLICADA: { icon: <AlertTriangle size={20} />, color: '#e11d48' },
+  ESTOURO_FATURA: { icon: <TrendingUp size={20} />, color: '#f59e0b' },
+  GASTO_INCOMUM: { icon: <AlertTriangle size={20} />, color: '#f59e0b' },
+  CARTAO_PREVISAO: { icon: <TrendingUp size={20} />, color: '#3b82f6' },
+  MICRO_TRANSACOES: { icon: <Coins size={20} />, color: '#a855f7' },
+  ORCAMENTO_SOBRA_META: { icon: <PiggyBank size={20} />, color: '#10b981' },
+  DINHEIRO_DORMINDO: { icon: <Clock size={20} />, color: '#06b6d4' },
+  RADAR_FIM_SEMANA: { icon: <CalendarDays size={20} />, color: '#f97316' },
+  QUEDA_RECEITA: { icon: <TrendingDown size={20} />, color: '#e11d48' },
+  REFORCO_POSITIVO: { icon: <Trophy size={20} />, color: '#eab308' },
+  ACELERADOR_METAS: { icon: <Rocket size={20} />, color: '#3b82f6' },
+  INFLACAO_PESSOAL: { icon: <ShoppingCart size={20} />, color: '#f59e0b' },
+  PROJECAO_PARCELAS: { icon: <TrendingUp size={20} />, color: '#3b82f6' },
+  SUGESTAO_VENCIMENTO: { icon: <Bell size={20} />, color: '#06b6d4' },
 }
 
 export function InsightsFeedWidget({ insights, onDispensar }: InsightsFeedWidgetProps) {
@@ -31,7 +44,6 @@ export function InsightsFeedWidget({ insights, onDispensar }: InsightsFeedWidget
 
   const handleDispensar = async (id: string) => {
     setDispensando(id)
-    // Pequeno delay para animação
     setTimeout(() => {
       onDispensar?.(id)
     }, 300)
@@ -39,15 +51,19 @@ export function InsightsFeedWidget({ insights, onDispensar }: InsightsFeedWidget
 
   if (insights.length === 0) {
     return (
-      <div className="widget insights-feed-widget">
-        <div className="widget__header">
-          <Bell size={18} />
-          <h3>Destaques da IA</h3>
-        </div>
-        <div className="insights-feed-widget__empty">
-          <Lightbulb size={32} style={{ opacity: 0.3, marginBottom: 8 }} />
-          <p>Nenhum alerta no momento.</p>
-          <p style={{ fontSize: '0.82rem', marginTop: 4 }}>Sua saúde financeira está estável!</p>
+      <div className="widget insights-feed-widget insights-feed-widget--compact">
+        <div className="insights-feed-widget__compact-banner">
+          <div className="insights-feed-widget__compact-icon">
+            <Sparkles size={18} />
+          </div>
+          <div className="insights-feed-widget__compact-text">
+            <strong>Destaques da IA</strong>
+            <span>Nenhum alerta pendente no momento — sua saúde financeira está estável.</span>
+          </div>
+          <div className="insights-feed-widget__compact-badge">
+            <CheckCircle2 size={15} />
+            <span>Tudo em ordem</span>
+          </div>
         </div>
       </div>
     )
@@ -56,14 +72,17 @@ export function InsightsFeedWidget({ insights, onDispensar }: InsightsFeedWidget
   return (
     <div className="widget insights-feed-widget">
       <div className="widget__header">
-        <Bell size={18} />
+        <Sparkles size={18} className="widget__header-icon" />
         <h3>Destaques da IA</h3>
         <span className="insights-feed-widget__count">{insights.length}</span>
       </div>
       <div className="insights-feed-widget__list">
         {insights.map((insight) => {
           const tipoNormalizado = insight.tipo.toLowerCase()
-          const config = insightIcons[insight.tipo] || { icon: <Bell size={20} color="#007AFF" />, color: '#007AFF' }
+          const config = insightIcons[insight.tipo] || {
+            icon: <Bell size={20} />,
+            color: 'var(--primary)',
+          }
 
           return (
             <div
@@ -74,7 +93,10 @@ export function InsightsFeedWidget({ insights, onDispensar }: InsightsFeedWidget
             >
               <div
                 className="insights-feed-widget__icon"
-                style={{ color: config.color }}
+                style={{
+                  color: config.color,
+                  backgroundColor: `${config.color}18`,
+                }}
               >
                 {config.icon}
               </div>
@@ -88,7 +110,7 @@ export function InsightsFeedWidget({ insights, onDispensar }: InsightsFeedWidget
                   onClick={() => handleDispensar(insight.id)}
                   title="Dispensar"
                 >
-                  <X size={14} />
+                  <X size={15} />
                 </button>
               )}
             </div>
