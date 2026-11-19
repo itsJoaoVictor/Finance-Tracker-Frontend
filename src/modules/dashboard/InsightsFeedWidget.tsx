@@ -13,7 +13,6 @@ import {
   Trophy,
   Rocket,
   ShoppingCart,
-  CheckCircle2,
 } from 'lucide-react'
 import { DashboardResumo } from '../../types/dashboard'
 
@@ -49,24 +48,9 @@ export function InsightsFeedWidget({ insights, onDispensar }: InsightsFeedWidget
     }, 300)
   }
 
-  if (insights.length === 0) {
-    return (
-      <div className="widget insights-feed-widget insights-feed-widget--compact">
-        <div className="insights-feed-widget__compact-banner">
-          <div className="insights-feed-widget__compact-icon">
-            <Sparkles size={18} />
-          </div>
-          <div className="insights-feed-widget__compact-text">
-            <strong>Destaques da IA</strong>
-            <span>Nenhum alerta pendente no momento — sua saúde financeira está estável.</span>
-          </div>
-          <div className="insights-feed-widget__compact-badge">
-            <CheckCircle2 size={15} />
-            <span>Tudo em ordem</span>
-          </div>
-        </div>
-      </div>
-    )
+  // Se não há alertas ou insights ativos da IA, não exibe card vazio
+  if (!insights || insights.length === 0) {
+    return null
   }
 
   return (

@@ -252,12 +252,8 @@ export function Dashboard() {
 
   const renderInsights = () => {
     if (widgetsOcultos.has('insights')) return null
-    if (!data.insightsAtivos) {
-      return (
-        <div className="dashboard__skeleton-card dashboard__skeleton-card--half">
-          <div className="skeleton dashboard__skeleton-line dashboard__skeleton-line--medium" />
-        </div>
-      )
+    if (!data.insightsAtivos || data.insightsAtivos.length === 0) {
+      return null
     }
     return <InsightsFeedWidget insights={data.insightsAtivos} onDispensar={handleDispensarInsight} />
   }
