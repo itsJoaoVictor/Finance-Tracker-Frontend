@@ -80,11 +80,11 @@
 
 .dashboard__skeleton-kpi-row {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 14px;
 }
 .dashboard__skeleton-kpi {
-  height: 112px;
+  height: 104px;
   border-radius: 14px;
 }
 
@@ -336,7 +336,7 @@
 
 .kpi-widget__grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 16px;
   width: 100%;
 }
@@ -345,8 +345,8 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 12px;
-  padding: 20px;
+  gap: 10px;
+  padding: 18px 20px;
   position: relative;
   overflow: hidden;
   min-width: 0;
@@ -364,6 +364,8 @@
 }
 
 .kpi-widget__card--saldo::before { background: linear-gradient(90deg, #059669, #10b981); }
+.kpi-widget__card--dinheiro-livre-ok::before { background: linear-gradient(90deg, #059669, #10b981); }
+.kpi-widget__card--dinheiro-livre-critico::before { background: linear-gradient(90deg, #e11d48, #fb7185); }
 .kpi-widget__card--fatura::before { background: linear-gradient(90deg, #e11d48, #fb7185); }
 .kpi-widget__card--limite::before { background: linear-gradient(90deg, #2563eb, #38bdf8); }
 
@@ -378,18 +380,47 @@
   gap: 10px;
 }
 
+.kpi-widget__label-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
 .kpi-widget__label {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 600;
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.4px;
 }
 
+.kpi-widget__badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 999px;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+}
+
+.kpi-widget__badge--ok {
+  background: var(--green-soft);
+  color: var(--green-positive);
+  border: 1px solid color-mix(in srgb, var(--green-positive) 28%, transparent);
+}
+
+.kpi-widget__badge--critico {
+  background: var(--danger-soft);
+  color: var(--danger);
+  border: 1px solid color-mix(in srgb, var(--danger) 28%, transparent);
+}
+
 .kpi-widget__icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -405,6 +436,14 @@
   background: var(--green-soft, rgba(16, 185, 129, 0.12));
   color: var(--green-positive, #10b981);
 }
+.kpi-widget__card--dinheiro-livre-ok .kpi-widget__icon {
+  background: var(--green-soft, rgba(16, 185, 129, 0.12));
+  color: var(--green-positive, #10b981);
+}
+.kpi-widget__card--dinheiro-livre-critico .kpi-widget__icon {
+  background: var(--danger-soft, rgba(225, 29, 72, 0.12));
+  color: var(--danger, #e11d48);
+}
 .kpi-widget__card--fatura .kpi-widget__icon {
   background: var(--danger-soft, rgba(225, 29, 72, 0.12));
   color: var(--danger, #e11d48);
@@ -417,8 +456,27 @@
 .kpi-widget__body {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
   min-width: 0;
+}
+
+.kpi-widget__card--dinheiro-livre-ok .kpi-widget__value {
+  color: var(--green-positive);
+}
+
+.kpi-widget__card--dinheiro-livre-critico .kpi-widget__value {
+  color: var(--danger);
+}
+
+.kpi-widget__formula {
+  font-size: 0.68rem;
+  color: var(--muted);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.85;
+  margin-top: 2px;
 }
 
 .kpi-widget__value {
@@ -1664,6 +1722,7 @@
 
 @media (max-width: 1280px) {
   .kpi-widget { grid-column: span 12; }
+  .kpi-widget__grid { grid-template-columns: repeat(4, 1fr); }
   .projecao-widget { grid-column: span 12; }
   .insights-feed-widget { grid-column: span 12; }
   .contas-pagar-widget { grid-column: span 6; }
@@ -1676,6 +1735,7 @@
 }
 
 @media (max-width: 1024px) {
+  .kpi-widget__grid { grid-template-columns: repeat(2, 1fr); }
   .contas-pagar-widget { grid-column: span 12; }
   .contas-cartoes-widget { grid-column: span 12; }
   .graficos-widget { grid-column: span 12; }

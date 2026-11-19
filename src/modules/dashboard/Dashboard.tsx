@@ -155,6 +155,7 @@ export function Dashboard() {
                 <div className="skeleton dashboard__skeleton-kpi" />
                 <div className="skeleton dashboard__skeleton-kpi" />
                 <div className="skeleton dashboard__skeleton-kpi" />
+                <div className="skeleton dashboard__skeleton-kpi" />
               </div>
             </div>
             <div className="dashboard__skeleton-card dashboard__skeleton-card--narrow">
@@ -182,11 +183,18 @@ export function Dashboard() {
             <div className="skeleton dashboard__skeleton-kpi" />
             <div className="skeleton dashboard__skeleton-kpi" />
             <div className="skeleton dashboard__skeleton-kpi" />
+            <div className="skeleton dashboard__skeleton-kpi" />
           </div>
         </div>
       )
     }
-    return <KpiWidget kpis={data.kpis} ocultarValores={ocultarValores} />
+    return (
+      <KpiWidget
+        kpis={data.kpis}
+        contasPagar={data.contasPagar}
+        ocultarValores={ocultarValores}
+      />
+    )
   }
 
   const renderProjecao = () => {
