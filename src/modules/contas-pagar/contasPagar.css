@@ -567,3 +567,292 @@
   flex-direction: column;
   gap: 10px;
 }
+
+/* ==========================================================================
+   CONFIGURAÇÃO DE PARCELAMENTO (PRICE / PROGRESSIVO / PERSONALIZADO)
+   ========================================================================== */
+
+.cp-parcel-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--accent, #2563eb) 6%, var(--surface-subtle, #f8fafc));
+  border: 1px solid color-mix(in srgb, var(--accent, #2563eb) 22%, var(--border-strong, rgba(15, 23, 42, 0.14)));
+}
+
+.cp-mode-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.cp-mode-pill-toggle {
+  display: inline-flex;
+  gap: 4px;
+  padding: 3px;
+  border-radius: 9px;
+  background: var(--surface-subtle, #f1f5f9);
+  border: 1px solid var(--border-strong, rgba(15, 23, 42, 0.14));
+  align-self: flex-start;
+}
+
+.cp-mode-pill-toggle button {
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  padding: 5px 10px;
+  border-radius: 7px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.74rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.cp-mode-pill-toggle button.is-active {
+  background: var(--accent, #2563eb);
+  color: var(--btn-accent-text, #ffffff);
+}
+
+.cp-parcel-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--card, #ffffff);
+  border: 1px solid var(--border-strong, rgba(15, 23, 42, 0.14));
+  font-size: 0.79rem;
+  color: var(--ink);
+}
+
+.cp-parcel-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.71rem;
+  font-weight: 700;
+  background: color-mix(in srgb, var(--accent, #2563eb) 14%, transparent);
+  color: var(--accent, #2563eb);
+}
+
+.cp-parcel-badge--down {
+  background: rgba(22, 163, 74, 0.14);
+  color: #15803d;
+}
+
+[data-theme="dark"] .cp-parcel-badge--down {
+  color: #34d399;
+}
+
+.cp-parcel-badge--up {
+  background: rgba(217, 119, 6, 0.16);
+  color: #b45309;
+}
+
+[data-theme="dark"] .cp-parcel-badge--up {
+  color: #fbbf24;
+}
+
+.cp-paste-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--card, #ffffff);
+  border: 1px dashed var(--border-strong, rgba(15, 23, 42, 0.24));
+}
+
+.cp-parcel-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  max-height: 220px;
+  overflow-y: auto;
+  padding: 4px 2px;
+}
+
+.cp-parcel-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 9px;
+  background: var(--card, #ffffff);
+  border: 1px solid var(--border-subtle, rgba(15, 23, 42, 0.12));
+}
+
+.cp-parcel-row--custom {
+  border-color: var(--accent, #2563eb);
+  background: color-mix(in srgb, var(--accent, #2563eb) 8%, var(--card, #ffffff));
+}
+
+.cp-parcel-row__label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--ink-secondary, var(--ink));
+  white-space: nowrap;
+}
+
+.cp-parcel-row__month {
+  font-size: 0.69rem;
+  color: var(--muted);
+}
+
+.cp-parcel-row input {
+  width: 104px;
+  padding: 5px 8px;
+  border-radius: 7px;
+  border: 1.5px solid var(--field-border, rgba(15, 23, 42, 0.18));
+  background: var(--field-bg, #ffffff);
+  color: var(--ink);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-align: right;
+  outline: none;
+}
+
+.cp-parcel-row input:focus {
+  border-color: var(--accent, #2563eb);
+}
+
+@media (max-width: 600px) {
+  .cp-mode-grid {
+    grid-template-columns: 1fr;
+  }
+  .cp-parcel-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ==========================================================================
+   FINANCIAMENTOS (PROJETOS ESTILO CAIXINHA / META) & VINCULAÇÃO
+   ========================================================================== */
+
+.cp-fin-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.cp-fin-card {
+  position: relative;
+  overflow: hidden;
+  padding: 20px;
+  border-radius: 18px;
+  border: 1px solid var(--border-strong, rgba(15, 23, 42, 0.14));
+  background: var(--card, #ffffff);
+  color: var(--ink);
+  box-shadow: 0 6px 24px rgba(15, 23, 42, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.cp-fin-card__accent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+}
+
+.cp-fin-kpis {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.cp-fin-kpi {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--surface-subtle, #f8fafc);
+  border: 1px solid var(--border-subtle, rgba(15, 23, 42, 0.08));
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.cp-fin-kpi__label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.cp-fin-kpi__value {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.cp-fin-kpi__value--paid {
+  color: #15803d;
+}
+
+[data-theme="dark"] .cp-fin-kpi__value--paid {
+  color: #34d399;
+}
+
+.cp-fin-kpi__value--rest {
+  color: #b45309;
+}
+
+[data-theme="dark"] .cp-fin-kpi__value--rest {
+  color: #fbbf24;
+}
+
+.cp-fin-sublist {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cp-fin-subitem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 11px;
+  background: var(--surface-subtle, #f8fafc);
+  border: 1px solid var(--border-subtle, rgba(15, 23, 42, 0.1));
+}
+
+.cp-vinculo-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 11px;
+  background: var(--surface-subtle, #f8fafc);
+  border: 1.5px solid var(--border-subtle, rgba(15, 23, 42, 0.12));
+  cursor: pointer;
+  transition: all 0.14s ease;
+}
+
+.cp-vinculo-item:hover {
+  border-color: var(--accent, #2563eb);
+}
+
+.cp-vinculo-item--checked {
+  border-color: var(--accent, #2563eb);
+  background: color-mix(in srgb, var(--accent, #2563eb) 10%, var(--card, #ffffff));
+}
+
+@media (max-width: 680px) {
+  .cp-fin-kpis {
+    grid-template-columns: 1fr;
+  }
+}

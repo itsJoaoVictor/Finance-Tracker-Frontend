@@ -3,12 +3,16 @@ import { contaPagarService } from '../../../services/contaPagarService'
 import {
   ContaPagarModelo,
   ContaPagarOcorrencia,
+  FinanciamentoResumo,
   GradeMensalResponse,
+  TipoContaPagar,
 } from '../../../types/contasPagar'
 import { Toast, useToast } from '../../../components/Toast'
 import { ModeloModal } from '../components/ModeloModal'
 import { OcorrenciaDrawer } from '../components/OcorrenciaDrawer'
 import { FinanciamentoModal } from '../components/FinanciamentoModal'
+import { FinanciamentoProjetoModal } from '../components/FinanciamentoProjetoModal'
+import { VincularItensModal } from '../components/VincularItensModal'
 import { NotificacaoConfigModal } from '../components/NotificacaoConfigModal'
 import {
   Plus,
@@ -21,6 +25,9 @@ import {
   Edit3,
   Trash2,
   Zap,
+  Link2,
+  Unlink,
+  CheckCircle2,
 } from 'lucide-react'
 import '../../contas/contas.css'
 import '../contasPagar.css'
@@ -41,6 +48,27 @@ function addMonths(isoFirstDay: string, delta: number): string {
   return `${yy}-${mm}-01`
 }
 
+function formatIntervaloLabel(intervalo?: number): string | null {
+  if (!intervalo || intervalo <= 1) return null
+  if (intervalo === 2) return 'Bimestral'
+  if (intervalo === 3) return 'Trimestral'
+  if (intervalo === 6) return 'Semestral'
+  if (intervalo === 12) return 'Anual'
+  return `A cada ${intervalo} meses`
+}
+
+function formatModoParcelamentoLabel(m: ContaPagarModelo): string {
+  if (m.modoParcelamento === 'PROGRESSIVO') {
+    if (m.valorPadrao != null && m.valorUltimaParcela != null) {
+      if (m.valorUltimaParcela < m.valorPadrao) return 'Progressivo ↓ (SAC)'
+      if (m.valorUltimaParcela > m.valorPadrao) return 'Progressivo ↑'
+    }
+    return 'Progressivo'
+  }
+  if (m.modoParcelamento === 'PERSONALIZADO') return 'Personalizado'
+  return 'Fixo (Price)'
+}
+
 export function ContasPagar() {
   const now = new Date()
   const mesAtualIso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`
@@ -51,12 +79,18 @@ export function ContasPagar() {
   const [agrupador, setAgrupador] = useState<string>('TODOS')
 
   const [grade, setGrade] = useState<GradeMensalResponse | null>(null)
+  const [financiamentos, setFinanciamentos] = useState<FinanciamentoResumo[]>([])
   const [loading, setLoading] = useState(true)
 
   const [showModeloModal, setShowModeloModal] = useState(false)
   const [modeloEditar, setModeloEditar] = useState<ContaPagarModelo | null>(null)
+  const [modeloFinanciamentoInicialId, setModeloFinanciamentoInicialId] = useState<string | null>(null)
+  const [modeloTipoInicial, setModeloTipoInicial] = useState<TipoContaPagar | undefined>(undefined)
   const [ocorrenciaAberta, setOcorrenciaAberta] = useState<ContaPagarOcorrencia | null>(null)
   const [financiamentoModeloId, setFinanciamentoModeloId] = useState<string | null>(null)
+  const [showFinProjetoModal, setShowFinProjetoModal] = useState(false)
+  const [finProjetoEditar, setFinProjetoEditar] = useState<FinanciamentoResumo | null>(null)
+  const [finParaVincular, setFinParaVincular] = useState<FinanciamentoResumo | null>(null)
   const [showNotifModal, setShowNotifModal] = useState(false)
 
   const { toasts, addToast, dismiss } = useToast()
@@ -72,12 +106,16 @@ export function ContasPagar() {
     try {
       const inicio = aba === 'MES' ? mesSelecionado : mesInicioGrade
       const fim = aba === 'MES' ? mesSelecionado : mesFimGrade
-      const res = await contaPagarService.obterGrade({
-        mesInicio: inicio,
-        mesFim: fim,
-        agrupador: agrupador === 'TODOS' ? undefined : agrupador,
-      })
-      setGrade(res.data)
+      const [gradeRes, finRes] = await Promise.all([
+        contaPagarService.obterGrade({
+          mesInicio: inicio,
+          mesFim: fim,
+          agrupador: agrupador === 'TODOS' ? undefined : agrupador,
+        }),
+        contaPagarService.listarFinanciamentos(),
+      ])
+      setGrade(gradeRes.data)
+      setFinanciamentos(finRes.data || [])
     } catch (err: any) {
       showToast(err.response?.data?.error || 'Erro ao carregar Contas a Pagar.', 'error')
     } finally {
@@ -118,10 +156,57 @@ export function ContasPagar() {
     return list.sort((a, b) => a.dataVencimento.localeCompare(b.dataVencimento))
   }, [grade, mesSelecionado])
 
+  const handleExcluirFinanciamento = async (f: FinanciamentoResumo) => {
+    if (
+      !window.confirm(
+        `Remover o financiamento "${f.nome}"? Suas contas, boletos e transações NÃO serão apagados — apenas desvinculados.`,
+      )
+    ) {
+      return
+    }
+    try {
+      await contaPagarService.excluirFinanciamento(f.id)
+      showToast('Financiamento removido (boletos e transações mantidos).', 'success')
+      carregarDados()
+    } catch (err: any) {
+      showToast(err.response?.data?.error || 'Erro ao remover financiamento.', 'error')
+    }
+  }
+
+  const handleDesvincularModelo = async (finId: string, modeloId: string, nome: string) => {
+    if (!window.confirm(`Desvincular "${nome}" deste financiamento? A conta continuará existindo normalmente.`)) {
+      return
+    }
+    try {
+      await contaPagarService.desvincularModeloFinanciamento(finId, modeloId)
+      showToast('Conta desvinculada do financiamento.', 'success')
+      carregarDados()
+    } catch (err: any) {
+      showToast(err.response?.data?.error || 'Erro ao desvincular conta.', 'error')
+    }
+  }
+
+  const handleDesvincularTransacao = async (finId: string, txId: string, desc: string) => {
+    if (!window.confirm(`Desvincular a transação "${desc}" deste financiamento?`)) {
+      return
+    }
+    try {
+      await contaPagarService.desvincularTransacaoFinanciamento(finId, txId)
+      showToast('Transação desvinculada.', 'success')
+      carregarDados()
+    } catch (err: any) {
+      showToast(err.response?.data?.error || 'Erro ao desvincular transação.', 'error')
+    }
+  }
+
   const modelosParcelados = useMemo(() => {
     if (!grade) return []
     return grade.linhas.map((l) => l.modelo).filter((m) => m.tipo === 'PARCELADO')
   }, [grade])
+
+  const modelosParceladosSoltos = useMemo(() => {
+    return modelosParcelados.filter((m) => !m.financiamentoId)
+  }, [modelosParcelados])
 
   return (
     <div className="contas-pagar">
@@ -147,7 +232,7 @@ export function ContasPagar() {
             className={`contas-pagar__tab ${aba === 'FINANCIAMENTOS' ? 'contas-pagar__tab--active' : ''}`}
             onClick={() => setAba('FINANCIAMENTOS')}
           >
-            <Building2 size={16} /> Financiamentos ({modelosParcelados.length})
+            <Building2 size={16} /> Financiamentos ({financiamentos.length > 0 ? financiamentos.length : modelosParcelados.length})
           </button>
         </div>
 
@@ -165,10 +250,12 @@ export function ContasPagar() {
             className="contas-pagar__btn contas-pagar__btn--primary"
             onClick={() => {
               setModeloEditar(null)
+              setModeloFinanciamentoInicialId(null)
+              setModeloTipoInicial(undefined)
               setShowModeloModal(true)
             }}
           >
-            <Plus size={16} /> Nova Conta / Financiamento
+            <Plus size={16} /> Nova Conta / Parcelamento
           </button>
         </div>
       </div>
@@ -277,7 +364,7 @@ export function ContasPagar() {
         <div style={{ padding: '40px', textAlign: 'center', opacity: 0.7 }}>
           Carregando controle mensal de contas...
         </div>
-      ) : grade.linhas.length === 0 ? (
+      ) : aba !== 'FINANCIAMENTOS' && grade.linhas.length === 0 ? (
         <div
           className="cp-card"
           style={{ padding: '40px', textAlign: 'center', alignItems: 'center', gap: '12px' }}
@@ -290,7 +377,12 @@ export function ContasPagar() {
           <button
             type="button"
             className="contas-pagar__btn contas-pagar__btn--primary"
-            onClick={() => setShowModeloModal(true)}
+            onClick={() => {
+              setModeloEditar(null)
+              setModeloFinanciamentoInicialId(null)
+              setModeloTipoInicial(undefined)
+              setShowModeloModal(true)
+            }}
           >
             <Plus size={16} /> Cadastrar Primeira Conta
           </button>
@@ -329,7 +421,13 @@ export function ContasPagar() {
                         </div>
                         <div className="contas-pagar__modelo-meta">
                           Dia {modelo.diaVencimento} · {modelo.tipo}
-                          {modelo.agrupador ? ` · ${modelo.agrupador}` : ''}
+                          {modelo.tipo === 'PARCELADO' && modelo.modoParcelamento && modelo.modoParcelamento !== 'FIXO'
+                            ? ` · ${formatModoParcelamentoLabel(modelo)}`
+                            : ''}
+                          {formatIntervaloLabel(modelo.intervaloMeses)
+                            ? ` · ${formatIntervaloLabel(modelo.intervaloMeses)}`
+                            : ''}
+                          {modelo.financiamentoNome ? ` · ${modelo.financiamentoNome}` : modelo.agrupador ? ` · ${modelo.agrupador}` : ''}
                         </div>
                       </div>
                       <div style={{ display: 'flex', gap: '4px' }}>
@@ -449,40 +547,376 @@ export function ContasPagar() {
           )}
         </div>
       ) : (
-        <div className="cp-card-list">
-          {modelosParcelados.length === 0 ? (
-            <div className="cp-card">
-              <p style={{ margin: 0, opacity: 0.75 }}>
-                Você ainda não cadastrou nenhum financiamento ou conta parcelada via boleto.
+        <div className="cp-fin-grid">
+          {/* Cabeçalho da aba Financiamentos */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+            <div>
+              <h3 style={{ margin: 0, fontSize: '1.05rem' }}>Meus Financiamentos & Projetos</h3>
+              <p style={{ margin: '2px 0 0 0', fontSize: '0.8rem', opacity: 0.75 }}>
+                Agrupe entrada, mensais, anuais, taxa de obra, prestações e boletos já pagos para ver o Valor Total, Total Pago e Restante.
               </p>
             </div>
+            <button
+              type="button"
+              className="contas-pagar__btn contas-pagar__btn--primary"
+              onClick={() => {
+                setFinProjetoEditar(null)
+                setShowFinProjetoModal(true)
+              }}
+            >
+              <Plus size={16} /> Novo Financiamento / Projeto
+            </button>
+          </div>
+
+          {financiamentos.length === 0 ? (
+            <div className="cp-card" style={{ padding: '28px', alignItems: 'center', textAlign: 'center', gap: '10px' }}>
+              <Building2 size={28} style={{ opacity: 0.6 }} />
+              <strong>Nenhum financiamento agrupado criado ainda</strong>
+              <p style={{ margin: 0, opacity: 0.75, maxWidth: '480px', fontSize: '0.84rem' }}>
+                Crie um financiamento (ex.: <strong>Meu Apê MCMV</strong>) para somar valores pagos antes do app, boletos avulsos já pagos e todos os parcelamentos em um único painel.
+              </p>
+              <button
+                type="button"
+                className="contas-pagar__btn contas-pagar__btn--primary"
+                onClick={() => {
+                  setFinProjetoEditar(null)
+                  setShowFinProjetoModal(true)
+                }}
+              >
+                <Plus size={16} /> Criar Primeiro Financiamento
+              </button>
+            </div>
           ) : (
-            modelosParcelados.map((m) => (
-              <div key={m.id} className="cp-card">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <strong style={{ fontSize: '1.05rem' }}>{m.nome}</strong>
-                  {m.agrupador && (
-                    <span style={{ fontSize: '0.75rem', opacity: 0.75 }}>{m.agrupador}</span>
+            financiamentos.map((fin) => {
+              const cor = fin.corHexadecimal || '#7c5cfc'
+              return (
+                <div key={fin.id} className="cp-fin-card">
+                  <div className="cp-fin-card__accent" style={{ background: cor }} />
+
+                  {/* Cabeçalho do Card */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px', flexWrap: 'wrap' }}>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                        <strong style={{ fontSize: '1.15rem' }}>{fin.nome}</strong>
+                        {fin.concluido && (
+                          <span className="cp-parcel-badge cp-parcel-badge--down">
+                            <CheckCircle2 size={12} /> Concluído / Quitado
+                          </span>
+                        )}
+                      </div>
+                      {fin.descricao && (
+                        <div style={{ fontSize: '0.82rem', opacity: 0.75, marginTop: '2px' }}>
+                          {fin.descricao}
+                        </div>
+                      )}
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                      <button
+                        type="button"
+                        className="contas-pagar__btn"
+                        style={{ padding: '6px 11px', fontSize: '0.78rem' }}
+                        onClick={() => setFinParaVincular(fin)}
+                      >
+                        <Link2 size={14} /> Vincular Boletos / Transações
+                      </button>
+                      <button
+                        type="button"
+                        className="contas-pagar__btn"
+                        style={{ padding: '6px 11px', fontSize: '0.78rem' }}
+                        onClick={() => {
+                          setModeloEditar(null)
+                          setModeloFinanciamentoInicialId(fin.id)
+                          setModeloTipoInicial('PARCELADO')
+                          setShowModeloModal(true)
+                        }}
+                      >
+                        <Plus size={14} /> Novo Contrato
+                      </button>
+                      <button
+                        type="button"
+                        className="contas-pagar__icon-btn"
+                        onClick={() => {
+                          setFinProjetoEditar(fin)
+                          setShowFinProjetoModal(true)
+                        }}
+                        title="Editar financiamento"
+                      >
+                        <Edit3 size={15} />
+                      </button>
+                      <button
+                        type="button"
+                        className="contas-pagar__icon-btn contas-pagar__icon-btn--danger"
+                        onClick={() => handleExcluirFinanciamento(fin)}
+                        title="Remover financiamento (mantém boletos e transações)"
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* 3 Grandes KPIs: Valor Total, Total Pago e Valor Restante */}
+                  <div className="cp-fin-kpis">
+                    <div className="cp-fin-kpi">
+                      <span className="cp-fin-kpi__label">
+                        {fin.valorContratado != null && fin.valorContratado > 0
+                          ? 'Custo Total Projetado'
+                          : 'Valor Total'}
+                      </span>
+                      <span className="cp-fin-kpi__value">{formatarMoeda(fin.valorTotal)}</span>
+                    </div>
+                    <div className="cp-fin-kpi">
+                      <span className="cp-fin-kpi__label">Total Pago</span>
+                      <span className="cp-fin-kpi__value cp-fin-kpi__value--paid">
+                        {formatarMoeda(fin.totalPago)}
+                      </span>
+                    </div>
+                    <div className="cp-fin-kpi">
+                      <span className="cp-fin-kpi__label">Valor Restante</span>
+                      <span className="cp-fin-kpi__value cp-fin-kpi__value--rest">
+                        {formatarMoeda(fin.totalRestante)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Comparação opcional com o Valor do Bem / Financiado */}
+                  {fin.valorContratado != null && fin.valorContratado > 0 && (
+                    <div className="cp-parcel-summary" style={{ fontSize: '0.8rem' }}>
+                      <span>
+                        Valor do Bem / Financiado:{' '}
+                        <strong>{formatarMoeda(fin.valorContratado)}</strong>
+                      </span>
+                      {fin.jurosEncargosProjetados != null && (
+                        <span className="cp-parcel-badge cp-parcel-badge--up" style={{ fontSize: '0.76rem' }}>
+                          Juros &amp; Encargos Projetados:{' '}
+                          {formatarMoeda(fin.jurosEncargosProjetados)}
+                          {fin.percentualJurosProjetados != null && fin.percentualJurosProjetados > 0
+                            ? ` (+${fin.percentualJurosProjetados.toFixed(1)}%)`
+                            : ''}
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Barra de progresso + composição */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', fontWeight: 700 }}>
+                      <span>Progresso Financeiro</span>
+                      <span>{fin.percentualPago.toFixed(1)}% pago</span>
+                    </div>
+                    <div
+                      style={{
+                        height: '10px',
+                        borderRadius: '999px',
+                        background: 'rgba(128,128,128,0.18)',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: `${Math.min(100, fin.percentualPago)}%`,
+                          height: '100%',
+                          background: fin.concluido ? '#16a34a' : cor,
+                          transition: 'width 0.3s ease',
+                        }}
+                      />
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', fontSize: '0.74rem' }}>
+                      {fin.valorPagoAnteriormente > 0 && (
+                        <span className="cp-parcel-badge">
+                          Antes do app: {formatarMoeda(fin.valorPagoAnteriormente)}
+                        </span>
+                      )}
+                      {fin.totalPagoModelos > 0 && (
+                        <span className="cp-parcel-badge">
+                          Boletos pagos: {formatarMoeda(fin.totalPagoModelos)}
+                        </span>
+                      )}
+                      {fin.totalPagoAmortizacoes > 0 && (
+                        <span className="cp-parcel-badge">
+                          Amortizações: {formatarMoeda(fin.totalPagoAmortizacoes)}
+                        </span>
+                      )}
+                      {fin.totalPagoTransacoesSoltas > 0 && (
+                        <span className="cp-parcel-badge">
+                          Transações vinculadas: {formatarMoeda(fin.totalPagoTransacoesSoltas)}
+                        </span>
+                      )}
+                      {fin.totalDescontoObtido > 0 && (
+                        <span className="cp-parcel-badge cp-parcel-badge--down">
+                          Economia em descontos: {formatarMoeda(fin.totalDescontoObtido)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Contratos e Boletos vinculados */}
+                  {fin.modelos.length > 0 && (
+                    <div>
+                      <div style={{ fontSize: '0.76rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em', opacity: 0.68, marginBottom: '6px' }}>
+                        Contratos & Boletos Vinculados ({fin.modelos.length})
+                      </div>
+                      <div className="cp-fin-sublist">
+                        {fin.modelos.map((m) => (
+                          <div key={m.id} className="cp-fin-subitem">
+                            <div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                                <strong style={{ fontSize: '0.9rem' }}>{m.nome}</strong>
+                                <span className="cp-parcel-badge">{m.tipo}</span>
+                                {m.concluido && (
+                                  <span className="cp-parcel-badge cp-parcel-badge--down">✓ Concluído</span>
+                                )}
+                              </div>
+                              <div style={{ fontSize: '0.76rem', opacity: 0.78, marginTop: '2px' }}>
+                                Total: <strong>{formatarMoeda(m.valorTotal)}</strong> · Pago:{' '}
+                                <strong style={{ color: '#16a34a' }}>{formatarMoeda(m.totalPago)}</strong> · Resta:{' '}
+                                <strong>{formatarMoeda(m.totalRestante)}</strong>
+                                {m.totalParcelas ? ` · ${m.parcelasPagas} paga(s) / ${m.parcelasRestantes} aberta(s)` : ''}
+                              </div>
+                            </div>
+
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              {m.tipo === 'PARCELADO' && (
+                                <button
+                                  type="button"
+                                  className="contas-pagar__btn"
+                                  style={{ padding: '5px 10px', fontSize: '0.76rem' }}
+                                  onClick={() => setFinanciamentoModeloId(m.id)}
+                                >
+                                  <Building2 size={13} /> Amortizar / Prazo
+                                </button>
+                              )}
+                              <button
+                                type="button"
+                                className="contas-pagar__icon-btn"
+                                title="Desvincular deste financiamento"
+                                onClick={() => handleDesvincularModelo(fin.id, m.id, m.nome)}
+                              >
+                                <Unlink size={14} />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Transações soltas vinculadas */}
+                  {fin.transacoesVinculadas.length > 0 && (
+                    <div>
+                      <div style={{ fontSize: '0.76rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em', opacity: 0.68, marginBottom: '6px' }}>
+                        Pagamentos / Transações Avulsas Vinculadas ({fin.transacoesVinculadas.length})
+                      </div>
+                      <div className="cp-fin-sublist">
+                        {fin.transacoesVinculadas.map((t) => (
+                          <div key={t.vinculoId} className="cp-fin-subitem">
+                            <div>
+                              <strong style={{ fontSize: '0.88rem' }}>{t.descricao}</strong>
+                              <div style={{ fontSize: '0.75rem', opacity: 0.75 }}>
+                                {t.data} · {t.tipo}
+                                {t.categoriaNome ? ` · ${t.categoriaNome}` : ''}
+                              </div>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <strong style={{ color: '#16a34a', fontSize: '0.9rem' }}>
+                                {formatarMoeda(t.valor)}
+                              </strong>
+                              <button
+                                type="button"
+                                className="contas-pagar__icon-btn"
+                                title="Desvincular transação"
+                                onClick={() => handleDesvincularTransacao(fin.id, t.transacaoId, t.descricao)}
+                              >
+                                <Unlink size={14} />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   )}
                 </div>
-                <div style={{ fontSize: '0.84rem', opacity: 0.8 }}>
-                  Vence todo dia {m.diaVencimento} · Parcela estimada:{' '}
-                  <strong>{formatarMoeda(m.valorPadrao)}</strong>
-                </div>
-                <div style={{ fontSize: '0.82rem', opacity: 0.75 }}>
-                  Prazo total: {m.totalParcelas} parcelas (iniciado no app na parcela{' '}
-                  {m.parcelaInicial || 1})
-                </div>
-                <button
-                  type="button"
-                  className="contas-pagar__btn contas-pagar__btn--primary"
-                  onClick={() => setFinanciamentoModeloId(m.id)}
-                  style={{ marginTop: '6px', justifyContent: 'center' }}
-                >
-                  <Building2 size={15} /> Abrir Evolução & Amortização (FGTS)
-                </button>
+              )
+            })
+          )}
+
+          {/* Parcelamentos ainda não vinculados a um Financiamento pai */}
+          {modelosParceladosSoltos.length > 0 && (
+            <div style={{ marginTop: '6px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div style={{ fontSize: '0.85rem', fontWeight: 800, opacity: 0.8 }}>
+                Parcelamentos Independentes ({modelosParceladosSoltos.length})
               </div>
-            ))
+              <div className="cp-card-list">
+                {modelosParceladosSoltos.map((m) => {
+                  const intervaloTxt = formatIntervaloLabel(m.intervaloMeses)
+                  const temFaixa =
+                    (m.modoParcelamento === 'PROGRESSIVO' || m.modoParcelamento === 'PERSONALIZADO') &&
+                    m.valorUltimaParcela != null &&
+                    m.valorPadrao != null &&
+                    m.valorUltimaParcela !== m.valorPadrao
+                  return (
+                    <div key={m.id} className="cp-card">
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
+                        <strong style={{ fontSize: '1.05rem' }}>{m.nome}</strong>
+                        {m.agrupador && (
+                          <span style={{ fontSize: '0.75rem', opacity: 0.75 }}>{m.agrupador}</span>
+                        )}
+                      </div>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                        <span
+                          className={`cp-parcel-badge ${
+                            m.modoParcelamento === 'PROGRESSIVO' &&
+                            m.valorPadrao != null &&
+                            m.valorUltimaParcela != null &&
+                            m.valorUltimaParcela < m.valorPadrao
+                              ? 'cp-parcel-badge--down'
+                              : m.modoParcelamento === 'PROGRESSIVO' &&
+                                m.valorPadrao != null &&
+                                m.valorUltimaParcela != null &&
+                                m.valorUltimaParcela > m.valorPadrao
+                              ? 'cp-parcel-badge--up'
+                              : ''
+                          }`}
+                        >
+                          {formatModoParcelamentoLabel(m)}
+                        </span>
+                        {intervaloTxt && <span className="cp-parcel-badge">{intervaloTxt}</span>}
+                        {m.valoresEstimados && (
+                          <span className="cp-parcel-badge">Estimado (~)</span>
+                        )}
+                      </div>
+                      <div style={{ fontSize: '0.84rem', opacity: 0.85 }}>
+                        Vence dia {m.diaVencimento} ·{' '}
+                        {temFaixa ? (
+                          <>
+                            Parcelas:{' '}
+                            <strong>
+                              {formatarMoeda(m.valorPadrao)} → {formatarMoeda(m.valorUltimaParcela)}
+                            </strong>
+                          </>
+                        ) : (
+                          <>
+                            Parcela estimada: <strong>{formatarMoeda(m.valorPadrao)}</strong>
+                          </>
+                        )}
+                      </div>
+                      <div style={{ fontSize: '0.82rem', opacity: 0.75 }}>
+                        Prazo total: {m.totalParcelas} parcelas (iniciado no app na parcela{' '}
+                        {m.parcelaInicial || 1})
+                      </div>
+                      <button
+                        type="button"
+                        className="contas-pagar__btn contas-pagar__btn--primary"
+                        onClick={() => setFinanciamentoModeloId(m.id)}
+                        style={{ marginTop: '6px', justifyContent: 'center' }}
+                      >
+                        <Building2 size={15} /> Evolução, Amortização & Prazo
+                      </button>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
           )}
         </div>
       )}
@@ -491,10 +925,48 @@ export function ContasPagar() {
       {showModeloModal && (
         <ModeloModal
           modeloEditar={modeloEditar}
-          onClose={() => setShowModeloModal(false)}
+          financiamentoInicialId={modeloFinanciamentoInicialId}
+          tipoInicial={modeloTipoInicial}
+          onClose={() => {
+            setShowModeloModal(false)
+            setModeloFinanciamentoInicialId(null)
+            setModeloTipoInicial(undefined)
+          }}
           onSaved={() => {
             setShowModeloModal(false)
+            setModeloFinanciamentoInicialId(null)
+            setModeloTipoInicial(undefined)
             showToast('Conta salva com sucesso!', 'success')
+            carregarDados()
+          }}
+          onError={(msg) => showToast(msg, 'error')}
+        />
+      )}
+
+      {showFinProjetoModal && (
+        <FinanciamentoProjetoModal
+          financiamentoEditar={finProjetoEditar}
+          onClose={() => {
+            setShowFinProjetoModal(false)
+            setFinProjetoEditar(null)
+          }}
+          onSaved={() => {
+            setShowFinProjetoModal(false)
+            setFinProjetoEditar(null)
+            showToast('Financiamento salvo com sucesso!', 'success')
+            carregarDados()
+          }}
+          onError={(msg) => showToast(msg, 'error')}
+        />
+      )}
+
+      {finParaVincular && (
+        <VincularItensModal
+          financiamento={finParaVincular}
+          onClose={() => setFinParaVincular(null)}
+          onVinculado={() => {
+            setFinParaVincular(null)
+            showToast('Itens vinculados ao financiamento com sucesso!', 'success')
             carregarDados()
           }}
           onError={(msg) => showToast(msg, 'error')}

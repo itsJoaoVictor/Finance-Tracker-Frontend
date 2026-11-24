@@ -1,5 +1,6 @@
 import api from './api'
 import {
+  AjustarPrazoRequest,
   AmortizarRequest,
   AtualizarOcorrenciaRequest,
   ContaPagarModelo,
@@ -7,9 +8,13 @@ import {
   ContaPagarModeloEdicaoRequest,
   ContaPagarOcorrencia,
   FinanciamentoDetalheResponse,
+  FinanciamentoRequest,
+  FinanciamentoResumo,
   GradeMensalResponse,
+  ItensDisponiveisVinculo,
   NotificacaoConfig,
   PagarOcorrenciaRequest,
+  VincularItensFinanciamentoRequest,
 } from '../types/contasPagar'
 
 export const contaPagarService = {
@@ -49,6 +54,12 @@ export const contaPagarService = {
       payload,
     ),
 
+  ajustarPrazo: (modeloId: string, payload: AjustarPrazoRequest) =>
+    api.post<FinanciamentoDetalheResponse>(
+      `/api/contas-pagar/modelos/${modeloId}/ajustar-prazo`,
+      payload,
+    ),
+
   obterConfigNotificacao: () => api.get<NotificacaoConfig>('/api/contas-pagar/notificacoes/config'),
 
   salvarConfigNotificacao: (payload: {
@@ -62,4 +73,33 @@ export const contaPagarService = {
 
   registrarPushSubscription: (payload: { endpoint: string; p256dh: string; auth: string }) =>
     api.post<void>('/api/contas-pagar/notificacoes/push/subscribe', payload),
+
+  // ── Financiamentos (Entidade Pai estilo Caixinha / Meta) ─────────────────
+
+  listarFinanciamentos: () => api.get<FinanciamentoResumo[]>('/api/financiamentos'),
+
+  obterFinanciamentoProjeto: (id: string) =>
+    api.get<FinanciamentoResumo>(`/api/financiamentos/${id}`),
+
+  criarFinanciamento: (payload: FinanciamentoRequest) =>
+    api.post<FinanciamentoResumo>('/api/financiamentos', payload),
+
+  editarFinanciamento: (id: string, payload: FinanciamentoRequest) =>
+    api.put<FinanciamentoResumo>(`/api/financiamentos/${id}`, payload),
+
+  excluirFinanciamento: (id: string) => api.delete<void>(`/api/financiamentos/${id}`),
+
+  listarItensDisponiveisVinculo: () =>
+    api.get<ItensDisponiveisVinculo>('/api/financiamentos/disponiveis'),
+
+  vincularItensFinanciamento: (id: string, payload: VincularItensFinanciamentoRequest) =>
+    api.post<FinanciamentoResumo>(`/api/financiamentos/${id}/vincular`, payload),
+
+  desvincularModeloFinanciamento: (financiamentoId: string, modeloId: string) =>
+    api.delete<FinanciamentoResumo>(`/api/financiamentos/${financiamentoId}/modelos/${modeloId}`),
+
+  desvincularTransacaoFinanciamento: (financiamentoId: string, transacaoId: string) =>
+    api.delete<FinanciamentoResumo>(
+      `/api/financiamentos/${financiamentoId}/transacoes/${transacaoId}`,
+    ),
 }

@@ -1,4 +1,5 @@
 export type TipoContaPagar = 'VARIAVEL' | 'FIXO' | 'PARCELADO' | 'AVULSO'
+export type ModoParcelamento = 'FIXO' | 'PROGRESSIVO' | 'PERSONALIZADO'
 export type StatusOcorrencia = 'AGUARDANDO_VALOR' | 'PENDENTE' | 'PAGA' | 'CANCELADA'
 export type StatusEfetivoOcorrencia = StatusOcorrencia | 'ATRASADA'
 
@@ -11,8 +12,14 @@ export interface ContaPagarModelo {
   categoriaIcone?: string
   categoriaCor?: string
   agrupador?: string | null
+  financiamentoId?: string | null
+  financiamentoNome?: string | null
   diaVencimento: number
   valorPadrao?: number | null
+  modoParcelamento?: ModoParcelamento
+  valorUltimaParcela?: number | null
+  intervaloMeses?: number
+  valoresEstimados?: boolean
   totalParcelas?: number | null
   parcelaInicial?: number | null
   dataInicio: string
@@ -28,6 +35,7 @@ export interface ContaPagarModeloCriacaoRequest {
   tipo: TipoContaPagar
   categoriaId: string
   agrupador?: string | null
+  financiamentoId?: string | null
   diaVencimento: number
   valorPadrao?: number | null
   totalParcelas?: number | null
@@ -38,18 +46,27 @@ export interface ContaPagarModeloCriacaoRequest {
   contaPadraoId?: string | null
   linhaDigitavel?: string | null
   observacao?: string | null
+  modoParcelamento?: ModoParcelamento
+  valorUltimaParcela?: number | null
+  intervaloMeses?: number | null
+  valoresEstimados?: boolean
+  valoresParcelas?: (number | null)[] | null
 }
 
 export interface ContaPagarModeloEdicaoRequest {
   nome: string
   categoriaId: string
   agrupador?: string | null
+  financiamentoId?: string | null
   diaVencimento: number
   valorPadrao?: number | null
   dataFim?: string | null
   debitoAutomatico?: boolean
   contaPadraoId?: string | null
   aplicarValorOcorrenciasFuturas?: boolean
+  modoParcelamento?: ModoParcelamento
+  valorUltimaParcela?: number | null
+  valoresEstimados?: boolean
 }
 
 export interface ContaPagarOcorrencia {
@@ -117,6 +134,8 @@ export interface GradeMensalResponse {
   totalJurosAno: number
 }
 
+export type DirecaoAbatimento = 'ULTIMAS' | 'PROXIMAS'
+
 export interface AmortizarRequest {
   valor: number
   data: string
@@ -126,6 +145,16 @@ export interface AmortizarRequest {
   parcelasEliminadas?: number | null
   novoValorParcela?: number | null
   observacao?: string | null
+  direcaoAbatimento?: DirecaoAbatimento
+  descontoObtido?: number | null
+  novoValorUltimaParcela?: number | null
+}
+
+export interface AjustarPrazoRequest {
+  acao: 'ENCERRAR' | 'REDUZIR' | 'ESTENDER'
+  quantidadeParcelas?: number | null
+  valorParcelasAdicionadas?: number | null
+  motivo?: string | null
 }
 
 export interface FinanciamentoDetalheResponse {
@@ -137,7 +166,9 @@ export interface FinanciamentoDetalheResponse {
   totalPagoAmortizacoes: number
   totalGeralPago: number
   totalJurosMultaPago: number
+  totalDescontoObtido: number
   totalRestanteEstimado: number
+  concluido: boolean
   ocorrencias: ContaPagarOcorrencia[]
   amortizacoes: {
     id: string
@@ -146,8 +177,11 @@ export interface FinanciamentoDetalheResponse {
     origem: 'CONTA' | 'EXTERNA'
     contaNome: string
     modo: 'REDUZIR_PRAZO' | 'REDUZIR_PARCELA'
+    direcaoAbatimento?: DirecaoAbatimento
     parcelasEliminadas?: number | null
     novoValorParcela?: number | null
+    valorOriginalAbatido?: number | null
+    descontoObtido?: number | null
     observacao?: string | null
     transacaoId?: string | null
   }[]
@@ -159,4 +193,95 @@ export interface NotificacaoConfig {
   webPushAtivo: boolean
   telegramBotConfiguradoNoServidor: boolean
   vapidPublicKey: string
+}
+
+export interface FinanciamentoRequest {
+  nome: string
+  descricao?: string | null
+  corHexadecimal?: string | null
+  valorPagoAnteriormente?: number | null
+  valorContratado?: number | null
+}
+
+export interface ModeloVinculadoResumo {
+  id: string
+  nome: string
+  tipo: TipoContaPagar
+  modoParcelamento: ModoParcelamento
+  intervaloMeses: number
+  valoresEstimados: boolean
+  diaVencimento: number
+  valorPadrao?: number | null
+  valorUltimaParcela?: number | null
+  totalParcelas?: number | null
+  parcelasPagas: number
+  parcelasRestantes: number
+  totalPago: number
+  totalAmortizacoes: number
+  totalDescontoObtido: number
+  totalRestante: number
+  valorTotal: number
+  concluido: boolean
+}
+
+export interface TransacaoVinculadaItem {
+  vinculoId: string
+  transacaoId: string
+  descricao: string
+  valor: number
+  data: string
+  tipo: string
+  categoriaNome?: string | null
+  observacao?: string | null
+}
+
+export interface FinanciamentoResumo {
+  id: string
+  nome: string
+  descricao?: string | null
+  corHexadecimal?: string | null
+  valorPagoAnteriormente: number
+  totalPagoModelos: number
+  totalPagoAmortizacoes: number
+  totalPagoTransacoesSoltas: number
+  totalPago: number
+  totalRestante: number
+  valorTotal: number
+  valorContratado?: number | null
+  jurosEncargosProjetados?: number | null
+  percentualJurosProjetados?: number | null
+  totalDescontoObtido: number
+  percentualPago: number
+  concluido: boolean
+  qtdModelosVinculados: number
+  qtdTransacoesVinculadas: number
+  modelos: ModeloVinculadoResumo[]
+  transacoesVinculadas: TransacaoVinculadaItem[]
+}
+
+export interface ItensDisponiveisVinculo {
+  modelosDisponiveis: {
+    id: string
+    nome: string
+    tipo: TipoContaPagar
+    agrupador?: string | null
+    totalParcelas?: number | null
+    parcelasPagas: number
+    parcelasRestantes: number
+    totalPago: number
+    totalRestante: number
+  }[]
+  transacoesDisponiveis: {
+    id: string
+    descricao: string
+    valor: number
+    data: string
+    tipo: string
+    categoriaNome?: string | null
+  }[]
+}
+
+export interface VincularItensFinanciamentoRequest {
+  modeloIds?: string[]
+  transacaoIds?: string[]
 }

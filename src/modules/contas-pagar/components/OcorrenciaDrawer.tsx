@@ -542,7 +542,11 @@ export function OcorrenciaDrawer({
 
               {ocorrencia.valorEstimado != null && (
                 <div style={{ fontSize: '0.78rem', opacity: 0.75 }}>
-                  Estimativa calculada (média 3 meses):{' '}
+                  {ocorrencia.modeloTipo === 'VARIAVEL'
+                    ? 'Estimativa calculada (média 3 meses):'
+                    : ocorrencia.modeloTipo === 'PARCELADO' && ocorrencia.status === 'AGUARDANDO_VALOR'
+                    ? 'Estimativa da parcela (recalibrada pelo histórico):'
+                    : 'Valor estimado da parcela:'}{' '}
                   <strong>{formatarMoeda(ocorrencia.valorEstimado)}</strong>
                 </div>
               )}
