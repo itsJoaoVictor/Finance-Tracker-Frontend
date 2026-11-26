@@ -13,6 +13,7 @@ export interface Cartao {
   faturaEstimada?: number
   faturaStatus?: 'ABERTA' | 'FECHADA'
   faturaMesReferencia?: string
+  faturaDataVencimento?: string
 }
 
 export interface CartaoCriacaoRequest {

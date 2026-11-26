@@ -374,23 +374,50 @@ export function CreditCard({
                   </span>
                 )}
 
-                {!isFaturaExibidaFechada && (
+                {!isFaturaExibidaFechada ? (
                   <span className="card-projecao-banner__progresso-dias">
                     <Calendar size={11} />
                     {Math.max(0, projecao.diasNoMes - projecao.diasPassados)}d p/ fechar
                   </span>
+                ) : (
+                  cartao.faturaDataVencimento && (
+                    <span className="card-projecao-banner__progresso-dias">
+                      <Calendar size={11} />
+                      Vence{' '}
+                      {parseLocalDate(cartao.faturaDataVencimento).toLocaleDateString('pt-BR', {
+                        day: '2-digit',
+                        month: '2-digit'
+                      })}
+                    </span>
+                  )
                 )}
               </div>
             </>
           ) : (
-            <div className="card-projecao-banner__valores">
-              <div className="card-projecao-banner__valor-item">
-                <span className="card-projecao-banner__valor-label">Fatura Estimada</span>
-                <span className="card-projecao-banner__valor-unico">
-                  {limitVisible ? formatCurrency(cartao.faturaEstimada || 0) : 'R$ ••••'}
-                </span>
+            <>
+              <div className="card-projecao-banner__valores">
+                <div className="card-projecao-banner__valor-item">
+                  <span className="card-projecao-banner__valor-label">
+                    {isFaturaExibidaFechada ? 'Total Fechado' : 'Fatura Estimada'}
+                  </span>
+                  <span className="card-projecao-banner__valor-unico">
+                    {limitVisible ? formatCurrency(cartao.faturaEstimada || 0) : 'R$ ••••'}
+                  </span>
+                </div>
               </div>
-            </div>
+              {isFaturaExibidaFechada && cartao.faturaDataVencimento && (
+                <div className="card-projecao-banner__meta-row">
+                  <span className="card-projecao-banner__progresso-dias">
+                    <Calendar size={11} />
+                    Vence{' '}
+                    {parseLocalDate(cartao.faturaDataVencimento).toLocaleDateString('pt-BR', {
+                      day: '2-digit',
+                      month: '2-digit'
+                    })}
+                  </span>
+                </div>
+              )}
+            </>
           )}
         </div>
 

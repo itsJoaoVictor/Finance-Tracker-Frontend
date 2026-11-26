@@ -13,6 +13,32 @@ interface ContasCartoesWidgetProps {
   ocultarValores?: boolean
 }
 
+function parseLocalDate(dateStr: string): Date {
+  const cleanStr = dateStr.split('T')[0]
+  const parts = cleanStr.split('-').map(Number)
+  if (parts.length === 3) {
+    return new Date(parts[0], parts[1] - 1, parts[2])
+  }
+  return new Date(dateStr)
+}
+
+function formatarPrazoVencimento(dataVencimentoStr: string): string {
+  const venc = parseLocalDate(dataVencimentoStr)
+  const agora = new Date()
+  const hoje = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate())
+  const diffDias = Math.round((venc.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24))
+  const dataCurta = venc.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
+
+  if (diffDias < 0) {
+    const atraso = Math.abs(diffDias)
+    return `Venceu ${dataCurta} (há ${atraso}d)`
+  }
+  if (diffDias === 0) {
+    return `Vence hoje (${dataCurta})`
+  }
+  return `Vence ${dataCurta} (em ${diffDias}d)`
+}
+
 export function ContasCartoesWidget({ contas, cartoes, ocultarValores = false }: ContasCartoesWidgetProps) {
   const navigate = useNavigate()
   const [cartoesCompletos, setCartoesCompletos] = useState<Cartao[]>([])
@@ -144,6 +170,10 @@ export function ContasCartoesWidget({ contas, cartoes, ocultarValores = false }:
               limiteTotal > 0 ? Math.min(100, (cartao.faturaAtual / limiteTotal) * 100) : 0
             const pctRound = Math.round(percentualConsumo)
 
+            const cartaoCompleto = cartoesCompletos.find((c) => c.id === cartao.id)
+            const isFaturaFechada = cartaoCompleto?.faturaStatus === 'FECHADA'
+            const faturaDataVencimento = cartaoCompleto?.faturaDataVencimento
+
             const info = resultadoMelhorCartao.comparativo.find((c) => c.id === cartao.id)
             const isMelhorHoje = info?.isMelhor
 
@@ -202,12 +232,20 @@ export function ContasCartoesWidget({ contas, cartoes, ocultarValores = false }:
                     />
                   </div>
 
-                  {info && (
+                  {isFaturaFechada && faturaDataVencimento ? (
                     <div className="contas-cartoes-widget__corte-meta">
-                      <span>Fecha dia {info.diaFechamento} (em {info.diasAteFechamento}d)</span>
+                      <span>Fatura fechada</span>
                       <span>•</span>
-                      <span>{info.diasAtePagar}d p/ pagar</span>
+                      <span>{formatarPrazoVencimento(faturaDataVencimento)}</span>
                     </div>
+                  ) : (
+                    info && (
+                      <div className="contas-cartoes-widget__corte-meta">
+                        <span>Fecha dia {info.diaFechamento} (em {info.diasAteFechamento}d)</span>
+                        <span>•</span>
+                        <span>{info.diasAtePagar}d p/ pagar</span>
+                      </div>
+                    )
                   )}
                 </div>
                 <div className="contas-cartoes-widget__valores">

@@ -38,13 +38,15 @@ interface CartaoFaturasModalProps {
   projecao?: ProjecaoCartao
   onClose: () => void
   onPagarFatura?: (cartao: Cartao) => void
+  onFaturaUpdated?: () => void
 }
 
 export function CartaoFaturasModal({
   cartao,
   projecao,
   onClose,
-  onPagarFatura
+  onPagarFatura,
+  onFaturaUpdated
 }: CartaoFaturasModalProps) {
   const [faturas, setFaturas] = useState<Fatura[]>([])
   const [loading, setLoading] = useState(true)
@@ -99,6 +101,7 @@ export function CartaoFaturasModal({
       setFaturas((prev) => prev.map((f) => (f.id === atualizada.id ? atualizada : f)))
       setSelectedFatura(atualizada)
       setEditingVencimento(false)
+      onFaturaUpdated?.()
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { message?: string; error?: string } } }
       const msg =

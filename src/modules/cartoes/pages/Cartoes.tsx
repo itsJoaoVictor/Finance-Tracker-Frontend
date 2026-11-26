@@ -576,6 +576,7 @@ export function Cartoes() {
           projecao={projecoes.find((p) => p.cartaoId === viewFaturasCartao.id)}
           onClose={() => setViewFaturasCartao(null)}
           onPagarFatura={(c) => setPagarFaturaCartao(c)}
+          onFaturaUpdated={loadDados}
         />
       )}
 
