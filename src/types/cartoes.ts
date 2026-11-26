@@ -45,10 +45,17 @@ export interface Fatura {
   mesReferencia: string
   dataFechamento: string
   dataVencimento: string
+  dataVencimentoPadrao?: string
+  vencimentoAjustado?: boolean
   valorTotal: number
   valorPago: number
   status: StatusFatura
   rolladoOver?: boolean
+}
+
+export interface FaturaVencimentoRequest {
+  dataVencimento?: string
+  restaurarPadrao?: boolean
 }
 
 // ── Projeção de Faturas (IA dedicada) ────────────────────────────────

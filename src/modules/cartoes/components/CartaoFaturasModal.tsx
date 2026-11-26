@@ -15,7 +15,10 @@ import {
   Layers,
   ShoppingBag,
   Receipt,
-  X
+  X,
+  Pencil,
+  Check,
+  RotateCcw
 } from 'lucide-react'
 import '../cartoes.css'
 import './CartaoFaturasModal.css'
@@ -56,6 +59,57 @@ export function CartaoFaturasModal({
   // Filtros rápidos dentro da lista de itens da fatura
   const [searchTerm, setSearchTerm] = useState('')
   const [itemFilter, setItemFilter] = useState<'todas' | 'parceladas' | 'avista'>('todas')
+
+  // Ajuste pontual de vencimento da fatura selecionada
+  const [editingVencimento, setEditingVencimento] = useState(false)
+  const [vencimentoInput, setVencimentoInput] = useState('')
+  const [savingVencimento, setSavingVencimento] = useState(false)
+  const [vencimentoError, setVencimentoError] = useState<string | null>(null)
+
+  useEffect(() => {
+    setEditingVencimento(false)
+    setVencimentoError(null)
+    if (selectedFatura) {
+      setVencimentoInput(selectedFatura.dataVencimento.split('T')[0])
+    }
+  }, [selectedFatura?.id])
+
+  const handleOpenEditVencimento = () => {
+    if (!selectedFatura) return
+    setVencimentoInput(selectedFatura.dataVencimento.split('T')[0])
+    setVencimentoError(null)
+    setEditingVencimento(true)
+  }
+
+  const handleSaveVencimento = async (restaurarPadrao = false) => {
+    if (!selectedFatura) return
+    if (!restaurarPadrao && !vencimentoInput) {
+      setVencimentoError('Informe uma data válida.')
+      return
+    }
+    setSavingVencimento(true)
+    setVencimentoError(null)
+    try {
+      const res = await cartaoService.ajustarVencimentoFatura(
+        cartao.id,
+        selectedFatura.id,
+        restaurarPadrao ? { restaurarPadrao: true } : { dataVencimento: vencimentoInput }
+      )
+      const atualizada = res.data
+      setFaturas((prev) => prev.map((f) => (f.id === atualizada.id ? atualizada : f)))
+      setSelectedFatura(atualizada)
+      setEditingVencimento(false)
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { message?: string; error?: string } } }
+      const msg =
+        axiosErr?.response?.data?.message ||
+        axiosErr?.response?.data?.error ||
+        'Não foi possível ajustar o vencimento desta fatura.'
+      setVencimentoError(msg)
+    } finally {
+      setSavingVencimento(false)
+    }
+  }
 
   const loadFaturaTransactions = useCallback(
     async (faturaId: string) => {
@@ -566,16 +620,111 @@ export function CartaoFaturasModal({
                           </div>
                         </div>
 
-                        <div className="invoice-date-pill">
+                        <div
+                          className={`invoice-date-pill ${
+                            selectedFatura.vencimentoAjustado ? 'invoice-date-pill--adjusted' : ''
+                          }`}
+                        >
                           <Calendar size={13} className="invoice-date-pill__icon" />
-                          <div>
-                            <span className="invoice-date-pill__label">Vencimento</span>
+                          <div className="invoice-date-pill__body">
+                            <span className="invoice-date-pill__label-row">
+                              <span className="invoice-date-pill__label">Vencimento</span>
+                              {selectedFatura.vencimentoAjustado && (
+                                <span
+                                  className="invoice-date-pill__badge"
+                                  title={
+                                    selectedFatura.dataVencimentoPadrao
+                                      ? `Padrão do cartão: ${formatLongDate(
+                                          selectedFatura.dataVencimentoPadrao
+                                        )}`
+                                      : `Padrão do cartão: dia ${cartao.diaVencimento}`
+                                  }
+                                >
+                                  Ajustado
+                                </span>
+                              )}
+                            </span>
                             <strong className="invoice-date-pill__val">
                               {formatLongDate(selectedFatura.dataVencimento)}
                             </strong>
                           </div>
+                          {selectedFatura.status !== 'PAGA' && !selectedFatura.rolladoOver && (
+                            <button
+                              type="button"
+                              className="invoice-date-pill__edit-btn"
+                              onClick={handleOpenEditVencimento}
+                              title="Ajustar vencimento apenas desta fatura"
+                              aria-label="Ajustar vencimento desta fatura"
+                            >
+                              <Pencil size={12} />
+                            </button>
+                          )}
                         </div>
                       </div>
+
+                      {/* Editor inline de ajuste pontual do vencimento */}
+                      {editingVencimento && (
+                        <div className="invoice-due-editor">
+                          <div className="invoice-due-editor__header">
+                            <span>Ajustar vencimento desta fatura</span>
+                            <button
+                              type="button"
+                              className="invoice-due-editor__close"
+                              onClick={() => {
+                                setEditingVencimento(false)
+                                setVencimentoError(null)
+                              }}
+                              disabled={savingVencimento}
+                              aria-label="Cancelar ajuste"
+                            >
+                              <X size={13} />
+                            </button>
+                          </div>
+
+                          <div className="invoice-due-editor__controls">
+                            <input
+                              type="date"
+                              className="invoice-due-editor__input"
+                              value={vencimentoInput}
+                              min={selectedFatura.dataFechamento.split('T')[0]}
+                              onChange={(e) => setVencimentoInput(e.target.value)}
+                              disabled={savingVencimento}
+                            />
+                            <button
+                              type="button"
+                              className="invoice-due-editor__save-btn"
+                              onClick={() => handleSaveVencimento(false)}
+                              disabled={savingVencimento}
+                              title="Salvar nova data para esta fatura"
+                            >
+                              <Check size={13} />
+                              <span>{savingVencimento ? 'Salvando...' : 'Salvar'}</span>
+                            </button>
+                          </div>
+
+                          {vencimentoError && (
+                            <p className="invoice-due-editor__error">{vencimentoError}</p>
+                          )}
+
+                          <div className="invoice-due-editor__footer">
+                            <span className="invoice-due-editor__hint">
+                              Padrão do cartão (dia {cartao.diaVencimento}) permanece inalterado nos
+                              outros meses.
+                            </span>
+                            {selectedFatura.vencimentoAjustado && (
+                              <button
+                                type="button"
+                                className="invoice-due-editor__reset-btn"
+                                onClick={() => handleSaveVencimento(true)}
+                                disabled={savingVencimento}
+                              >
+                                <RotateCcw size={11} />
+                                <span>Restaurar padrão</span>
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )
                 })()}
